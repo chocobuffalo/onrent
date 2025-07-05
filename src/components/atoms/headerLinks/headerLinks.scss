@@ -1,0 +1,29 @@
+ 
+@media(max-width:1024px){
+     a.button {
+        margin-top: 30px;
+         background: #13123d !important;
+         color:white;
+         padding: 5px;
+         border-radius: 5px;
+         text-align: center;
+         border:1px solid #13123d;
+         &:hover{
+             background: white !important;
+             color:#13123d;
+        }
+    }
+}
+@media(min-width:1025px){
+    a.desktop.button {
+        background: white !important;
+        color:#13123d;
+        padding: 5px;
+        border-radius: 5px;
+        border:1px solid white;
+        &:hover{
+            background: #13123d !important;
+            color:white;
+        }
+    }
+}

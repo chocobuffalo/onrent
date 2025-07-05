@@ -13,7 +13,7 @@ export interface AuthState {
 }
 
 export const initialAuth: AuthState = {
-    isLogin:false,
+    isLogin:true,
     profile:{
         name:'',
         email:''

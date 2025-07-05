@@ -1,3 +1,4 @@
-export default function BulldozerIcon(){
-    return(<svg style={{opacity:0.5}} width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="24" height="24" rx="8" fill="none"/><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff" x="0" y="0" width="20" height="20"><g fill="none" stroke="#fff" strokeLinecap="round" strokeLinejoin="round" stroke-width="1"><path d="M2 17a2 2 0 1 0 4 0a2 2 0 0 0-4 0m10 0a2 2 0 1 0 4 0a2 2 0 0 0-4 0m7-4v4a2 2 0 0 0 2 2h1m-8 0H4m0-4h10"/><path d="M9 11V6h2a3 3 0 0 1 3 3v6"/><path d="M5 15v-3a1 1 0 0 1 1-1h8m5 6h-3"/></g></svg></svg>)
+export default function BulldozerIcon({color}:{color?:string}){
+    const currrentColor = color ? color : "#fff";
+    return(<svg style={{opacity:0.5}} width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="24" height="24" rx="8" fill="none"/><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={currrentColor} x="0" y="0" width="20" height="20"><g fill="none" stroke={currrentColor} strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"><path d="M2 17a2 2 0 1 0 4 0a2 2 0 0 0-4 0m10 0a2 2 0 1 0 4 0a2 2 0 0 0-4 0m7-4v4a2 2 0 0 0 2 2h1m-8 0H4m0-4h10"/><path d="M9 11V6h2a3 3 0 0 1 3 3v6"/><path d="M5 15v-3a1 1 0 0 1 1-1h8m5 6h-3"/></g></svg></svg>)
 }

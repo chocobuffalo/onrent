@@ -1,0 +1,25 @@
+
+import { RouteItem } from "@/types/menu";
+import Link from "next/link";
+import './headerLinks.scss'
+
+export default function HeaderLinks({links,isMobile,isTopColor}:{links:RouteItem[],isMobile:boolean,isTopColor:boolean}) {
+    const mobileStyle = 'block px-3 py-2 text-primary hover:text-secondary hover:bg-gray-50 rounded-md transition-colors duration-300';
+    const desktopStyle = isTopColor? 'desktop text-white hover:text-secondary transition-colors duration-300':'text-gray-100 hover:text-primary transition-colors duration-300';
+    return (
+        <>
+        {links.map((link:RouteItem)=>( 
+            <li key={link.id}>
+
+            <Link 
+                href={link.slug} 
+                className={`${isMobile?mobileStyle:desktopStyle} ${link.extraClass && link.extraClass}`}
+                >
+                
+                {link.title}
+              </Link>
+              </li>
+            ))}
+        </>
+    )
+}

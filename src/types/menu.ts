@@ -1,4 +1,8 @@
+
+
+
 import React from "react";
+import { ReactElement, ElementType } from "react";
 
 export type Menu = ListinsMenu[]
 
@@ -20,8 +24,22 @@ export interface sideBarLink{
     title:string,
 }
 
-export interface SidebarMenuProps extends sideBarLink{
-    childrens:null| sideBarLink[];
-    icon?: () => React.JSX.Element
-    function: null | (() => void) | (()=>string)
+export interface SidebarMenuProps extends sideBarLink {
+    childrens?:sideBarLink[];
+    icon?: ElementType
+    action?: (() => void) | (() => string);
+}
+
+export interface RouteItem extends LinkItem {
+    description?: string;
+    rel?: string;
+    image?: string;
+    extraClass?:string;
+}
+export interface LinkItem{
+    id: number;
+    name: string;
+    title: string;
+    slug: string;
+    target?: boolean;
 }

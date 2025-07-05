@@ -1,0 +1,46 @@
+
+
+.mobileNav  {
+    li{
+        padding-bottom: 10px;
+    }
+     button{
+        width: 100%;
+        padding: 15px 13px;
+     }
+    li a,
+    li button{
+        color: #696665;
+        padding-left: 15px !important;
+        svg{
+           opacity: 1;
+            g{
+                    opacity: 1;
+                    stroke:#696665;
+                    path{
+                     //   stroke: #696665;
+                    }
+                }
+            path{
+                fill:#696665 !important;
+            }
+        }
+        &.active,&:hover{
+            background:#ff7101;
+            border-radius:15px;
+            color: white !important;
+            svg{
+                g{
+                    opacity: 1;
+                  //  stroke:white;
+                    path{
+                       stroke: #696665;
+                    }
+                }
+            path{
+                fill:white !important;
+            }
+        }
+        }
+    }
+}

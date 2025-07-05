@@ -40,7 +40,7 @@ export default function Sidebar(){
            <>
               <div className="dashboard-overlay" />
               <aside className="sidebar-dashboard">
-                <DashboardLogo/>
+                <DashboardLogo color="white"/>
                 <DashboardAvatar/>
                 <SidebarMenu/>
               </aside>

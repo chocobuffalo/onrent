@@ -8,61 +8,54 @@ import UserProfileIcon from "@/components/atoms/customIcons/userProfileIcon";
 import WrenckIcon from "@/components/atoms/customIcons/wrenkIcon";
 import { SidebarMenuProps } from "@/types/menu";
 
+
+
 export const dashboardRoutes:SidebarMenuProps[] = [
     {
         link:'/dashboard',
         title:'Dashboard',
         icon: DashboardIcon,
-        childrens:null,
-        function:null
+       
     },
     {
         link:'/dashboard/equipaments',
         title:'Gestión de maquinaria',
         icon: BulldozerIcon,
-        childrens: null,
-        function:null
+      
     },
     {
         link: '/dashboard/orders',
         title: 'Solicitudes de Renta',
         icon:PencilWrite,
-        childrens: null,
-        function:null
+       
     },
     {
         link:'/dashboard/favorites',
         title:"Favoritos",
         icon: HearthIcon,
-        childrens: null,
-        function:null
+        
     },
     {
         link:'/dashboard/reviews',
         title:"Reseñas",
         icon:EnvelopeIcon,
-        childrens: null,
-        function:null
+      
     },
     {
         link:'/dashboard/profile',
         title:"Perfil",
         icon:UserProfileIcon,
-        childrens: null,
-        function:null
     },
     {
         link:'/dashboard/changepass',
         title:"Cambio de contraseña",
         icon:WrenckIcon,
-        childrens: null,
-        function:null
     },
     {
         link:'#',
         title:'Salir',
         icon:ExitIcon,
-        function:()=>console.log('object'),
-        childrens:null
+        action:()=>console.log('object'),
+       
     }
 ]

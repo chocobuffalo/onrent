@@ -1,0 +1,17 @@
+.slice{
+right: -350px;
+transition: right 0.5s ease-in-out;
+}
+.sliceOpen{
+right: 0px;
+}
+
+.desktopmenu li{
+   padding-left:15px;
+   padding-right:15px;
+   border-right: 1px solid white;
+}
+.desktopmenu li:last-child{
+   border-right: none;
+}
+
