@@ -37,7 +37,7 @@ export default function Header(){
                     </div>
                 </div>
             </header>
-            <header id="header" className="z-10 top-0 left-0 w-full px-3.5 py-2 bg-primary absolute" style={{zIndex:300}}>
+            <header id="header" className="z-10 top-0 left-0 w-full px-3.5 py-2 bg-primary" style={{zIndex:300}}>
                 <div className="container mx-auto">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center">
