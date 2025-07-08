@@ -4,7 +4,7 @@ import { RouteItem } from "@/types/menu";
 export function FooterCol({ title,routes }: { title: string,routes:RouteItem[] }) {
     return (
         <div className="col-span-1">
-            <h2 className="text-lg font-bold">
+            <h2 className="text-lg font-bold pb-4">
                 {title}
             </h2>
             <ul className="footer-links">

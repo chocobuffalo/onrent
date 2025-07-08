@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Capa_2" data-name="Capa 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 51.28 51.28">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #ea6300;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <g id="Capa_1-2" data-name="Capa 1">
+    <path class="cls-1" d="m25.64,0C11.48,0,0,11.48,0,25.64s11.48,25.64,25.64,25.64,25.64-11.48,25.64-25.64S39.8,0,25.64,0Zm8.85,37.99l-8.85-5.36-8.85,5.36,2.36-10.08-7.83-6.77,10.31-.87,4.01-9.54,4.01,9.54,10.31.87-7.83,6.77,2.36,10.08Z"/>
+  </g>
+</svg>

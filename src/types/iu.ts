@@ -1,0 +1,1 @@
+export interface ProcessItemInterface {id:number, image:string,title?:string,description?:string}

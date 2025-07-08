@@ -11,7 +11,9 @@ export default function FrontendLayout({
     return (
        <>
        <Header/>
-       {children}
+       <main className="pb-14">
+        {children}
+       </main>
        <Footer />
        </>
     );
