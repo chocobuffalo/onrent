@@ -44,7 +44,7 @@ const Navbar = ({isTop}:{isTop:boolean}) => {
       {/* Mobile Menu */}
     </nav>
    
-       <div className={`lg:none ${Style.slice} ${isOpen?Style.sliceOpen:''} w-[250px] min-h-[100vh] fixed top-0 right-0 bottom-0`}>
+       <div className={`lg:none ${Style.slice} ${isOpen?Style.sliceOpen:''} w-[250px] min-h-[100vh] fixed top-0 z-50 right-0 bottom-0`}>
 
        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-lg min-h-[100vh]">
          <button onClick={toggleMenu} >

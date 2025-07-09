@@ -3,6 +3,7 @@
     background-repeat: no-repeat;
     background-position: center;
     background-attachment: fixed;
+    overflow:hidden;
 }
 
 .banner-card::after {

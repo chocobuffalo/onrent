@@ -1,0 +1,41 @@
+.category-item{
+    transition: 0.3s;
+    .images-section{
+        width: 100%;
+        img{
+            max-height: 250px;
+            width: 100%;
+            object-fit: cover;
+        }
+    }
+    .explore-more{
+        transition: 0.3s;
+        padding-bottom: 15px;
+        padding-top:7px;
+        &:after{
+            content:"";
+            display: block;
+            position: relative;
+            transition: 0.5s;
+            margin-top: 3px;
+            width: 0;
+            height: 2px;
+            background: rgb(0, 0, 0);
+            z-index: 1;
+        }
+        
+    }
+    &:hover{
+        .explore-more{
+            &:after{
+              width: 100px;
+            }
+
+        }
+    }
+}
+@media (min-width:767px) and (max-width:1023px){
+    .cat-item:last-of-type {
+        grid-column: span 2;
+    }
+}

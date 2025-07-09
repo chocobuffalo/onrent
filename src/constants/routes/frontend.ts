@@ -19,7 +19,7 @@ CONTÁCTANOS AHORA
 export const contactLinks: RouteItem[] =[
     {id: 1, rel: 'noopener noreferrer', name: 'correo-electronico', title: 'Email: soporte@onrentx.com', slug:'mailto:soporte@onrentx.com' , target: true},
     {id: 2, rel: 'noopener noreferrer', name: 'ubicacion', title: 'San Luis Potosí, SLP', slug:'https://maps.app.goo.gl/6wNSY3JNckG33VkZ6' , target: true},
-    {id: 2, name: 'contacto', title: 'CONTÁCTANOS AHORA', slug:'/contactanos' , target: false},
+    {id: 3, name: 'contacto', title: 'CONTÁCTANOS AHORA', slug:'/contactanos' , target: false},
 ]
 
 /**
@@ -50,11 +50,9 @@ export const legalLinks: RouteItem[] = [
  */
 
 export const interestLinks: RouteItem[] = [
-    {id: 1, name: 'maquinaria-pesada', title: 'Maquinaria Pesada', slug:'/maquinaria-pesada' , target: false},
-    {id: 2, name: 'maquinaria-ligeras', title: 'Maquinaria Ligeras', slug:'/maquinaria-ligeras' , target: false},
-    {id: 3, name: 'equipo-de-seguridad', title: 'Equipo de Seguridad', slug:'/equipo-de-seguridad' , target: false},
-    {id: 4, name: 'equipo-de-transporte', title: 'Equipo de Transporte', slug:'/equipo-de-transporte' , target: false},
-    {id: 5, name: 'materiales', title: 'Materiales', slug:'/materiales' , target: false},
+    {id: 1, name: 'maquinaria-pesada', title: 'Maquinaria Pesada', slug:'/maquinaria-pesada' , target: false,image:'/images/pesada.webp'},
+    {id: 2, name: 'maquinaria-ligeras', title: 'Maquinaria Ligeras', slug:'/maquinaria-ligeras' , target: false,image:'/images/ligera.webp'},
+    {id: 3, name: 'transporte-materiales', title: 'Materiales', slug:'/materiales' , target: false,image:'/images/materiales.webp'},
 ]
 
 /**
