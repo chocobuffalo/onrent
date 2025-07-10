@@ -1,23 +1,29 @@
 
-import Apple from "next-auth/providers/apple"
-import Google from "next-auth/providers/google"
 import NextAuth from "next-auth"
+import { JWT } from "@auth/core/jwt";
+import { AuthConfig, Session } from "@auth/core/types";
+import { providers } from "./auth/auth.provider";
+import { callbacks } from "./auth/auth.callbacks";
+
+
+export const authOptions: AuthConfig ={
+  debug: true,
+  secret: process.env.AUTH_SECRET,
+  providers,
+  session: {
+    strategy:"jwt",
+    maxAge: 7 * 24 * 60 * 60, // 7 días
+    updateAge: 24 * 60 * 60, // Actualizar diariamente
+  },
+  jwt:{
+    maxAge: 24 * 60 * 60 * 7,
+
+  },
+  pages:{
+    signIn:'/iniciar-session',
+    newUser: '/complete-usuario'
+  },
+  callbacks
+}
  
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [
-    Google({
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    authorization: {
-      params: {
-        redirect_uri: process.env.NEXTAUTH_URL + '/api/auth/callback/google',
-        prompt: "consent",
-        access_type: "offline",
-        response_type: "code",
-        scope: "openid email profile"
-      }
-    }
-  }),
-    Apple
-  ],
-})
+export const { handlers, signIn, signOut, auth } = NextAuth(authOptions)

@@ -1,3 +1,4 @@
+import { signOut } from "@/auth";
 import BulldozerIcon from "@/components/atoms/customIcons/bulldozers";
 import DashboardIcon from "@/components/atoms/customIcons/dashboard";
 import ExitIcon from "@/components/atoms/customIcons/ExitIcon";
@@ -55,7 +56,7 @@ export const dashboardRoutes:SidebarMenuProps[] = [
         link:'#',
         title:'Salir',
         icon:ExitIcon,
-        action:()=>console.log('object'),
+        action:()=>signOut({redirect:true}),
        
     }
 ]

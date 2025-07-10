@@ -16,7 +16,7 @@ export default function FooterBanner(){
                             </h2>
                         </AOSWrapper>
                         <AOSWrapper  animation="zoom-in" duration={500} delay={200}>
-                            <Link href={'/auth/register'} className="w-fit px-6 font-bold py-2 text-white   uppercase border-2 duration-300 border-secondary bg-secondary hover:border-white hover:bg-transparent rounded-lg" >
+                            <Link href={'/registrate'} className="w-fit px-6 font-bold py-2 text-white   uppercase border-2 duration-300 border-secondary bg-secondary hover:border-white hover:bg-transparent rounded-lg" >
                                 Regístrate                          
                             </Link>
                         </AOSWrapper>

@@ -10,6 +10,7 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
 import 'swiper/css/effect-fade';
+import AdvanceFinder from "@/components/molecule/advanceFinder";
 
 export default function HeroSlider(){
     return(
@@ -34,7 +35,7 @@ export default function HeroSlider(){
                 }}>
                 {sliderItems.map((item:SliderInterface)=>{
                     return(
-                        <SwiperSlide>
+                        <SwiperSlide className="w-full">
                             <SliderPanel sliderItem={item} />
                         </SwiperSlide>
                     )
@@ -46,6 +47,7 @@ export default function HeroSlider(){
                     <h2 className="text-xl text-white">
                         La plataforma líder para renta de maquinaria en México
                     </h2>
+                    <AdvanceFinder/>
                 </div>
             </div>
         </section>

@@ -4,8 +4,10 @@ import { FaFacebook, FaInstagram, FaXTwitter } from "react-icons/fa6";
 export const headerLinks: RouteItem[] = [
     {id: 1, name: 'ouienes-somos', title: '¿Quienes Somos?', slug:'/quienes-somos' , target: false},
     {id: 2, name: 'ayuda', title: 'Ayuda', slug:'/ayuda', target: false},
-    {id: 3, name: 'iniciar-session', title: 'Iniciar Sesión', slug:'/iniciar-session', target: false},
-    {id: 4, name: 'registrate', title: 'Regístrate', slug:'/registrate',extraClass:'button', target: false},
+    {id: 3, name: 'iniciar-session', title: 'Iniciar Sesión', slug:'/iniciar-session', target: false, isLogged:false,protected:false},
+    {id: 4, name: 'registrate', title: 'Regístrate', slug:'/registrate',extraClass:'button', target: false,isLogged:false,protected:false},
+    {id: 5, name: 'Mi cuenta', title: 'Dashboard', slug:'/dashboard',extraClass:'button',protected:true, target: false,isLogged:true},
+
 ]
 
 /*
@@ -50,9 +52,9 @@ export const legalLinks: RouteItem[] = [
  */
 
 export const interestLinks: RouteItem[] = [
-    {id: 1, name: 'maquinaria-pesada', title: 'Maquinaria Pesada', slug:'/maquinaria-pesada' , target: false,image:'/images/pesada.webp'},
-    {id: 2, name: 'maquinaria-ligeras', title: 'Maquinaria Ligeras', slug:'/maquinaria-ligeras' , target: false,image:'/images/ligera.webp'},
-    {id: 3, name: 'transporte-materiales', title: 'Materiales', slug:'/materiales' , target: false,image:'/images/materiales.webp'},
+    {id: 1, name: 'maquinaria-pesada', title: 'Maquinaria Pesada', slug:'/catalogo/maquinaria-pesada' , target: false,image:'/images/pesada.webp'},
+    {id: 2, name: 'maquinaria-ligeras', title: 'Maquinaria Ligeras', slug:'/catalogo/maquinaria-ligeras' , target: false,image:'/images/ligera.webp'},
+    {id: 3, name: 'transporte-materiales', title: 'Materiales', slug:'/catalogo/materiales' , target: false,image:'/images/materiales.webp'},
 ]
 
 /**

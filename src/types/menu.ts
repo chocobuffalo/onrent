@@ -36,6 +36,8 @@ export interface RouteItem extends LinkItem {
     image?: string;
     extraClass?:string;
     icon?: ElementType;
+    protected?:boolean;
+    isLogged?:boolean;
 }
 export interface LinkItem{
     id: number;
