@@ -8,10 +8,12 @@ export default function SidebarMenu(){
       <div className="db-content db-list-menu">
         <h6 className="db-title">Menu</h6>
         <div className="db-dashboard-menu">
+          {/* si es tipo proveedor */ }
           <ul>
             {
               dashboardRoutes.map((route) => <SidebarLink key={route.title} route={route} />)
             }
+            
           </ul>
         </div>
       </div>
