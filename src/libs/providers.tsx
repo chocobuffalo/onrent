@@ -1,18 +1,19 @@
 'use client'
 import { Provider } from "react-redux"
 import { store } from "./redux/store"
-import { ReactNode } from "react"
+import { ReactNode, useRef } from "react"
 import { SessionProvider } from "next-auth/react"
 import { Session } from "@auth/core/types";
+import { PersistGate } from "redux-persist/integration/react"
+import { uiStore } from "./redux/uistore"
 
 
-export const Providers = ({children}:{children:ReactNode}) => {
-    
+const Providers = ({children}:{children:ReactNode}) => {
     return (
-        <SessionProvider>
-            <Provider store={store}>
-                    {children}
-            </Provider>
-        </SessionProvider>
+        <Provider store={uiStore}>
+            {children}
+        </Provider>
     )
 }
+
+export default Providers

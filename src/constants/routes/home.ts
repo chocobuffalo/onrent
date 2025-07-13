@@ -1,4 +1,4 @@
-import { ProcessItemInterface, SliderInterface } from "@/types/iu";
+import { ProcessItemInterface, SelectInterface, SliderInterface } from "@/types/iu";
 
 export const ProcessItems:ProcessItemInterface[] = [
     {id:1, image:'images/home/1.svg',description:'Encuentra maquinaria cercana'},
@@ -20,4 +20,11 @@ export const sliderItems:SliderInterface[]=[
     {id:2,image:'/images/home/banner-2.webp',title:'Encuentra y renta maquinaria cerca de tu obra',description:'La plataforma líder para renta de maquinaria en México'},
     {id:3,image:'/images/home/banner-3.webp',title:'Encuentra y renta maquinaria cerca de tu obra',description:'La plataforma líder para renta de maquinaria en México'},
    
+]
+
+export const typeOptions:SelectInterface[]=[
+    {value:'',label:'Todas las categorías',color:'#fff'},
+    {value:'maquinaria-pesada',label:'Maquinaria Pesada',color:'#fff'},
+    {value:'maquinaria-ligeras',label:'Maquinaria Ligera',color:'#fff'},
+    {value:'materiales',label:'Materiales',color:'#fff'},
 ]

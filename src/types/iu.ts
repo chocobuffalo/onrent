@@ -7,3 +7,12 @@ export interface SliderInterface{
     textLink?:string;
     link?:string;
 }
+export interface SelectInterface{
+    readonly value: string;
+    readonly label: string;
+    readonly color: string;
+    readonly isFixed?: boolean;
+    readonly isDisabled?: boolean;
+    readonly lat?: number;
+    readonly lon?: number;
+}

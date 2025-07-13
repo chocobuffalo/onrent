@@ -52,9 +52,9 @@ export const legalLinks: RouteItem[] = [
  */
 
 export const interestLinks: RouteItem[] = [
-    {id: 1, name: 'maquinaria-pesada', title: 'Maquinaria Pesada', slug:'/catalogo/maquinaria-pesada' , target: false,image:'/images/pesada.webp'},
-    {id: 2, name: 'maquinaria-ligeras', title: 'Maquinaria Ligeras', slug:'/catalogo/maquinaria-ligeras' , target: false,image:'/images/ligera.webp'},
-    {id: 3, name: 'transporte-materiales', title: 'Materiales', slug:'/catalogo/materiales' , target: false,image:'/images/materiales.webp'},
+    {id: 1, name: 'maquinaria-pesada', title: 'Maquinarias Pesada', slug:'/catalogo/maquinaria-pesada' , target: false,image:'/images/pesada.webp'},
+    {id: 2, name: 'maquinaria-ligeras', title: 'Maquinarias Ligeras', slug:'/catalogo/maquinaria-ligeras' , target: false,image:'/images/ligera.webp'},
+    {id: 3, name: 'materiales', title: 'Materiales', slug:'/catalogo/materiales' , target: false,image:'/images/materiales.webp'},
 ]
 
 /**
