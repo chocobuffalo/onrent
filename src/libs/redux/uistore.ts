@@ -16,16 +16,21 @@ export interface RootInterface {
 }
 
 
-export const uiStore = configureStore({
+
+// nextjs config
+export const makeStore = () => {
+  return configureStore({
     reducer: {
         filters:filterSlicer,
     }
-})
+  })
+}
 
+// Infer the type of makeStore
+export type UIAppStore = ReturnType<typeof makeStore>
 // Infer the `RootState` and `AppDispatch` types from the store itself
-export type IURootState = ReturnType<typeof uiStore.getState>
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
-export type IUAppDispatch = typeof uiStore.dispatch
+export type UIRootState = ReturnType<UIAppStore['getState']>
+export type UIAppDispatch = UIAppStore['dispatch']
 
 /* // const isClient = typeof window !== "undefined";
 // const createNoopStorage = () => {
