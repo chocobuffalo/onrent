@@ -1,25 +1,16 @@
 export const getLocationList = async (query:string) =>{
-    const response = await fetch(`https://api.locationiq.com/v1/autocomplete?key=${process.env.NEXT_PUBLIC_TEMP_LOCATION_API}&q=${query}`);
+    const response = await fetch(`/api/get-autocomplete?query=${encodeURIComponent(query)}`);
 
-    const data = await response.json()
+    const {data} = await response.json()
     
-    const mapData = data.map((location:any)=>{
-        console.log(location);
-        console.log(location.address.county);
-        console.log(location.address.state);
-        const countyLabel = location.address.county ? location.address.county : location.address.state ?location.address.state: false
-
-        const countyValue = countyLabel !== false ? ` - ${countyLabel}`:''
-
-        
-        const label = `${location.display_address} - ${location.display_place}`;
-        const value = `${location.display_address}${location.display_place}`
+    console.log(data.ResultItems);
+    const mapData = data.ResultItems.map((location:any)=>{     
+        const label = `${location.Title}`;
+        const value = `${location.PlaceId}`;
         return {
                 label, 
                 value,
                 color:"#fff",
-                lon:location.lon,
-                lat:location.lat
             }
     })
 

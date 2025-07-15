@@ -69,6 +69,21 @@ export default  function useAutoComplete() {
     const handlerSubmit = (e:any) =>{
         e.preventDefault()
         console.log(e);
+        // add latitud and longitude to the location
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/get-place?place=${uiSelector.location?.value}`)
+        .then((res) =>res.json())
+        .then((res) => {
+           const { data } = res;
+           if(data.Position && data.Position.length > 0){
+            const [lon, lat] = data.Position;
+            dispatch(setLocation({
+                ...uiSelector.location,
+                lat,
+                lon
+            }))
+           }
+        })
+
         if(uiSelector.location && uiSelector.type !== null){
             const path = `/catalogo/${uiSelector.type[0].value || ''}`; 
             redirect(path,RedirectType.push)
