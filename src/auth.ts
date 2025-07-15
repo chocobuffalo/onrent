@@ -1,4 +1,3 @@
-
 import NextAuth from "next-auth"
 import { JWT } from "@auth/core/jwt";
 import { AuthConfig, Session } from "@auth/core/types";
