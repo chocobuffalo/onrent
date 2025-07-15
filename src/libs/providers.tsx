@@ -7,9 +7,10 @@ import { Session } from "@auth/core/types";
 import { PersistGate } from "redux-persist/integration/react"
 import { makeStore, UIAppStore } from "./redux/uistore"
 import { FilterInterface } from "@/types/filters"
+import { AuthProvider } from "./providers/AuthProvider"
 
 
-const Providers = ({filters,children}:{filters:FilterInterface,children:ReactNode}) => {
+const Providers = ({children}:{children:ReactNode}) => {
     const storeRef = useRef<UIAppStore | null>(null)
     if (!storeRef.current) {
         // Create the store instance the first time this renders
@@ -17,9 +18,12 @@ const Providers = ({filters,children}:{filters:FilterInterface,children:ReactNod
         // storeRef.current.dispatch(initializeCount(count))
     }
     return (
+        <AuthProvider session={null}> 
+
         <Provider store={storeRef.current}>
             {children}
         </Provider>
+        </AuthProvider>
     )
 }
 
