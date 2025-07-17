@@ -72,4 +72,5 @@ export interface RouteItem extends LinkItem {
   icon?: ElementType;
   protected?: boolean;
   isLogged?: boolean;
+  typeMachine?: string;
 }

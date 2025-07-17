@@ -14,7 +14,7 @@ export default function AdvanceFinder(){
     return (
         <div className="find-form max-w-[650px] mt-5">
            <form onSubmit={handlerSubmit}>
-                <div className="finder-white flex gap-3.5">
+                <div className="finder-white flex-col md:flex-row flex gap-3.5">
                     <AsyncSelect 
                     className='min-w-[300px]'
                     components={{

@@ -3,6 +3,8 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
+import { signIn } from 'next-auth/react';
+import Link from 'next/link';
 
 const schema = Yup.object({
   emailOrPhone: Yup.string().required('Este campo es obligatorio'),
@@ -76,7 +78,7 @@ export default function IniciarSesion() {
         <div className="my-6 text-center text-[12px] text-gray-400 font-light">o</div>
 
         {/* Google Login */}
-        <button className="w-full flex items-center justify-center gap-3 bg-white border px-6 py-4 rounded-md shadow-sm hover:shadow-md transition text-[12px] font-light">
+        <button onClick={() => signIn('google', { callbackUrl: "/dashboard", })} className="w-full flex cursor-pointer items-center justify-center gap-3 bg-white border px-6 py-4 rounded-md shadow-sm hover:shadow-md transition text-[12px] font-light">
           <img src="/icons/google.svg" alt="Google" className="w-5 h-5" />
           Continuar con Google
         </button>
@@ -84,13 +86,13 @@ export default function IniciarSesion() {
         {/* Links inferiores */}
         <div className="mt-8 text-center text-[12px] text-gray-700 font-light space-y-2">
           <p>
-            ¿No tienes una cuenta? <a href="/registrate" className="text-blue-600 font-normal">Regístrate aquí</a>
+            ¿No tienes una cuenta? <Link href="/registrate" className="text-blue-600 font-normal">Regístrate aquí</Link>
           </p>
           <p>
-            <a href="/auth/recuperar" className="text-blue-600 font-normal">Olvidé mi contraseña</a>
+            <a href="/recuperar" className="text-blue-600 font-normal">Olvidé mi contraseña</a>
           </p>
           <p>
-            <a href="#" className="text-black underline">Seguir como invitado</a>
+            <a href="/" className="text-black underline">Seguir como invitado</a>
           </p>
         </div>
       </div>
