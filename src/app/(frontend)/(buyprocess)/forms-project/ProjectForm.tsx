@@ -1,17 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-const MapaCliente = dynamic(() => import("./MapaCliente"), { ssr: false });
+const MapaCliente = dynamic(() => import("./MapaClienteGoogle"), { ssr: false });
 
 
 export default function ProjectForm() {
   const [formData, setFormData] = useState({
     responsable: "",
+    telefono: "",
     proyecto: "",
     ubicacion: null as [number, number] | null,
     fechaInicio: "",
     fechaFin: "",
     tipoTrabajo: "",
+    tipoTrabajoOtro: "",
     tipoMaterial: "",
     seguridad: "",
     descripcionSeguridad: "",
@@ -36,31 +38,29 @@ export default function ProjectForm() {
       <h1 className="text-3xl font-bold mb-10">Formulario del Proyecto</h1>
 
       <FormSection title="1. Datos básicos">
-        <Input label="Nombre del responsable" />
-        <Input label="Nombre del proyecto" />
+        <Input label="Nombre del responsable" onChange={(e) => setFormData({ ...formData, responsable: e.target.value })} />
+        <Input label="Teléfono del responsable" type="tel" onChange={(e) => setFormData({ ...formData, telefono: e.target.value })} />
+        <Input label="Nombre del proyecto" onChange={(e) => setFormData({ ...formData, proyecto: e.target.value })} />
 
         <Input
-          label="Fecha de inicio"
+          label="Fecha estimada de inicio"
           type="date"
           onChange={(e) => setFormData({ ...formData, fechaInicio: e.target.value })}
         />
         <Input
-          label="Fecha de fin"
+          label="Fecha estimada de fin"
           type="date"
           onChange={(e) => setFormData({ ...formData, fechaFin: e.target.value })}
         />
 
-        {/* Mapa */}
         <div className="mb-4">
           <label className="text-sm font-medium text-gray-700 block mb-2">
             Ubicación de la obra (seleccione en el mapa)
           </label>
-
           <MapaCliente
             ubicacion={formData.ubicacion}
             setUbicacion={(coords) => setFormData({ ...formData, ubicacion: coords })}
           />
-
           {formData.ubicacion && (
             <p className="text-xs text-gray-500 mt-2">
               Coordenadas: {formData.ubicacion[0]}, {formData.ubicacion[1]}
@@ -75,6 +75,13 @@ export default function ProjectForm() {
           options={["Edificación", "Obra civil", "Camino", "Desarrollo Urbano", "Otro"]}
           onChange={(e) => setFormData({ ...formData, tipoTrabajo: e.target.value })}
         />
+
+        {formData.tipoTrabajo === "Otro" && (
+          <Input
+            label="Especificar otro tipo de obra"
+            onChange={(e) => setFormData({ ...formData, tipoTrabajoOtro: e.target.value })}
+          />
+        )}
 
         <Input
           label="Tipo de material del terreno"
@@ -111,9 +118,7 @@ export default function ProjectForm() {
         <Input
           label="Requisitos especiales"
           placeholder="Ej. terreno con pendiente, entrada limitada, etc."
-          onChange={(e) =>
-            setFormData({ ...formData, requisitosEspeciales: e.target.value })
-          }
+          onChange={(e) => setFormData({ ...formData, requisitosEspeciales: e.target.value })}
         />
       </FormSection>
 
@@ -189,7 +194,10 @@ function FileInput({
       <label className="text-sm font-medium text-gray-700 block mb-2">{label}</label>
       <input
         type="file"
-        className="block w-full text-sm text-gray-600 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100"
+        title="Elegir imagen"
+        className="block w-full text-sm text-gray-600 border border-gray-300 rounded-md
+          file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
+          file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100"
         onChange={(e) => onChange?.(e.target.files?.[0] || null)}
       />
     </div>
