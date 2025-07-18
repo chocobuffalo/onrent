@@ -78,7 +78,7 @@ export default function IniciarSesion() {
         <div className="my-6 text-center text-[12px] text-gray-400 font-light">o</div>
 
         {/* Google Login */}
-        <button onClick={() => signIn('google', { callbackUrl: "/dashboard", })} className="w-full flex cursor-pointer items-center justify-center gap-3 bg-white border px-6 py-4 rounded-md shadow-sm hover:shadow-md transition text-[12px] font-light">
+        <button onClick={() => signIn('google', { callbackUrl: "/dashboard", })} className=" hover:bg-[#0f0f26] hover:text-white w-full flex cursor-pointer items-center justify-center gap-3 bg-white border px-6 py-4 rounded-md shadow-sm hover:shadow-md transition text-[12px] font-light">
           <img src="/icons/google.svg" alt="Google" className="w-5 h-5" />
           Continuar con Google
         </button>

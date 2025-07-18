@@ -1,15 +1,11 @@
 
 'use client';
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { configureStore } from "@reduxjs/toolkit";
 import filterSlicer from "./features/ui/filterSlicer";
-import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER, PersistConfig } from "redux-persist";
-import storage from 'redux-persist/lib/storage'
-import { useDispatch, useSelector } from 'react-redux'
 
 
-import { createWrapper, MakeStore } from 'next-redux-wrapper';
 import { FilterInterface } from "@/types/filters";
-import createWebStorage from "redux-persist/es/storage/createWebStorage";
+
 import authSlicer,{  AuthStateInterface } from "./features/auth/authSlicer";
 
 export interface RootInterface {
@@ -25,7 +21,13 @@ export const makeStore = () => {
     reducer: {
         filters: filterSlicer,
         auth: authSlicer
-    }
+    },
+    middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+      },
+    })
   })
 }
 

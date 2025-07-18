@@ -1,4 +1,3 @@
-'use client';
 import { getLogin } from "@/libs/redux/features/auth/authSlicer";
 import { useUIAppDispatch } from "@/libs/redux/hooks";
 import cookieSession from "@/utils/cookieSession";
@@ -11,7 +10,7 @@ export const callbacks:NextAuthConfig["callbacks"] = {
       if (user) {
         token.user = user;
       }
-      console.log(token, user, account, trigger, session, 'jwt');
+    //  console.log(token, user, account, trigger, session, 'jwt');
       // Refrescar token si es necesario
       if (trigger === "update") {
         return { ...token, ...session.user };
@@ -26,7 +25,7 @@ export const callbacks:NextAuthConfig["callbacks"] = {
       //   email: 'juanvs23@gamil.com',
       //   token: '1234567890abcdefg'
       // })
-      console.log(account, profile, email,'signIn',user);
+     //console.log(account, profile, email,'signIn',user);
       return true
     },
 
@@ -34,7 +33,7 @@ export const callbacks:NextAuthConfig["callbacks"] = {
 
     async redirect({ url, baseUrl }) {
         
-        return `${baseUrl}/${url}`;
+        return `${url}`;
     },
     
     async session({ session, token }) {
