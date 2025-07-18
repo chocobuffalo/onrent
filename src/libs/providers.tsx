@@ -18,12 +18,11 @@ const Providers = ({children}:{children:ReactNode}) => {
         // storeRef.current.dispatch(initializeCount(count))
     }
     return (
-        <AuthProvider session={null}> 
-
         <Provider store={storeRef.current}>
-            {children}
+            <AuthProvider session={null}> 
+                {children}
+            </AuthProvider>
         </Provider>
-        </AuthProvider>
     )
 }
 

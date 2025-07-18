@@ -1,3 +1,4 @@
+
 'use client';
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import filterSlicer from "./features/ui/filterSlicer";
@@ -9,10 +10,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { createWrapper, MakeStore } from 'next-redux-wrapper';
 import { FilterInterface } from "@/types/filters";
 import createWebStorage from "redux-persist/es/storage/createWebStorage";
+import authSlicer,{  AuthStateInterface } from "./features/auth/authSlicer";
 
 export interface RootInterface {
   filters: FilterInterface;
-  
+  auth: AuthStateInterface;
 }
 
 
@@ -21,7 +23,8 @@ export interface RootInterface {
 export const makeStore = () => {
   return configureStore({
     reducer: {
-        filters:filterSlicer,
+        filters: filterSlicer,
+        auth: authSlicer
     }
   })
 }
@@ -31,65 +34,3 @@ export type UIAppStore = ReturnType<typeof makeStore>
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type UIRootState = ReturnType<UIAppStore['getState']>
 export type UIAppDispatch = UIAppStore['dispatch']
-
-/* // const isClient = typeof window !== "undefined";
-// const createNoopStorage = () => {
-//   return {
-//     getItem(_key: string) {
-//       return Promise.resolve(null);
-//     },
-//     setItem(_key: string, value: any) {
-//       return Promise.resolve(value);
-//     },
-//     removeItem(_key: string) {
-//       return Promise.resolve();
-//     },
-//   };
-// };
-// const storage =
-//   isClient
-//     ? createWebStorage("local")
-//     : createNoopStorage();
-
-
-
-const persistConfig:PersistConfig<RootInterface> = {
-  key: 'root',
-  storage:storage,
-  whitelist: ['filters'], // Solo persiste el slice 'filters'
-};
-
-// Combine all reducers here
-const combinedReducer = combineReducers({
-    filters:filterSlicer,
-})
-
-const makeConfiguredStore = () =>
-  configureStore({
-    reducer: combinedReducer,
-  })
-
-export const makeStore = () =>{
-    const isServer = typeof window === 'undefined';
-    if (isServer) {
-        return makeConfiguredStore()
-    } else {
-       const persistedReducer = persistReducer(persistConfig, combinedReducer)
-      let store: any = configureStore({
-        reducer: persistedReducer,
-        middleware: (getDefaultMiddleware) =>
-          getDefaultMiddleware({
-            serializableCheck: {
-              ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-            },
-        }),
-      })
-      store.__persistor = persistStore(store)
-      return store
-    }
-}
-
-export type AppStore = ReturnType<typeof makeStore>
-export type RootState = ReturnType<AppStore['getState']>
-export type AppDispatch = AppStore['dispatch'] */
-

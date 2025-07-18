@@ -1,3 +1,7 @@
+'use client';
+import { getLogin } from "@/libs/redux/features/auth/authSlicer";
+import { useUIAppDispatch } from "@/libs/redux/hooks";
+import cookieSession from "@/utils/cookieSession";
 import { JWT } from "@auth/core/jwt";
 import { Session } from "@auth/core/types";
 import { NextAuthConfig } from "next-auth";
@@ -7,7 +11,7 @@ export const callbacks:NextAuthConfig["callbacks"] = {
       if (user) {
         token.user = user;
       }
-      
+      console.log(token, user, account, trigger, session, 'jwt');
       // Refrescar token si es necesario
       if (trigger === "update") {
         return { ...token, ...session.user };
@@ -18,10 +22,11 @@ export const callbacks:NextAuthConfig["callbacks"] = {
 
 
     async signIn({ user, account, profile, email, credentials }) {
-      // if (account?.provider === "apple") {
-      //   return profile?.email_verified
-      // }
-      console.log(account, profile, email);
+      // cookieSession({
+      //   email: 'juanvs23@gamil.com',
+      //   token: '1234567890abcdefg'
+      // })
+      console.log(account, profile, email,'signIn',user);
       return true
     },
 
@@ -29,11 +34,12 @@ export const callbacks:NextAuthConfig["callbacks"] = {
 
     async redirect({ url, baseUrl }) {
         
-        return baseUrl
+        return `${baseUrl}/${url}`;
     },
     
     async session({ session, token }) {
       // Agregamos info del token a la sesión
+      console.log(session, token, 'session');
       session.user = token.user as any;
       return session;
     },

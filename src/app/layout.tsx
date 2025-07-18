@@ -3,6 +3,7 @@ import "./globals.css";
 import { CustomMetadata } from "@/types";
 import { customMetadata } from "@/constants";
 import  Providers  from "@/libs/providers";
+import AuthSync from "@/auth/authSync";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -20,6 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <Providers>
+      <AuthSync />
       <html lang="en">
         <body
           className={`${inter.variable} antialiased`}
