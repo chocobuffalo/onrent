@@ -31,6 +31,9 @@ export const makeStore = () => {
   })
 }
 
+// Create a store instance to infer RootState
+const store = makeStore();
+export type RootState = ReturnType<typeof store.getState>
 // Infer the type of makeStore
 export type UIAppStore = ReturnType<typeof makeStore>
 // Infer the `RootState` and `AppDispatch` types from the store itself

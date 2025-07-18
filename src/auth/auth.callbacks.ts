@@ -1,10 +1,25 @@
+'use client';
+
 import { getLogin } from "@/libs/redux/features/auth/authSlicer";
 import { useUIAppDispatch } from "@/libs/redux/hooks";
-import cookieSession from "@/utils/cookieSession";
 import { JWT } from "@auth/core/jwt";
 import { Session } from "@auth/core/types";
 import { NextAuthConfig } from "next-auth";
 export const callbacks:NextAuthConfig["callbacks"] = {
+
+    authorized({ auth, request: { nextUrl } }){
+     
+      const isLoggedIn = !!auth?.user;
+      if(auth?.user?.email == 'admin@example.com'){
+        return false;
+      }
+      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard')
+
+      if (!isLoggedIn) {
+        return false;
+      }
+      return true;
+    },
      async jwt({ token, user, account, trigger, session }) {
       // Solo en el inicio de sesión, agregamos info del usuario al token
       if (user) {
@@ -21,11 +36,7 @@ export const callbacks:NextAuthConfig["callbacks"] = {
 
 
     async signIn({ user, account, profile, email, credentials }) {
-      // cookieSession({
-      //   email: 'juanvs23@gamil.com',
-      //   token: '1234567890abcdefg'
-      // })
-     //console.log(account, profile, email,'signIn',user);
+     
       return true
     },
 
@@ -38,8 +49,8 @@ export const callbacks:NextAuthConfig["callbacks"] = {
     
     async session({ session, token }) {
       // Agregamos info del token a la sesión
-      console.log(session, token, 'session');
+      //console.log(session, token, 'session');
       session.user = token.user as any;
       return session;
-    },
+    }
 }

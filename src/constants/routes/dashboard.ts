@@ -80,10 +80,4 @@ export const dashboardRoutes: SidebarMenuProps[] = [
   /* ----------------------------------------------------
    * Salir (común)
    * -------------------------------------------------- */
-  {
-    link: "#",
-    title: "Salir",
-    icon: ExitIcon,
-    action: () => signOut({ redirect: true }),
-  },
 ] satisfies SidebarMenuProps[];

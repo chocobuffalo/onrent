@@ -3,7 +3,8 @@ import "./globals.css";
 import { CustomMetadata } from "@/types";
 import { customMetadata } from "@/constants";
 import  Providers  from "@/libs/providers";
-import AuthSync from "@/auth/authSync";
+import { auth } from "@/auth";
+
 
 const inter = Inter({
   variable: "--font-inter",
@@ -14,14 +15,15 @@ export const metadata: CustomMetadata = {
 
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth()
+  
   return (
-    <Providers>
-      <AuthSync />
+    <Providers session={session}>
       <html lang="en">
         <body
           className={`${inter.variable} antialiased`}

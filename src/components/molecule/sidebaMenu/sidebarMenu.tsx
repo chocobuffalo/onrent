@@ -6,10 +6,11 @@
  **********************************************************************/
 "use client"; // Necesario porque usamos `useSession()` (hook de cliente)
 
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import SidebarLink from "@/components/atoms/sidebarLink/sidebarLink";
 import { dashboardRoutes } from "@/constants/routes/dashboard";
 import type { UserRole } from "@/types/menu"; // 'PROVIDER' | 'CLIENT'
+import ExitIcon from "@/components/atoms/customIcons/ExitIcon";
 
 export default function SidebarMenu() {
   /* ------------------------------------------------------------------
@@ -42,6 +43,11 @@ export default function SidebarMenu() {
           {visibleRoutes.map((route) => (
             <SidebarLink key={route.title} route={route} />
           ))}
+          <li>
+            <button onClick={() => signOut({ redirect: true, callbackUrl: '/' })} className="menu-index-2 d-flex gap-2">
+              <ExitIcon/> Salir
+            </button>
+            </li>
         </ul>
       )}
     </nav>

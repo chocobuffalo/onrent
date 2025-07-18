@@ -5,6 +5,8 @@ import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 
+
+
 export default function AuthSync() {
   const dispatch = useUIAppDispatch();
   const isLogin = useUIAppSelector((state) => state.auth.isLogin);
