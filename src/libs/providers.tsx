@@ -3,10 +3,10 @@ import { Provider } from "react-redux"
 
 import { ReactNode, useRef } from "react"
 import { SessionProvider } from "next-auth/react"
-import { Session } from "@auth/core/types";
+
 import { makeStore, UIAppStore } from "./redux/uistore"
 
-import AuthSync from "@/auth/authSync";
+import AuthSync from "@/components/organlism/syncs/authSync";
 
 
 const Providers = ({children,session}:{children:ReactNode,session:any}) => {
@@ -20,6 +20,7 @@ const Providers = ({children,session}:{children:ReactNode,session:any}) => {
         <SessionProvider session={session}>
             <Provider store={storeRef.current}>
                 <AuthSync />
+                
                 {children}
            
             </Provider>

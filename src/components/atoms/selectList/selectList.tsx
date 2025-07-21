@@ -1,10 +1,26 @@
+'use client';
+import { typeOptions } from "@/constants/routes/home";
+import useSelectList from "@/hooks/frontend/buyProcess/useSelectList";
+import Select from 'react-select';
 export default function SelectList() {
+    const { filterStateType, dispatch } = useSelectList();
+
+    const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedValue = event.target.value;
+        // Dispatch an action or update state based on the selected value
+        console.log("Selected value:", selectedValue);
+    };
+
+    console.log(filterStateType);
+
     return(
-        <select className="border border-gray-300 rounded-md p-2">
-            <option value="">Seleccionar...</option>
-            <option value="opcion1">Opción 1</option>
-            <option value="opcion2">Opción 2</option>
-            <option value="opcion3">Opción 3</option>
-        </select>
+        <Select 
+        defaultValue={filterStateType}
+    isMulti
+    name="colors"
+    options={typeOptions}
+    className="basic-multi-select"
+    classNamePrefix="select"
+         />
     )
 }

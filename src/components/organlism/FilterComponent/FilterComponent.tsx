@@ -8,7 +8,7 @@ export default function FilterComponent() {
         <div className="filter-component flex flex-col gap-3.5 ">
             {/* Aquí puedes agregar los filtros necesarios */}
             <div className="rounded-[5px] flex flex-col gap-2 border-[#B2B2B2] border-1 p-4">
-                <FilterInput />
+                <FilterInput checkpersist={true} />
                 <SelectList/>
                 <PriceSelector/>
                 

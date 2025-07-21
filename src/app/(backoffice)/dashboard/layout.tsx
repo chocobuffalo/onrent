@@ -4,8 +4,6 @@ import Sidebar from '@/components/organlism/sidebar/sidebar';
 import TopDashboard from '@/components/organlism/TopDashboard/TopDashboard';
 import '@/assets/scss/app.scss'
 import '@/assets/css/backoffice.css'
-import { authOptions } from "@/auth";
-import { headers } from "next/headers";
 import { redirect } from 'next/navigation';
 
 export default  async function DashboardLayout({
