@@ -1,6 +1,7 @@
 import { RouteItem } from "@/types/menu";
 import './categoryItem.scss';
 import AOSWrapper from "../aosWrapper";
+import Link from "next/link";
 
 export default function CategoryItem({
    item:{
@@ -13,7 +14,7 @@ export default function CategoryItem({
     return(
         <AOSWrapper animation="fade-in" delay={id*200} className="cat-item">
             <article className='flex flex-col justify-between overflow-hidden category-item items-center shadow-lg hover:shadow-xl rounded-2xl'>
-                <a href={slug} className='block w-full'>
+                <Link href={slug} className='block w-full'>
                     <div className="images-section">
                         <img src={image} alt={title} />
                     </div>
@@ -25,7 +26,7 @@ export default function CategoryItem({
                         Explorar más
                         </p>
                     </div>
-                </a>
+                </Link>
             </article>
         </AOSWrapper>
     )

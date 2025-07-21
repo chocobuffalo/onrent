@@ -43,6 +43,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/aos": "^3.0.7",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/jwt-decode": "^2.2.1",
     "@types/node": "^20",
     "@types/react": "^19",

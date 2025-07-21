@@ -1,266 +1,567 @@
 export async function GET() {
   return Response.json({ data:{
     equipaments:[
-        {
-          "maquinaria_id": "maq_002",
-          "proveedor_id": "prov_124",
-          "nombre": "Excavadora Volvo",
-          "descripcion": "Modelo EC200 con cabina reforzada",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_003",
-          "proveedor_id": "prov_125",
-          "nombre": "Excavadora Komatsu",
-          "descripcion": "PC210 con sistema hidráulico mejorado",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_004",
-          "proveedor_id": "prov_126",
-          "nombre": "Excavadora Hitachi",
-          "descripcion": "ZX350LC-6 con bajo consumo de combustible",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_005",
-          "proveedor_id": "prov_127",
-          "nombre": "Excavadora Liebherr",
-          "descripcion": "R 956 con sistema de control avanzado",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_006",
-          "proveedor_id": "prov_128",
-          "nombre": "Excavadora Hyundai",
-          "descripcion": "Robex 300LC-9A con motor eficiente",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_007",
-          "proveedor_id": "prov_129",
-          "nombre": "Excavadora Doosan",
-          "descripcion": "DX300LC con cabina de lujo",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_008",
-          "proveedor_id": "prov_130",
-          "nombre": "Excavadora JCB",
-          "descripcion": "JS220 con sistema de auto-nivelación",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_009",
-          "proveedor_id": "prov_131",
-          "nombre": "Excavadora Case",
-          "descripcion": "CX210C con tren de rodaje reforzado",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_010",
-          "proveedor_id": "prov_132",
-          "nombre": "Excavadora Kobelco",
-          "descripcion": "SK210LC-10 con bajo nivel de ruido",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_011",
-          "proveedor_id": "prov_133",
-          "nombre": "Excavadora Sany",
-          "descripcion": "SY235C con sistema de diagnóstico inteligente",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_012",
-          "proveedor_id": "prov_134",
-          "nombre": "Excavadora XCMG",
-          "descripcion": "XE215C con motor Cummins",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_013",
-          "proveedor_id": "prov_135",
-          "nombre": "Excavadora Terex",
-          "descripcion": "TC225 con sistema de control de flujo",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_014",
-          "proveedor_id": "prov_136",
-          "nombre": "Excavadora New Holland",
-          "descripcion": "E215B con diseño ergonómico",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_015",
-          "proveedor_id": "prov_137",
-          "nombre": "Excavadora Kubota",
-          "descripcion": "KX080-4 con cabina panorámica",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_016",
-          "proveedor_id": "prov_138",
-          "nombre": "Excavadora Yanmar",
-          "descripcion": "ViO80 con sistema de reducción de vibraciones",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_017",
-          "proveedor_id": "prov_139",
-          "nombre": "Excavadora Takeuchi",
-          "descripcion": "TB260 con brazo telescópico",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_018",
-          "proveedor_id": "prov_140",
-          "nombre": "Excavadora Bobcat",
-          "descripcion": "E85 con sistema de auto-nivelación",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_019",
-          "proveedor_id": "prov_141",
-          "nombre": "Excavadora John Deere",
-          "descripcion": "200G con motor PowerTech",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_020",
-          "proveedor_id": "prov_142",
-          "nombre": "Excavadora Wacker Neuson",
-          "descripcion": "ET90 con sistema de control preciso",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        },
-        {
-          "maquinaria_id": "maq_021",
-          "proveedor_id": "prov_143",
-          "nombre": "Excavadora Hidromek",
-          "descripcion": "HMK 220LC con cabina climatizada",
-          "categoria": "Excavadora",
-          "ubicacion": "Bogotá",
-          "estado": "activo",
-          "fecha_creacion": "2025-07-03T17:00:00Z",
-          "imagenes": [
-            "https://mi-bucket.s3.amazonaws.com/imagen1.jpg"
-          ]
-        }
-      ]
+  {
+    "machine_id": 1,
+    "name": "Excavadora Estándar 1",
+    "brand": "Caterpillar",
+    "model": "S650",
+    "serial_number": "XPT-20217",
+    "daily_rate": 142.3,
+    "status": "reserved",
+    "location_info": "Zona Industrial Norte",
+    "image_base64": "https://picsum.photos/400/300?random=1",
+    "certified": true,
+    "certification_black_reviewed": true,
+    "national": false,
+    "delivery_method": "Transporte especializado",
+    "compatible_operator_ids": ["Operador 4", "Operador 6"],
+    "terrain_tags": ["Lodo", "Grava", "Terraplén"],
+    "tech_specs": {
+      "weight_tn": 2.4,
+      "motor_spec": "167 HP Aspirado",
+      "height_m": 3.6,
+      "width_m": 2.1,
+      "seat_count": 3,
+      "fuel_type": "gasolina",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=21",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=41"
+  },
+  {
+    "machine_id": 2,
+    "name": "Excavadora Compacta 2",
+    "brand": "Komatsu",
+    "model": "PC200",
+    "serial_number": "XPT-34567",
+    "daily_rate": 180.5,
+    "status": "available",
+    "location_info": "Sector Construcción Sur",
+    "image_base64": "https://picsum.photos/400/300?random=2",
+    "certified": false,
+    "certification_black_reviewed": false,
+    "national": true,
+    "delivery_method": "Camión plataforma",
+    "compatible_operator_ids": ["Operador 1", "Operador 2"],
+    "terrain_tags": ["Arena", "Roca", "Asfalto"],
+    "tech_specs": {
+      "weight_tn": 1.8,
+      "motor_spec": "120 HP Turbo",
+      "height_m": 3.0,
+      "width_m": 2.0,
+      "seat_count": 2,
+      "fuel_type": "diesel",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=22",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=42"
+  },
+  {
+    "machine_id": 3,
+    "name": "Excavadora Profesional 3",
+    "brand": "Volvo",
+    "model": "EC160",
+    "serial_number": "XPT-98765",
+    "daily_rate": 210.0,
+    "status": "maintenance",
+    "location_info": "Área Minera Este",
+    "image_base64": "https://picsum.photos/400/300?random=3",
+    "certified": true,
+    "certification_black_reviewed": false,
+    "national": false,
+    "delivery_method": "Remolque pesado",
+    "compatible_operator_ids": ["Operador 3", "Operador 4"],
+    "terrain_tags": ["Tierra", "Concreto", "Piedra"],
+    "tech_specs": {
+      "weight_tn": 2.2,
+      "motor_spec": "150 HP Intercooler",
+      "height_m": 3.5,
+      "width_m": 2.3,
+      "seat_count": 2,
+      "fuel_type": "híbrido",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=23",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=43"
+  },
+  {
+    "machine_id": 4,
+    "name": "Excavadora Premium 4",
+    "brand": "JCB",
+    "model": "JS130",
+    "serial_number": "XPT-12345",
+    "daily_rate": 195.7,
+    "status": "rented",
+    "location_info": "Complejo Industrial Oeste",
+    "image_base64": "https://picsum.photos/400/300?random=4",
+    "certified": false,
+    "certification_black_reviewed": true,
+    "national": true,
+    "delivery_method": "Grúa móvil",
+    "compatible_operator_ids": ["Operador 5", "Operador 6"],
+    "terrain_tags": ["Arcilla", "Grava", "Roca"],
+    "tech_specs": {
+      "weight_tn": 2.9,
+      "motor_spec": "175 HP Turbo",
+      "height_m": 3.8,
+      "width_m": 2.5,
+      "seat_count": 1,
+      "fuel_type": "eléctrico",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=24",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=44"
+  },
+  {
+    "machine_id": 5,
+    "name": "Excavadora Industrial 5",
+    "brand": "Liebherr",
+    "model": "R926",
+    "serial_number": "XPT-54321",
+    "daily_rate": 160.2,
+    "status": "available",
+    "location_info": "Zona Portuaria",
+    "image_base64": "https://picsum.photos/400/300?random=5",
+    "certified": true,
+    "certification_black_reviewed": false,
+    "national": false,
+    "delivery_method": "Transporte especializado",
+    "compatible_operator_ids": ["Operador 1", "Operador 3"],
+    "terrain_tags": ["Lodo", "Arena", "Tierra"],
+    "tech_specs": {
+      "weight_tn": 1.5,
+      "motor_spec": "130 HP Aspirado",
+      "height_m": 2.9,
+      "width_m": 1.9,
+      "seat_count": 2,
+      "fuel_type": "diesel",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=25",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=45"
+  },
+  {
+    "machine_id": 6,
+    "name": "Excavadora Compacta 6",
+    "brand": "Hitachi",
+    "model": "ZX200",
+    "serial_number": "XPT-67890",
+    "daily_rate": 175.0,
+    "status": "maintenance",
+    "location_info": "Distrito Comercial",
+    "image_base64": "https://picsum.photos/400/300?random=6",
+    "certified": false,
+    "certification_black_reviewed": true,
+    "national": true,
+    "delivery_method": "Camión plataforma",
+    "compatible_operator_ids": ["Operador 2", "Operador 5"],
+    "terrain_tags": ["Asfalto", "Concreto", "Piedra"],
+    "tech_specs": {
+      "weight_tn": 2.0,
+      "motor_spec": "140 HP Turbo",
+      "height_m": 3.1,
+      "width_m": 2.2,
+      "seat_count": 1,
+      "fuel_type": "gasolina",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=26",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=46"
+  },
+  {
+    "machine_id": 7,
+    "name": "Excavadora Profesional 7",
+    "brand": "Doosan",
+    "model": "DX140",
+    "serial_number": "XPT-11223",
+    "daily_rate": 200.0,
+    "status": "reserved",
+    "location_info": "Parque Industrial Central",
+    "image_base64": "https://picsum.photos/400/300?random=7",
+    "certified": true,
+    "certification_black_reviewed": false,
+    "national": false,
+    "delivery_method": "Remolque pesado",
+    "compatible_operator_ids": ["Operador 3", "Operador 4"],
+    "terrain_tags": ["Tierra", "Concreto", "Piedra"],
+    "tech_specs": {
+      "weight_tn": 2.7,
+      "motor_spec": "160 HP Intercooler",
+      "height_m": 3.7,
+      "width_m": 2.4,
+      "seat_count": 3,
+      "fuel_type": "híbrido",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=27",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=47"
+  },
+  {
+    "machine_id": 8,
+    "name": "Excavadora Premium 8",
+    "brand": "Case",
+    "model": "CX130",
+    "serial_number": "XPT-33445",
+    "daily_rate": 220.0,
+    "status": "rented",
+    "location_info": "Área de Desarrollo",
+    "image_base64": "https://picsum.photos/400/300?random=8",
+    "certified": false,
+    "certification_black_reviewed": true,
+    "national": true,
+    "delivery_method": "Grúa móvil",
+    "compatible_operator_ids": ["Operador 5", "Operador 6"],
+    "terrain_tags": ["Arcilla", "Grava", "Roca"],
+    "tech_specs": {
+      "weight_tn": 2.5,
+      "motor_spec": "170 HP Turbo",
+      "height_m": 3.3,
+      "width_m": 2.0,
+      "seat_count": 2,
+      "fuel_type": "eléctrico",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=28",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=48"
+  },
+  {
+    "machine_id": 9,
+    "name": "Excavadora Estándar 9",
+    "brand": "New Holland",
+    "model": "E145",
+    "serial_number": "XPT-55667",
+    "daily_rate": 130.0,
+    "status": "available",
+    "location_info": "Sector Logístico",
+    "image_base64": "https://picsum.photos/400/300?random=9",
+    "certified": true,
+    "certification_black_reviewed": false,
+    "national": false,
+    "delivery_method": "Transporte especializado",
+    "compatible_operator_ids": ["Operador 1", "Operador 3"],
+    "terrain_tags": ["Lodo", "Arena", "Tierra"],
+    "tech_specs": {
+      "weight_tn": 1.2,
+      "motor_spec": "110 HP Aspirado",
+      "height_m": 2.8,
+      "width_m": 1.8,
+      "seat_count": 1,
+      "fuel_type": "diesel",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=29",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=49"
+  },
+  {
+    "machine_id": 10,
+    "name": "Excavadora Industrial 10",
+    "brand": "Bobcat",
+    "model": "S650",
+    "serial_number": "XPT-77889",
+    "daily_rate": 145.0,
+    "status": "maintenance",
+    "location_info": "Complejo Manufacturero",
+    "image_base64": "https://picsum.photos/400/300?random=10",
+    "certified": false,
+    "certification_black_reviewed": true,
+    "national": true,
+    "delivery_method": "Camión plataforma",
+    "compatible_operator_ids": ["Operador 2", "Operador 5"],
+    "terrain_tags": ["Asfalto", "Concreto", "Piedra"],
+    "tech_specs": {
+      "weight_tn": 1.9,
+      "motor_spec": "135 HP Turbo",
+      "height_m": 3.2,
+      "width_m": 2.1,
+      "seat_count": 2,
+      "fuel_type": "gasolina",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=30",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=50"
+  },
+  {
+    "machine_id": 11,
+    "name": "Excavadora Premium 11",
+    "brand": "Caterpillar",
+    "model": "320D",
+    "serial_number": "XPT-88990",
+    "daily_rate": 160.0,
+    "status": "available",
+    "location_info": "Zona Industrial Norte",
+    "image_base64": "https://picsum.photos/400/300?random=11",
+    "certified": true,
+    "certification_black_reviewed": true,
+    "national": true,
+    "delivery_method": "Camión plataforma",
+    "compatible_operator_ids": ["Operador 1", "Operador 2"],
+    "terrain_tags": ["Lodo", "Grava", "Terraplén"],
+    "tech_specs": {
+      "weight_tn": 1.5,
+      "motor_spec": "120 HP Turbo",
+      "height_m": 3.2,
+      "width_m": 2.1,
+      "seat_count": 2,
+      "fuel_type": "diesel",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=31",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=51"
+  },
+  {
+    "machine_id": 12,
+    "name": "Excavadora Estándar 12",
+    "brand": "Komatsu",
+    "model": "PC200",
+    "serial_number": "XPT-99001",
+    "daily_rate": 170.0,
+    "status": "rented",
+    "location_info": "Sector Construcción Sur",
+    "image_base64": "https://picsum.photos/400/300?random=12",
+    "certified": false,
+    "certification_black_reviewed": false,
+    "national": false,
+    "delivery_method": "Transporte especializado",
+    "compatible_operator_ids": ["Operador 3", "Operador 4"],
+    "terrain_tags": ["Arena", "Roca", "Asfalto"],
+    "tech_specs": {
+      "weight_tn": 2.0,
+      "motor_spec": "125 HP Intercooler",
+      "height_m": 3.0,
+      "width_m": 2.0,
+      "seat_count": 1,
+      "fuel_type": "híbrido",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=32",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=52"
+  },
+  {
+    "machine_id": 13,
+    "name": "Excavadora Compacta 13",
+    "brand": "Volvo",
+    "model": "EC160",
+    "serial_number": "XPT-10112",
+    "daily_rate": 185.0,
+    "status": "maintenance",
+    "location_info": "Área Minera Este",
+    "image_base64": "https://picsum.photos/400/300?random=13",
+    "certified": true,
+    "certification_black_reviewed": false,
+    "national": true,
+    "delivery_method": "Remolque pesado",
+    "compatible_operator_ids": ["Operador 5", "Operador 6"],
+    "terrain_tags": ["Tierra", "Concreto", "Piedra"],
+    "tech_specs": {
+      "weight_tn": 2.3,
+      "motor_spec": "140 HP Turbo",
+      "height_m": 3.4,
+      "width_m": 2.2,
+      "seat_count": 2,
+      "fuel_type": "eléctrico",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=33",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=53"
+  },
+  {
+    "machine_id": 14,
+    "name": "Excavadora Profesional 14",
+    "brand": "JCB",
+    "model": "JS130",
+    "serial_number": "XPT-20223",
+    "daily_rate": 200.0,
+    "status": "reserved",
+    "location_info": "Complejo Industrial Oeste",
+    "image_base64": "https://picsum.photos/400/300?random=14",
+    "certified": false,
+    "certification_black_reviewed": true,
+    "national": false,
+    "delivery_method": "Grúa móvil",
+    "compatible_operator_ids": ["Operador 1", "Operador 3"],
+    "terrain_tags": ["Arcilla", "Grava", "Roca"],
+    "tech_specs": {
+      "weight_tn": 2.8,
+      "motor_spec": "180 HP Aspirado",
+      "height_m": 3.6,
+      "width_m": 2.3,
+      "seat_count": 3,
+      "fuel_type": "diesel",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=34",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=54"
+  },
+  {
+    "machine_id": 15,
+    "name": "Excavadora Premium 15",
+    "brand": "Liebherr",
+    "model": "R926",
+    "serial_number": "XPT-30334",
+    "daily_rate": 210.0,
+    "status": "available",
+    "location_info": "Zona Portuaria",
+    "image_base64": "https://picsum.photos/400/300?random=15",
+    "certified": true,
+    "certification_black_reviewed": false,
+    "national": true,
+    "delivery_method": "Transporte especializado",
+    "compatible_operator_ids": ["Operador 2", "Operador 5"],
+    "terrain_tags": ["Lodo", "Arena", "Tierra"],
+    "tech_specs": {
+      "weight_tn": 1.7,
+      "motor_spec": "150 HP Intercooler",
+      "height_m": 3.1,
+      "width_m": 2.0,
+      "seat_count": 1,
+      "fuel_type": "gasolina",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=35",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=55"
+  },
+  {
+    "machine_id": 16,
+    "name": "Excavadora Industrial 16",
+    "brand": "Hitachi",
+    "model": "ZX200",
+    "serial_number": "XPT-40445",
+    "daily_rate": 175.0,
+    "status": "maintenance",
+    "location_info": "Distrito Comercial",
+    "image_base64": "https://picsum.photos/400/300?random=16",
+    "certified": false,
+    "certification_black_reviewed": true,
+    "national": false,
+    "delivery_method": "Camión plataforma",
+    "compatible_operator_ids": ["Operador 3", "Operador 4"],
+    "terrain_tags": ["Asfalto", "Concreto", "Piedra"],
+    "tech_specs": {
+      "weight_tn": 2.1,
+      "motor_spec": "160 HP Turbo",
+      "height_m": 3.2,
+      "width_m": 2.1,
+      "seat_count": 2,
+      "fuel_type": "híbrido",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=36",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=56"
+  },
+  {
+    "machine_id": 17,
+    "name": "Excavadora Compacta 17",
+    "brand": "Doosan",
+    "model": "DX140",
+    "serial_number": "XPT-50556",
+    "daily_rate": 190.0,
+    "status": "rented",
+    "location_info": "Parque Industrial Central",
+    "image_base64": "https://picsum.photos/400/300?random=17",
+    "certified": true,
+    "certification_black_reviewed": false,
+    "national": true,
+    "delivery_method": "Remolque pesado",
+    "compatible_operator_ids": ["Operador 5", "Operador 6"],
+    "terrain_tags": ["Tierra", "Concreto", "Piedra"],
+    "tech_specs": {
+      "weight_tn": 2.6,
+      "motor_spec": "170 HP Aspirado",
+      "height_m": 3.5,
+      "width_m": 2.2,
+      "seat_count": 3,
+      "fuel_type": "eléctrico",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=37",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=57"
+  },
+  {
+    "machine_id": 18,
+    "name": "Excavadora Profesional 18",
+    "brand": "Case",
+    "model": "CX130",
+    "serial_number": "XPT-60667",
+    "daily_rate": 205.0,
+    "status": "reserved",
+    "location_info": "Área de Desarrollo",
+    "image_base64": "https://picsum.photos/400/300?random=18",
+    "certified": false,
+    "certification_black_reviewed": true,
+    "national": false,
+    "delivery_method": "Grúa móvil",
+    "compatible_operator_ids": ["Operador 1", "Operador 2"],
+    "terrain_tags": ["Arcilla", "Grava", "Roca"],
+    "tech_specs": {
+      "weight_tn": 2.9,
+      "motor_spec": "180 HP Turbo",
+      "height_m": 3.8,
+      "width_m": 2.5,
+      "seat_count": 1,
+      "fuel_type": "diesel",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=38",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=58"
+  },
+  {
+    "machine_id": 19,
+    "name": "Excavadora Estándar 19",
+    "brand": "New Holland",
+    "model": "E145",
+    "serial_number": "XPT-70778",
+    "daily_rate": 150.0,
+    "status": "available",
+    "location_info": "Sector Logístico",
+    "image_base64": "https://picsum.photos/400/300?random=19",
+    "certified": true,
+    "certification_black_reviewed": false,
+    "national": true,
+    "delivery_method": "Transporte especializado",
+    "compatible_operator_ids": ["Operador 3", "Operador 4"],
+    "terrain_tags": ["Lodo", "Arena", "Tierra"],
+    "tech_specs": {
+      "weight_tn": 1.3,
+      "motor_spec": "115 HP Intercooler",
+      "height_m": 2.9,
+      "width_m": 1.9,
+      "seat_count": 2,
+      "fuel_type": "gasolina",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=39",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=59"
+  },
+  {
+    "machine_id": 20,
+    "name": "Excavadora Industrial 20",
+    "brand": "Bobcat",
+    "model": "S650",
+    "serial_number": "XPT-80889",
+    "daily_rate": 165.0,
+    "status": "maintenance",
+    "location_info": "Complejo Manufacturero",
+    "image_base64": "https://picsum.photos/400/300?random=20",
+    "certified": false,
+    "certification_black_reviewed": true,
+    "national": false,
+    "delivery_method": "Camión plataforma",
+    "compatible_operator_ids": ["Operador 5", "Operador 6"],
+    "terrain_tags": ["Asfalto", "Concreto", "Piedra"],
+    "tech_specs": {
+      "weight_tn": 2.0,
+      "motor_spec": "140 HP Turbo",
+      "height_m": 3.1,
+      "width_m": 2.0,
+      "seat_count": 1,
+      "fuel_type": "híbrido",
+      "machine_category": "heavy"
+    },
+    "catalog_photo_base64": "https://picsum.photos/600/400?random=40",
+    "black_certification_photo_base64": "https://picsum.photos/500/350?random=60"
+  }
+]
+       
   } })
 }

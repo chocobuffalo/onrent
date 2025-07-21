@@ -1,11 +1,10 @@
-
+import { cookies } from 'next/headers'
 import { auth } from "@/auth"
 import Sidebar from '@/components/organlism/sidebar/sidebar';
 import TopDashboard from '@/components/organlism/TopDashboard/TopDashboard';
 import '@/assets/scss/app.scss'
 import '@/assets/css/backoffice.css'
-import { authOptions } from "@/auth";
-import { headers } from "next/headers";
+import { redirect } from 'next/navigation';
 
 export default  async function DashboardLayout({
     children,
@@ -14,10 +13,10 @@ export default  async function DashboardLayout({
 
 }){
     const session = await auth();
-    // console.log(session);
-    // const headersList = headers();
-    //  const userAgent = await headersList.get('user-agent')
-    //  console.log(userAgent);
+    if (!session?.user) {
+    // Redirige a login si no está autenticado
+    redirect('/')
+     }
     return (
        <>
        <Sidebar/>

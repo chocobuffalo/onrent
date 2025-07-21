@@ -1,7 +1,20 @@
-export default function MachineTypePage(){
+import FrontSectionWrapper from "@/components/molecule/frontSectionWrapper/frontSectionWrapper";
+import Catalogue from "@/components/organlism/Catalogue/Catalogue";
+import FilterComponent from "@/components/organlism/FilterComponent/FilterComponent";
+
+
+export default async function CatalogPage(){
+    //get path params
     return (
-        <>
-        <h1>catalogo</h1>
-        </>
+        <FrontSectionWrapper identicator="catalogSection" extraClass="">
+            <div className="flex flex-col items-start justify-center md:flex-row gap-3.5 w-full md:justify-between">
+                <div className="filter-wrapper w-full md:w-1/4">
+                    <FilterComponent />
+                </div>
+                <div className="catalogue-wrapper w-full md:w-3/4">
+                    <Catalogue />
+                </div>
+            </div>
+        </FrontSectionWrapper>
     )
 }

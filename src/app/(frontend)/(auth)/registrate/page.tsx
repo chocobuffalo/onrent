@@ -103,7 +103,7 @@ export default function Registro() {
         <div className="my-6 text-center text-[12px] text-gray-400 font-light">o</div>
 
         {/* Google Login */}
-        <button className="w-full flex items-center justify-center gap-3 bg-white border px-6 py-4 rounded-md shadow-sm hover:shadow-md transition text-[12px] font-light">
+        <button  className="w-full cursor-pointer flex items-center justify-center gap-3 bg-white border px-6 py-4 rounded-md shadow-sm hover:shadow-md transition text-[12px] font-light">
           <img src="/icons/google.svg" alt="Google" className="w-5 h-5" />
           Continuar con Google
         </button>

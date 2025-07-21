@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { RootState } from "../../store";
+import { RootState } from "../../uistore";
 
 
 
 
-export interface AuthState {
+export interface AuthStateInterface {
     isLogin: boolean;
     profile: {
         name: string;
@@ -12,15 +12,15 @@ export interface AuthState {
     };
 }
 
-export const initialAuth: AuthState = {
-    isLogin:true,
+export const initialAuth: AuthStateInterface = {
+    isLogin:false,
     profile:{
         name:'',
         email:''
     }
 }
 
-export const authSlicer = createSlice({
+const authSlicer = createSlice({
     name: 'auth',
     initialState: initialAuth,
     reducers:{
@@ -33,7 +33,7 @@ export const authSlicer = createSlice({
 
 export const {getLogin} = authSlicer.actions;
 
-export const selectProfile = ( state:RootState ) => (state.auth as AuthState).profile
-export const selectAuth = ( state:RootState ) =>  (state.auth as AuthState).isLogin
+export const selectProfile = ( state:RootState ) => (state.auth as AuthStateInterface).profile
+export const selectAuth = ( state:RootState ) =>  (state.auth as AuthStateInterface).isLogin
 
 export default authSlicer.reducer

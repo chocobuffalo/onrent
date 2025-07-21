@@ -2,10 +2,10 @@ import { RouteItem } from "@/types/menu";
 import { FaFacebook, FaInstagram, FaXTwitter } from "react-icons/fa6";
 
 export const headerLinks: RouteItem[] = [
-    {id: 1, name: 'ouienes-somos', title: '¿Quienes Somos?', slug:'/quienes-somos' , target: false},
-    {id: 2, name: 'ayuda', title: 'Ayuda', slug:'/ayuda', target: false},
-    {id: 3, name: 'iniciar-session', title: 'Iniciar Sesión', slug:'/iniciar-session', target: false, isLogged:false,protected:false},
-    {id: 4, name: 'registrate', title: 'Regístrate', slug:'/registrate',extraClass:'button', target: false,isLogged:false,protected:false},
+    {id: 1, name: 'ouienes-somos', title: '¿Quienes Somos?', slug:'/quienes-somos' , target: false,protected:false},
+    {id: 2, name: 'ayuda', title: 'Ayuda', slug:'/ayuda', target: false,protected:false},
+    {id: 3, name: 'iniciar-session', title: 'Iniciar Sesión', slug:'/iniciar-session', target: false, isLogged:false,protected:true},
+    {id: 4, name: 'registrate', title: 'Regístrate', slug:'/registrate',extraClass:'button', target: false,isLogged:false,protected:true},
     {id: 5, name: 'Mi cuenta', title: 'Dashboard', slug:'/dashboard',extraClass:'button',protected:true, target: false,isLogged:true},
 
 ]
@@ -52,9 +52,10 @@ export const legalLinks: RouteItem[] = [
  */
 
 export const interestLinks: RouteItem[] = [
-    {id: 1, name: 'maquinaria-pesada', title: 'Maquinarias Pesada', slug:'/catalogo/maquinaria-pesada' , target: false,image:'/images/pesada.webp'},
-    {id: 2, name: 'maquinaria-ligeras', title: 'Maquinarias Ligeras', slug:'/catalogo/maquinaria-ligeras' , target: false,image:'/images/ligera.webp'},
-    {id: 3, name: 'materiales', title: 'Materiales', slug:'/catalogo/materiales' , target: false,image:'/images/materiales.webp'},
+    {id: 2, name: 'maquinaria-ligera', title: 'Maquinarias Ligera', slug:'/catalogo/maquinaria-ligera' , target: false,image:'/images/ligera.webp',typeMachine:'light'},
+    {id: 1, name: 'maquinaria-pesada', title: 'Maquinarias Pesada', slug:'/catalogo/maquinaria-pesada' , target: false,image:'/images/pesada.webp',typeMachine:'heavy'},
+    {id: 3, name: 'especializada', title: 'Especializada', slug:'/catalogo/especializada' , target: false,image:'/images/materiales.webp',typeMachine:'special'},
+    {id: 4, name: 'otros', title: 'Otros', slug:'/catalogo/otros' , target: false,typeMachine:'other'},
 ]
 
 /**
