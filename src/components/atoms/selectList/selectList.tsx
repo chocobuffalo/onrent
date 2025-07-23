@@ -1,26 +1,48 @@
 'use client';
 import { typeOptions } from "@/constants/routes/home";
 import useSelectList from "@/hooks/frontend/buyProcess/useSelectList";
+import { setType } from "@/libs/redux/features/ui/filterSlicer";
+import { storage } from "@/utils/storage";
+import { useEffect, useState } from "react";
 import Select from 'react-select';
 export default function SelectList() {
-    const { filterStateType, dispatch } = useSelectList();
+    const {  filterStateType,
+        selectedType,
+        setSelectedType,
+        dispatch } = useSelectList();
+        const [options, setOptions] = useState(filterStateType || []);
 
-    const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedValue = event.target.value;
-        // Dispatch an action or update state based on the selected value
-        console.log("Selected value:", selectedValue);
-    };
+    useEffect(() => {
+        const storedType = storage.getItem('filters')?.type;
+        setTimeout(() => {
+            if (storedType) {
+                console.log(storedType);
+               setOptions(storedType);
+                setSelectedType(storedType);
+                dispatch(setType(storedType));
+            } else {
+                setSelectedType([]);
+                dispatch(setType([]));
+            }
+        }, 300);
+    }, []);
 
-    console.log(filterStateType);
-
+    const handlerChange = (value:any) =>{
+        setSelectedType(value);
+        dispatch(setType(value));
+        storage.setItem('filters', { ...storage.getItem('filters'), type: value });
+        console.log("Selected types:", value);
+    }
     return(
         <Select 
-        defaultValue={filterStateType}
-    isMulti
-    name="colors"
-    options={typeOptions}
-    className="basic-multi-select"
-    classNamePrefix="select"
+        defaultValue={options}
+        value={selectedType}
+        isMulti
+        name="colors"
+        options={typeOptions}
+        className="basic-multi-select"
+        classNamePrefix="select"
+        onChange={(newValue)=>handlerChange(newValue)}
          />
     )
 }

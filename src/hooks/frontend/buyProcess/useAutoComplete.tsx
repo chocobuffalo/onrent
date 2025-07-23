@@ -80,6 +80,7 @@ export default  function useAutoComplete() {
                 lat,
                 lon
             }))
+            storage.setItem('filters', {...uiSelector, location: {value: data.PlaceId, label: data.Title, lat, lon}});
            }
         })
     }

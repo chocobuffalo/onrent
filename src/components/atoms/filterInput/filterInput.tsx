@@ -5,6 +5,7 @@ import useAutoComplete from "@/hooks/frontend/buyProcess/useAutoComplete";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import './filterInput.scss';
 import { setFilters } from "@/libs/redux/features/ui/filterSlicer";
+import { storage } from "@/utils/storage";
 
 
 export default function FilterInput({checkpersist}: {checkpersist?: boolean}) {
@@ -17,20 +18,25 @@ export default function FilterInput({checkpersist}: {checkpersist?: boolean}) {
     }
     useEffect(()=>{
         if(checkpersist){
-            const persistedInput = localStorage.getItem('filters');
-            if (persistedInput) {
-                const parsedInput = JSON.parse(persistedInput);
-                dispatch(setFilters(parsedInput));
-                handlerInputChange(parsedInput.location.label || '');
+            if(typeof window !== 'undefined'){
+                 const persistedInput = storage.getItem('filters');
+                 console.log(persistedInput);
+                if (persistedInput.location !== null && persistedInput.location !== undefined) {
+                    const parsedInput = persistedInput;
+                    if(parsedInput) {
+                        dispatch(setFilters(parsedInput));
+                        if(parsedInput) handlerInputChange(parsedInput.location.label || '');
+                    }
+                }
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
     const handlerInputChange =(text:string)=>{
         debouncedFilterColors(text)
-        setInputValue(text)
+        setInputValue(text);
     }
-    console.log(inputValue, options);
+    
     return (
         <div className="search-input relative w-full" >
           <div className="input-item flex items-center gap-2 bg-white border border-gray-300 rounded-md px-2">

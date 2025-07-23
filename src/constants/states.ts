@@ -5,8 +5,8 @@ export const filterInitialState:FilterInterface = {
     userID:null,
     type:null,
     rangePrice:{
-        min:null,
-        max:null,
+        min:0,
+        max:0,
     },
     startDate:null,
     endDate:null,

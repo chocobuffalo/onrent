@@ -1,6 +1,6 @@
-
+'use client';
 import FilterInput from "@/components/atoms/filterInput/filterInput";
-import PriceSelector from "@/components/atoms/priceSelector/priceSelector";
+import PriceSelector from "@/components/molecule/priceSelector/priceSelector";
 import SelectList from "@/components/atoms/selectList/selectList";
 
 export default function FilterComponent() {

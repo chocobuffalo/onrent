@@ -6,7 +6,7 @@ import FilterComponent from "@/components/organlism/FilterComponent/FilterCompon
 export default async function CatalogPage(){
     //get path params
     return (
-        <FrontSectionWrapper identicator="catalogSection" extraClass="">
+        <FrontSectionWrapper identicator="catalogSection" extraClass="py-10">
             <div className="flex flex-col items-start justify-center md:flex-row gap-3.5 w-full md:justify-between">
                 <div className="filter-wrapper w-full md:w-1/4">
                     <FilterComponent />

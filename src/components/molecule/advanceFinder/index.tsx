@@ -19,7 +19,7 @@ export default function AdvanceFinder(){
                 <div className="finder-white flex-col md:flex-row flex gap-3.5">
                     <FilterInput checkpersist={false}/>
                     <Select
-                        className='bg-white w-full md:w-[250px] text-sm rounded'
+                        className='bg-white w-full md:w-[250px] flex items-center text-sm rounded'
                         classNames={{ control:()=> 'w-full md:w-[250px] no-border italic' }}
                         loadingMessage={() => "Cargando..."} 
                         noOptionsMessage={() => "Escribe para buscar..."}
