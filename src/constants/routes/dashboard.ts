@@ -28,27 +28,74 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     link: "/dashboard",
     title: "Dashboard",
     icon: DashboardIcon,
-    roles: ["PROVIDER", "CLIENT"], // explícito, pero podrías omitirlo
+    //roles: ["PROVIDER", "CLIENT"], // explícito, pero podrías omitirlo
+  },
+
+  {
+    link: "/dashboard/Notificaciones",
+    title: "Notificaciones",
+    icon: HearthIcon,
+    //roles: ["PROVIDER", "CLIENT"], // explícito, pero podrías omitirlo
+  },
+  {
+    link: "/dashboard/#",
+    title: "Mis Proyectos Guardados",
+    icon: HearthIcon,
+    //roles: ["PROVIDER", "CLIENT"], // explícito, pero podrías omitirlo
   },
   {
     link: "/dashboard/favorites",
     title: "Favoritos",
     icon: HearthIcon,
+    //roles: ["PROVIDER", "CLIENT"], // explícito, pero podrías omitirlo
   },
   {
-    link: "/dashboard/reviews",
-    title: "Reseñas",
-    icon: EnvelopeIcon,
+    link: "/dashboard/#",
+    title: "Ordenes activas",
+    icon: HearthIcon,
+    //roles: ["PROVIDER", "CLIENT"], // explícito, pero podrías omitirlo
+  },
+  {
+    link: "/dashboard/#",
+    title: "Historial de alquileres",
+    icon: HearthIcon,
+    //roles: ["PROVIDER", "CLIENT"], // explícito, pero podrías omitirlo
+  },
+  {
+    link: "/dashboard/#",
+    title: "Soporte",
+    icon: HearthIcon,
+    //roles: ["PROVIDER", "CLIENT"], // explícito, pero podrías omitirlo
   },
   {
     link: "/dashboard/profile",
     title: "Perfil",
     icon: UserProfileIcon,
+    //roles: ["PROVIDER", "CLIENT"], // explícito, pero podrías omitirlo
   },
   {
     link: "/dashboard/changepass",
     title: "Cambio de contraseña",
     icon: WrenckIcon,
+    //roles: ["PROVIDER", "CLIENT"], // explícito, pero podrías omitirlo
+  },
+
+  /* ----------------------------------------------------
+   * Solo CLIENTES
+   * -------------------------------------------------- */
+
+  {
+    link: "/dashboard/#",
+    title: "Documentos y Facturas",
+    icon: HearthIcon,
+    roles: ["CLIENT"],
+  },
+
+  {
+    link: "/dashboard/reviews",
+    title: "Reseñas",
+    icon: EnvelopeIcon,
+    roles: ["CLIENT"],
   },
 
   /* ----------------------------------------------------
@@ -58,24 +105,39 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     link: "/dashboard/equipaments",
     title: "Gestión de maquinaria",
     icon: BulldozerIcon,
+    //roles: ["PROVIDER"],
+  },
+  {
+    link: "/dashboard/#",
+    title: "Bitacora digital",
+    icon: BulldozerIcon,
     roles: ["PROVIDER"],
   },
+  {
+    link: "/dashboard/#",
+    title: "Gestion de asignaciones",
+    icon: BulldozerIcon,
+    roles: ["PROVIDER"],
+  },
+  {
+    link: "/dashboard/#",
+    title: "Finanzas y comisiones",
+    icon: BulldozerIcon,
+    roles: ["PROVIDER"],
+  },
+  {
+    link: "/dashboard/#",
+    title: "Gestion de operadores",
+    icon: BulldozerIcon,
+    roles: ["PROVIDER"],
+  },
+
   {
     link: "/dashboard/orders",
     title: "Solicitudes de Renta",
     icon: PencilWrite,
     roles: ["PROVIDER"],
   },
-
-  /* ----------------------------------------------------
-   * Ejemplo solo CLIENTE (opcional)
-   * -------------------------------------------------- */
-  // {
-  //   link: '/dashboard/my-rents',
-  //   title: 'Mis rentas',
-  //   icon: PencilWrite,
-  //   roles: ['CLIENT'],
-  // },
 
   /* ----------------------------------------------------
    * Salir (común)
