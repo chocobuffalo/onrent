@@ -1,0 +1,29 @@
+input[type="date"].dateInput::-webkit-inner-spin-button,
+input[type="date"].dateInput::-webkit-calendar-picker-indicator {
+    filter: opacity(0);
+}
+input[type="date"].dateInput::placeholder{
+    opacity: 0;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month,
+span.flatpickr-weekday,
+.flatpickr-weekdays,
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-months .flatpickr-month {
+    background: #EA6300 !important;
+    color: white;
+}
+.dateInput{
+
+       label{
+        transition: 0.3s ease-in-out;
+    }
+    .dateItem:focus + label{
+        opacity: 0;
+    }
+    &:hover{
+        label{
+            opacity: 0;
+        }
+    }
+}

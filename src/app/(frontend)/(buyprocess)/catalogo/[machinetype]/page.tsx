@@ -16,13 +16,13 @@ export async function generateMetadata(props: {
 export default async function MachineTypePage({ params }: { params: Params }) {
     const {machinetype} = await params;
     return (
-            <FrontSectionWrapper identicator="catalogSection" extraClass=" flex flex-col items-start justify-center md:flex-row gap-3.5 w-full justify-between">
+            <FrontSectionWrapper identicator="catalogSection" extraClass=" ">
               
-               <div className="flex pt-10 flex-col items-start justify-center md:flex-row gap-3.5 w-full md:justify-between">
-                  <div className="filter-wrapper w-full md:w-1/4">
+               <div className="flex pt-10 flex-col items-start justify-center lg:flex-row gap-3.5 w-full md:justify-between">
+                  <div className="filter-wrapper w-full lg:w-1/4">
                       <FilterComponent />
                   </div>
-                  <div className="catalogue-wrapper w-full md:w-3/4">
+                  <div className="catalogue-wrapper w-full lg:w-3/4">
                       <Catalogue slug={machinetype} />
                   </div>
               </div>

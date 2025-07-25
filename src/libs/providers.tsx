@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react"
 import { makeStore, UIAppStore } from "./redux/uistore"
 
 import AuthSync from "@/components/organlism/syncs/authSync";
+import FilterSync from "@/components/organlism/syncs/FilterSync"
 
 
 const Providers = ({children,session}:{children:ReactNode,session:any}) => {
@@ -20,7 +21,7 @@ const Providers = ({children,session}:{children:ReactNode,session:any}) => {
         <SessionProvider session={session}>
             <Provider store={storeRef.current}>
                 <AuthSync />
-                
+                <FilterSync />
                 {children}
            
             </Provider>

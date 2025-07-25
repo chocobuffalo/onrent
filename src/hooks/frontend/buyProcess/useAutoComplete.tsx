@@ -1,13 +1,13 @@
 'use client'
 import { getLocationList } from "@/services/getLocationList.adapter";
-import { setLocation, setType } from "@/libs/redux/features/ui/filterSlicer";
+import { setFilters, setLocation, setType } from "@/libs/redux/features/ui/filterSlicer";
 import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
 import { SelectInterface } from "@/types/iu";
 import { debounce } from "@/utils/debounce";
 import { LocationClient, SearchPlaceIndexForSuggestionsCommand } from "@aws-sdk/client-location";
 import { redirect, RedirectType } from 'next/navigation'
 
-import { useCallback,  useState } from "react";
+import { useCallback,  useEffect,  useState } from "react";
 import {  GroupBase,  OptionsOrGroups } from 'react-select';
 import { storage } from "@/utils/storage";
 
@@ -15,16 +15,18 @@ import { storage } from "@/utils/storage";
 
 
 
-export default  function useAutoComplete() {
+export default  function useAutoComplete(checkpersist?: boolean) {
     const [options, setOptions] = useState<SelectInterface[]>([
        
-      ])
-    const [inputValue,setInputValue] = useState<string>('')
-    const [isLoading, setIsLoading] = useState(false)
-    const dispatch = useUIAppDispatch()
+    ])
     const uiSelector = useUIAppSelector((state) => state.filters);
+    const locationLabel = uiSelector.location? uiSelector.location.label : '';
+    const [inputValue,setInputValue] = useState<string>(locationLabel || '');
+    const [isLoading, setIsLoading] = useState(false)
+    const [open, setOpen] = useState(false);
+    const dispatch = useUIAppDispatch()
     
-       const debouncedFilterColors = useCallback(
+    const debouncedFilterColors = useCallback(
         debounce(async (inputValue: string) => {
             try {
                 const res = await getLocationList(inputValue||'Ciudad de Mexico');
@@ -39,7 +41,19 @@ export default  function useAutoComplete() {
     );
 
 
-
+    useEffect(()=>{
+        setInputValue(uiSelector?.location?.label || '');
+    },[uiSelector.location])
+    
+    const handlerFocus=(text:string)=>{
+        debouncedFilterColors(text)
+        setOpen(true);
+    }
+       
+    const handlerInputChange =(text:string)=>{
+        debouncedFilterColors(text)
+        setInputValue(text);
+    }
 
     const loadOptions =   (
         inputValue: string,
@@ -61,9 +75,6 @@ export default  function useAutoComplete() {
        fecthLocation(optionSelected)
     }
 
-    const handlerTypeMachine = (optionSelected:SelectInterface) =>{
-        dispatch(setType([optionSelected]))
-    }
 
     const fecthLocation = async (placeID:string) => {
          fetch(`${process.env.NEXT_PUBLIC_API_URL}/get-place?place=${placeID}`)
@@ -80,22 +91,25 @@ export default  function useAutoComplete() {
                 lat,
                 lon
             }))
-            storage.setItem('filters', {...uiSelector, location: {value: data.PlaceId, label: data.Title, lat, lon}});
+            const getStorage = storage.getItem('filters');
+            storage.setItem('filters', {...getStorage, location: {value: data.PlaceId, label: data.Title, lat, lon}});
            }
         })
     }
-    const handlerSubmit = (e:any) =>{
-        e.preventDefault()
-        console.log(e);
-        // add latitud and longitude to the location
-        if(!uiSelector.location?.value) return;
-        fecthLocation(uiSelector.location?.value || '');
-        if(uiSelector.location && uiSelector.type !== null){
-            storage.setItem('filters', uiSelector || '');
-            const path = `/catalogo/${uiSelector.type[0].value || ''}`; 
-            redirect(path,RedirectType.push);
-        }
-    }
+   
 
-    return {options,uiSelector,dispatch,isLoading,setInputValue,inputValue,loadOptions,handlerChange,handlerTypeMachine,handlerSubmit, debouncedFilterColors}
+    return {options,
+            uiSelector,
+            dispatch,
+            isLoading,
+            open,
+            setOpen,
+            setInputValue,
+            handlerFocus,
+            handlerInputChange,
+            inputValue,
+            loadOptions,
+            handlerChange,
+            debouncedFilterColors
+        }
 }

@@ -1,0 +1,9 @@
+.input-wrapper{
+    span{
+        transition: 0.3s ease-in-out;
+    }
+    .inputItem:focus + span{
+        opacity: 0;
+    }
+   
+}

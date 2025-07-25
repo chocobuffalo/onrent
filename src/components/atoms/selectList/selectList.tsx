@@ -1,41 +1,13 @@
 'use client';
 import { typeOptions } from "@/constants/routes/home";
 import useSelectList from "@/hooks/frontend/buyProcess/useSelectList";
-import { setType } from "@/libs/redux/features/ui/filterSlicer";
-import { storage } from "@/utils/storage";
-import { useEffect, useState } from "react";
 import Select from 'react-select';
 export default function SelectList() {
-    const {  filterStateType,
-        selectedType,
-        setSelectedType,
-        dispatch } = useSelectList();
-        const [options, setOptions] = useState(filterStateType || []);
-
-    useEffect(() => {
-        const storedType = storage.getItem('filters')?.type;
-        setTimeout(() => {
-            if (storedType) {
-                console.log(storedType);
-               setOptions(storedType);
-                setSelectedType(storedType);
-                dispatch(setType(storedType));
-            } else {
-                setSelectedType([]);
-                dispatch(setType([]));
-            }
-        }, 300);
-    }, []);
-
-    const handlerChange = (value:any) =>{
-        setSelectedType(value);
-        dispatch(setType(value));
-        storage.setItem('filters', { ...storage.getItem('filters'), type: value });
-        console.log("Selected types:", value);
-    }
+    const {  filterStateType, selectedType, handlerChange } = useSelectList();
+    
     return(
         <Select 
-        defaultValue={options}
+        defaultValue={filterStateType}
         value={selectedType}
         isMulti
         name="colors"

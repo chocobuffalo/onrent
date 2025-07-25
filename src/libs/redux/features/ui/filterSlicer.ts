@@ -31,9 +31,12 @@ export const filterSlicer = createSlice({
         },
         setFilters:(state,action)=>{
             state = {...state, ...action.payload}
+        },
+        setUserID:(state,action)=>{
+            state.userID = action.payload
         }
     },
 })
 
-export const {setStartDate,setEndDate,setMinPrice,setMaxPrice,setLocation,setType,setFilters} = filterSlicer.actions
+export const {setStartDate,setEndDate,setMinPrice,setMaxPrice,setLocation,setType,setFilters,setUserID} = filterSlicer.actions
 export default filterSlicer.reducer
