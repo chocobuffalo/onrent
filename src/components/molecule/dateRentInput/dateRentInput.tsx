@@ -3,6 +3,7 @@ import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
 
 export default function DateRentInput() {
     const {startDate,endDate,handleStartDateChange,handleEndDateChange} = useDateRange();
+
     return (
         <div className="date-rent-input flex flex-col gap-2">
             <h3 className="Arrendamiento text-[16px] font-bold text-center">

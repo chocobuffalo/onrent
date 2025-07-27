@@ -42,8 +42,16 @@ export default  function useAutoComplete(checkpersist?: boolean) {
 
 
     useEffect(()=>{
-        setInputValue(uiSelector?.location?.label || '');
-    },[uiSelector.location])
+        if(checkpersist)setInputValue(uiSelector?.location?.label || '');
+       
+    },[uiSelector.location,checkpersist]);
+
+    useEffect(()=>{
+         if(!checkpersist){
+            setInputValue('');
+            dispatch(setLocation(null));   
+        }
+    },[])
     
     const handlerFocus=(text:string)=>{
         debouncedFilterColors(text)
