@@ -1,22 +1,22 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../uistore";
+import { AuthStateInterface } from "@/types/auth";
+import { set } from "react-hook-form";
 
 
 
 
-export interface AuthStateInterface {
-    isLogin: boolean;
-    profile: {
-        name: string;
-        email: string;
-    };
-}
+
 
 export const initialAuth: AuthStateInterface = {
     isLogin:false,
     profile:{
         name:'',
-        email:''
+        email:'',
+        avatarUrl: '',
+        role: '',
+        userID: '',
+        token:''
     }
 }
 
@@ -24,14 +24,25 @@ const authSlicer = createSlice({
     name: 'auth',
     initialState: initialAuth,
     reducers:{
-         getLogin: ( state, action ) =>{
+        setLogin: ( state, action ) =>{
             state.isLogin = action.payload
-         },
-
+        },
+        setProfile: ( state, action ) => {
+            state.profile = action.payload;
+        },
+        setAvatar: ( state, action ) => {
+            state.profile.avatarUrl = action.payload;
+        },
+        setName: ( state, action ) => {
+            state.profile.name = action.payload;
+        },
+        setEmail: ( state, action ) => {
+            state.profile.email = action.payload;
+        },
     }
 });
 
-export const {getLogin} = authSlicer.actions;
+export const {setLogin, setProfile, setAvatar, setName, setEmail} = authSlicer.actions;
 
 export const selectProfile = ( state:RootState ) => (state.auth as AuthStateInterface).profile
 export const selectAuth = ( state:RootState ) =>  (state.auth as AuthStateInterface).isLogin
