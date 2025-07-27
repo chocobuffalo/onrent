@@ -4,26 +4,48 @@ import { useState } from "react";
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
+import { useUIAppSelector } from "@/libs/redux/hooks";
 
 
 const schema = Yup.object({
     fullName: Yup.string().required('Nombres y apellidos son requeridos'),
-   
-    confirmPassword: Yup.string()
-        .oneOf([Yup.ref('newPassword')], 'Las contraseñas deben coincidir')
-        .required('Confirmar contraseña es requerido'),
+    telephone: Yup.string().required('Teléfono es requerido'),
 });
 
 
 export default function usePersonalForm() {
-    // This hook can be used to manage the state and logic for the profile form
-    // For example, it can handle form submission, validation, and state management
-    // Here we can return any necessary functions or state variables
+    const [isLoading, setIsLoading] = useState(false);
+    const authEmail = useUIAppSelector((state) => state.auth.profile.email);
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors, isValid },
+    } = useForm({
+        resolver: yupResolver(schema),
+        mode: 'onBlur',
+    });
+    const onSubmit = async (data:any) => {
+
+        setIsLoading(true);
+        try {
+            // Simulate an API call
+        } catch (error) {
+            console.error('Error submitting form:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+   
 
     return {
         // Example return values
-        handleSubmit: () => {},
-        formState: {},
-        errors: {}
+        onSubmit,
+        errors,
+        handleSubmit,
+        register,
+        isValid,
+        authEmail,
+        isLoading,
     };
 }

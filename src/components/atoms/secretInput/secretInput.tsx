@@ -31,7 +31,7 @@ export default function SecretInput(props:any) {
                 </div>
             {
                 props.errors[props.id] && (
-                    <div className="text-danger">{props.errors[`${props.id}`].message}</div>
+                    <p className="text-red-500 mt-1 text-danger">{props.errors[`${props.id}`].message}</p>
                 )
             }
         </div>

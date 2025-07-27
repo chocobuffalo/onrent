@@ -15,9 +15,8 @@ export default function ChangePassForm() {
         register,
         isValid,
         isLoading
-
     } = useChangePass();
-    console.log(errors);
+
     return(
         
             <>
