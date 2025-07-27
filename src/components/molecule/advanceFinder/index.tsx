@@ -7,7 +7,7 @@ import useSendAction from '@/hooks/frontend/buyProcess/useSendAction';
 
 import './advanceFinder.scss';
 import useSelectList from '@/hooks/frontend/buyProcess/useSelectList';
-import { useState } from 'react';
+
 
 
 export default function AdvanceFinder(){
@@ -17,7 +17,6 @@ export default function AdvanceFinder(){
              } = useSelectList();
     
     const { handlerSubmit } = useSendAction();
-     const [options, setOptions] = useState(filterStateType || []);
     return (
         <div className="find-form max-w-[650px] mt-5">
            <div >

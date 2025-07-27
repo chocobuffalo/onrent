@@ -8,9 +8,15 @@ export default function useSendAction(){
     const handlerSubmit = (e:any) =>{
             // // add latitud and longitude to the location
         if(uiSelector.location  && uiSelector.type){
-            console.log(uiSelector);
-            const path = `/catalogo/${uiSelector.type[0].value || ''}`; 
-            redirect(path,RedirectType.push);
+            const catalogue = uiSelector.type;
+            let catalogueValue = '';
+            if (Array.isArray(catalogue)) {
+                catalogueValue = catalogue.length > 0 && catalogue[0]?.value ? catalogue[0].value : '';
+            } else if (catalogue && 'value' in catalogue) {
+                catalogueValue = catalogue.value;
+            }
+            const path = `/catalogo/${catalogueValue}`;
+            redirect(path, RedirectType.push);
         }
     }
     

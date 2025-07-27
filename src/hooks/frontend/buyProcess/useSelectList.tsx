@@ -13,21 +13,24 @@ export default function useSelectList() {
     const filters = useUIAppSelector((state) => state.filters);
     const filterStateType =  useUIAppSelector((state) => state.filters.type);
     const dispatch = useUIAppDispatch()
-    const [selectedType, setSelectedType] = useState<SelectInterface[]>(filterStateType||[]);
+    const [selectedType, setSelectedType] = useState<SelectInterface[]>(
+        Array.isArray(filterStateType) ? filterStateType : filterStateType ? [filterStateType] : []
+    );
 
     const handlerChange = (value:any) =>{
-        console.log(value);
-        setSelectedType([...value]);
-        dispatch(setType([...value]));
+        console.log(typeof value);
+        setSelectedType(value);
+        dispatch(setType(value));
         if (typeof window !== 'undefined') {
            
-            storage.setItem('filters', { ...filters, type: [...value] });
+            storage.setItem('filters', { ...filters, type: value });
         }
+        
     }
 
     useEffect(() => {
         if (filterStateType) {
-            setSelectedType(filterStateType);
+            setSelectedType(Array.isArray(filterStateType) ? filterStateType : [filterStateType]);
         }
     }, [filterStateType]);
 
