@@ -7,11 +7,13 @@ import * as Yup from 'yup';
 import { useUIAppSelector } from "@/libs/redux/hooks";
 
 const schema = Yup.object({
-    companyName: Yup.string().required('El nombre de la empresa es requerido'),
-    taxId: Yup.string().required('El NIT es requerido'),
-    address: Yup.string().required('La dirección es requerida'),
-    phone: Yup.string().required('El teléfono es requerido'),
-    email: Yup.string().email('El correo electrónico no es válido').required('El correo electrónico es requerido'),
+    empresa: Yup.string().required('La razón social es requerida'),
+    rfc_empresa: Yup.string().required('El RFC es requerido'),
+    direccion_empresa: Yup.string().required('La dirección es requerida'),
+    contacto_fiscal: Yup.string().required('El contacto fiscal es requerido'),
+    telefono_contacto: Yup.string().required('El teléfono de contacto es requerido'),
+    representante_legal: Yup.string().required('El representante legal es requerido'),
+    empleados: Yup.number().required('El número de empleados es requerido').min(1, 'Debe ser al menos 1'),
 });
 
 export default function useCompanyInfo() {

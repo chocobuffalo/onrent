@@ -13,7 +13,7 @@ export default function PersonalForm(){
     } = usePersonalForm();
 
     return (
-        <div className="mb-4">
+        <div className="">
              <h2 className="form-title mb-2">Información Personal</h2>
             <form onSubmit={handleSubmit(onSubmit)} className="">
                 <div className="profile-personal">
@@ -65,7 +65,7 @@ export default function PersonalForm(){
                             {isLoading ? (
                                 <ImSpinner8 color="#ffffff" size={20} className="animate-spin mx-auto" />
                             ) : (
-                                <span>Actualizar Perfil</span>
+                                <span>Actualizar</span>
                             )}
                         </button>
                     </div>

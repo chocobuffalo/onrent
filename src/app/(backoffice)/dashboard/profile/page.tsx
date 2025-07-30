@@ -2,13 +2,13 @@ import ProfileForm from "@/components/organlism/backoffice/backoffice/profileFor
 import { Metadata } from "next"
 
 export const metadata:Metadata ={
-    title: 'Cambiar Contraseña',
-    description: 'Página para cambiar la contraseña del usuario',
+    title: 'Editar perfil',
+    description: 'Página para editar el perfil del usuario',
 }
 export default function Profile(){
     return(
         <>
-            <h1 className="admin-title">Perfil</h1>
+            <h1 className="admin-title mb-2">Editar perfil</h1>
             <ProfileForm/>
         </>
     )

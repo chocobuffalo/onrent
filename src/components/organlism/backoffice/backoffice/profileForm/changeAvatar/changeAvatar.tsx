@@ -1,20 +1,27 @@
+import useChangeAvatar from "@/hooks/backend/useChangeAvatar";
+import Image from "next/image";
+import  './changeAvatar.scss';
+
 export default function ChangeAvatar(){
-     return(<div className="tfcl_choose_avatar">
-      <h3>Avatar</h3>
+
+  const {avatar} = useChangeAvatar();
+     return(
+      <div className="tfcl_choose_avatar  profile-inner">
+        <h2 className="mb-2">Cambiar imagen</h2>
                     <div className="avatar">
                       <div className="form-group">
-                        <img
+                        <Image
                           loading="lazy"
                           decoding="async"
                           width={158}
                           height={138}
                           id="tfcl_avatar_thumbnail"
                           alt="avatar"
-                         
+                          src={avatar || '/profile-placeholder.svg'}
                         />
                       </div>
                       <div className="choose-box">
-                        <label>Upload a new Avatar</label>
+                        <label>Cambiar imagen</label>
                         <div className="form-group relative pb-2 pt-2">
                           <input
                             type="file"
@@ -23,12 +30,11 @@ export default function ChangeAvatar(){
                             
                           />
                           <label htmlFor="tfcl_avatar">
-                            <button type="button">Choose file</button>
+                            <button type="button">Elegir imagen</button>
                           </label>
                         </div>
                         <span className="notify-avatar">
-                          PNG, JPG, SVG dimension (400 * 400) max file not more
-                          then size 4 mb
+                          PNG, JPG, SVG dimensiones (400 x 400) tamaño máximo de archivo 4 MB
                         </span>
                       </div>
                     </div>

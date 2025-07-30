@@ -13,7 +13,7 @@ export const initialAuth: AuthStateInterface = {
     profile:{
         name:'',
         email:'',
-        avatarUrl: '',
+        avatarUrl: '/profile-placeholder.svg',
         role: '',
         userID: '',
         token:''

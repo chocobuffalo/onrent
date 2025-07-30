@@ -5,6 +5,7 @@ import TopDashboard from '@/components/organlism/TopDashboard/TopDashboard';
 import '@/assets/scss/app.scss'
 import '@/assets/css/backoffice.css'
 import { redirect } from 'next/navigation';
+import ModalForm from '@/components/organlism/modalForm/modalForm';
 
 export default  async function DashboardLayout({
     children,
@@ -40,6 +41,7 @@ export default  async function DashboardLayout({
                 </div>
             </div>
         </ViewTransition>
+        <ModalForm/>
       </div>
       
        </>

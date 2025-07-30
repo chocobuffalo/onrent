@@ -5,8 +5,15 @@ import MobileNav from "../../molecule/MobileNav/MobileNav";
 import DashboardLogo from "@/components/molecule/dashboardLogo/dashboardLogo";
 import AddEnginery from "@/components/atoms/AddEnginery/AddEnginery";
 import DashboardAvatar from "@/components/molecule/dashboardAvatar/dashboardAvatar";
+import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
+import { openModal, toggleModal } from "@/libs/redux/features/ui/modalSlicer";
 export default function TopDashboard() {
-  const active = false;
+  const active = useUIAppSelector((state) => state.modal.isOpen);
+  const dispatch = useUIAppDispatch();
+  const handleAddEnginery = () => {
+    dispatch(toggleModal());
+  };
+
   return (
     <header className="main-header">
       {/* Header Lower */}
@@ -22,10 +29,9 @@ export default function TopDashboard() {
                 <div className="nav-outer flex align-center">
                  
                 </div>
-                <div className="header-account flex align-center">
+                <div className="flex align-center">
+                  <AddEnginery active={active} func={handleAddEnginery} />
           
-                  <AddEnginery active={active} func={()=>console.log('open')} />
-                </div>
                 <div
                   className="mobile-nav-toggler mobile-button"
                   onClick={() =>
@@ -33,6 +39,7 @@ export default function TopDashboard() {
                   }
                 >
                   <span />
+                </div>
                 </div>
               </div>
             </div>
@@ -60,7 +67,7 @@ export default function TopDashboard() {
             <DashboardAvatar/>
             <MobileNav />
             <div className="button-mobi-sell">
-              <AddEnginery active={active} func={()=>console.log('open')} />
+              <AddEnginery active={active} func={handleAddEnginery} />
             </div>
           </div>
         </nav>

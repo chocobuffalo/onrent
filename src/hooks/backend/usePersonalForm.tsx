@@ -19,7 +19,6 @@ export default function usePersonalForm() {
     const {
         register,
         handleSubmit,
-        reset,
         formState: { errors, isValid },
     } = useForm({
         resolver: yupResolver(schema),
