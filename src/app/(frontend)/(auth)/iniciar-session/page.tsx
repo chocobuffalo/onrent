@@ -1,19 +1,30 @@
 'use client';
 
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
-import useLogin from '@/hooks/frontend/auth/iniciarSession/useLogin';
-import { ImSpinner8 } from 'react-icons/im';
+
+const schema = Yup.object({
+  emailOrPhone: Yup.string().required('Este campo es obligatorio'),
+  password: Yup.string().min(6, 'Mínimo 6 caracteres').required('Contraseña requerida'),
+});
 
 export default function IniciarSesion() {
   const {
-    errors,
-    isValid,
     register,
     handleSubmit,
-    isLoading,
-    onSubmit,
-   } = useLogin();
+    formState: { errors, isValid },
+  } = useForm({
+    resolver: yupResolver(schema),
+    mode: 'onChange',
+  });
+
+  const onSubmit = (data: any) => {
+    console.log('Credenciales:', data);
+    alert('Inicio de sesión simulado');
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -52,16 +63,14 @@ export default function IniciarSesion() {
           {/* Botón Iniciar sesión */}
           <button
             type="submit"
-            className={`w-full py-4 cursor-pointer flex justify-center rounded-md font-semibold text-white text-[12px] tracking-wide transition-colors ${
+            className={`w-full py-4 rounded-md font-semibold text-white text-[12px] tracking-wide transition-colors ${
               isValid
                 ? 'bg-[#1C1B3A] hover:bg-[#0f0f26]'
                 : 'bg-gray-300 cursor-not-allowed'
             }`}
             disabled={!isValid}
           >
-            {isLoading ?<ImSpinner8 color="#ffffff" size={20} className="animate-spin mx-auto" />: <span>Iniciar sesión</span>}
-            
-
+            Iniciar sesión
           </button>
         </form>
 
