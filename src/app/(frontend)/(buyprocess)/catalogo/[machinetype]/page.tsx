@@ -1,32 +1,29 @@
-import FrontSectionWrapper from "@/components/molecule/frontSectionWrapper/frontSectionWrapper";
-import Catalogue from "@/components/organlism/Catalogue/Catalogue";
-import FilterComponent from "@/components/organlism/FilterComponent/FilterComponent";
+// app/machinery/[machinetype]/page.tsx
 
-type Params = Promise<{ machinetype: string }>
+import CatalogueContainer from "@/components/catalogue/CatalogueContainer";
+import FilterComponent from "@/components/filters/FilterComponent";
+import FrontSectionWrapper from "@/components/layout/FrontSectionWrapper";
 
-
-export async function generateMetadata(props: {
-  params: Params
-}) {
-  const params = await props.params
-  console.log(params);
+interface Params {
+  machinetype: string;
 }
 
-
 export default async function MachineTypePage({ params }: { params: Params }) {
-    const {machinetype} = await params;
-    return (
-            <FrontSectionWrapper identicator="catalogSection" extraClass=" ">
-              
-               <div className="flex pt-10 flex-col items-start justify-center lg:flex-row gap-3.5 w-full md:justify-between">
-                  <div className="filter-wrapper w-full lg:w-1/4">
-                      <FilterComponent />
-                  </div>
-                  <div className="catalogue-wrapper w-full lg:w-3/4">
-                      <Catalogue slug={machinetype} />
-                  </div>
-              </div>
-                
-            </FrontSectionWrapper>
-        )
+  const { machinetype } = params;
+
+  return (
+    <FrontSectionWrapper
+      identicator="catalogSection"
+      extraClass="py-10 px-4 md:px-10 bg-gray-100 min-h-screen"
+    >
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="w-full md:w-1/4">
+          <FilterComponent />
+        </div>
+        <div className="w-full md:w-3/4">
+          <CatalogueContainer slug={machinetype} />
+        </div>
+      </div>
+    </FrontSectionWrapper>
+  );
 }
