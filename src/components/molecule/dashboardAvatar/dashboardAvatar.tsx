@@ -1,27 +1,32 @@
 'use client'
+import useDashboardAvatar from "@/hooks/backend/useDashboardAvatar";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function DashboardAvatar(){
-    return(
-        <div className="db-content db-author pad-30">
-                  <h6 className="db-title">Profile</h6>
-                  <div className="author">
-                    <div className="avatar">
-                      <Image
-                        loading="lazy"
-                        id="tfre_avatar_thumbnail"
-                        alt="admin"
-                        title="admin"
-                        src="/assets/images/dashboard/avatar.png"
-                        width={52}
-                        height={52}
-                      />
-                    </div>
-                    <div className="content">
-                      <div className="name">Account</div>
-                      <div className="author-email">themesflat@gmail...</div>
-                    </div>
-                  </div>
-                </div>
-    )
+  const { avatarUrl, name, email } = useDashboardAvatar();
+  return(
+  <div className="db-content db-author pad-30">
+    <h6 className="db-title">Perfil</h6>
+    <div className="author">
+      <div className="avatar">
+        <Link href="/dashboard/profile" title={name} className="avatar-link">
+            <Image
+            loading="lazy"
+            id="tfre_avatar_thumbnail"
+            alt={name}
+            title={name}
+            src={avatarUrl}
+            width={52}
+            height={52}
+            />
+        </Link>
+      </div>
+      <Link href="/dashboard/profile" className="content" title="Ir al perfil">
+        <div className="name">{name}</div>
+        <div className="author-email">{email}</div>
+      </Link>
+    </div>
+  </div>
+  )
 }

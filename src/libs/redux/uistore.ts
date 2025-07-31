@@ -6,11 +6,15 @@ import filterSlicer from "./features/ui/filterSlicer";
 
 import { FilterInterface } from "@/types/filters";
 
-import authSlicer,{  AuthStateInterface } from "./features/auth/authSlicer";
+import authSlicer from "./features/auth/authSlicer";
+import { AuthStateInterface } from "@/types/auth";
+import  modalSlicer  from "./features/ui/modalSlicer";
+import { ModalStateInterface } from "@/types/iu";
 
 export interface RootInterface {
   filters: FilterInterface;
   auth: AuthStateInterface;
+  modal: ModalStateInterface;
 }
 
 
@@ -20,7 +24,8 @@ export const makeStore = () => {
   return configureStore({
     reducer: {
         filters: filterSlicer,
-        auth: authSlicer
+        auth: authSlicer,
+        modal: modalSlicer
     },
     middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

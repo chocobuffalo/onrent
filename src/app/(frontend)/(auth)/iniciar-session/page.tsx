@@ -47,19 +47,15 @@ export default function IniciarSesion() {
           </div>
 
           {/* Contraseña */}
-          <div>
-            <label className="block mb-1">Contraseña <span className="text-red-500">*</span></label>
-            <input
-              type="password"
-              {...register('password')}
-              placeholder="Contraseña"
-              className="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
-            />
-            {errors.password && (
-              <p className="text-red-500 mt-1">{errors.password.message}</p>
-            )}
-          </div>
-
+          <SecretInput
+            register={register}
+            errors={errors}
+            label="Contraseña"
+            placeHolder="Contraseña"
+            id={'password'}
+            classWrapper="form-group relative"
+            inputClass="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
+          />
           {/* Botón Iniciar sesión */}
           <button
             type="submit"
