@@ -1,5 +1,5 @@
 import FrontSectionWrapper from "@/components/molecule/frontSectionWrapper/frontSectionWrapper";
-import Catalogue from "@/components/organlism/Catalogue/Catalogue";
+import Catalogue from "@/components/organlism/Catalogue/CatalogueContainer";
 import FilterComponent from "@/components/organlism/FilterComponent/FilterComponent";
 
 
