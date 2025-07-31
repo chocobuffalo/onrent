@@ -10,7 +10,7 @@ const schema = Yup.object({
     rfc: Yup.string().required('RFC es requerido'),
     razon_social: Yup.string().required('Razón social es requerida'),
     direccion_fiscal: Yup.string().required('Dirección fiscal es requerida'),
-   // comprobante_fiscal: Yup.string().required('Comprobante fiscal es requerido'),
+    comprobante_fiscal: Yup.string().required('Comprobante fiscal es requerido'),
 });
 
 export default function useFiscalInfo() {
