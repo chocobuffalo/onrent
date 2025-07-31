@@ -30,9 +30,9 @@ export default function PriceSelector(){
             </h3>
             {/* <input type="range" min={minPrice||0} max={maxPrice||100} step={10} onChange={(e)=>{handlerSetMaxPrice(e.target.value);}} /> */}
             <div className="range-inputs flex items-center justify-between gap-2.5">
-                <InputPrice type="number" id="min-price" placeholder="Min Price " value={`${minPrice}`||'0'} onChange={handlerSetMinPrice} />
+                <InputPrice name="min-price" type="number" id="min-price" placeholder="Min Price " value={`${minPrice}`||'0'} onChange={handlerSetMinPrice} />
                 <div className="separator  w-1/4 border-t-[#b2b2b23a] border-1"/>
-                <InputPrice type="number" id="max-price" placeholder="Max Price" value={`${maxPrice}`||'0'} onChange={handlerSetMaxPrice} />
+                <InputPrice name="max-price" type="number" id="max-price" placeholder="Max Price" value={`${maxPrice}`||'0'} onChange={handlerSetMaxPrice} />
             </div>
         </div>
     )

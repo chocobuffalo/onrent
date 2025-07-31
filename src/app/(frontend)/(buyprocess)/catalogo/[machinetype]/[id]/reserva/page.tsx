@@ -49,7 +49,7 @@ export default function ReservaPage() {
  
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
+    <div className="max-w-4xl mx-auto p-6 py-20 space-y-8">
       {/* Resumen de la máquina */}
       <div className="flex items-center gap-4 mb-6">
         <img
