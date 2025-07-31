@@ -2,12 +2,8 @@
 
 export default function Dashboard() {
   return (
-   <div className="container">
-         <div className="row">
-           <div className="col-md-12">
-             <div className="content-area">
-               <main id="main" className="main-content">
-                 <div className="tfcl-dashboard">
+   
+              <>
                    <h1 className="admin-title">Dashboard</h1>
                    <div className="tfcl-dashboard-overview">
                      <div className="row">
@@ -613,11 +609,6 @@ export default function Dashboard() {
                        </ul>
                      </div>
                    </div>
-                 </div>
-               </main>
-             </div>
-           </div>
-         </div>
-       </div>
+                   </>                
   );
 }

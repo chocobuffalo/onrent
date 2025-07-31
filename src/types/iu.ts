@@ -16,3 +16,7 @@ export interface SelectInterface{
     readonly lat?: number;
     readonly lon?: number;
 }
+
+export interface ModalStateInterface{
+    isOpen: boolean;
+}

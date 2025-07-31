@@ -4,6 +4,7 @@ import { userRoles } from "@/constants/user";
 import useRegister from "@/hooks/frontend/auth/register/useRegister";
 import { signIn } from "next-auth/react";
 import { ImSpinner8 } from "react-icons/im";
+import SecretInput from '@/components/atoms/secretInput/secretInput';
 
 
 
@@ -65,28 +66,26 @@ export default function Registro() {
           </div>
 
           {/* Contraseña */}
-          <div>
-            <label className="block mb-1">Contraseña <span className="text-red-500">*</span></label>
-            <input
-              type="password"
-              {...register('password')}
-              placeholder="Mínimo 6 caracteres"
-              className="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
-            />
-            {errors.password && <p className="text-red-500 mt-1">{errors.password.message}</p>}
-          </div>
+          <SecretInput
+            register={register}
+            errors={errors}
+            label="Contraseña"
+            placeHolder="Mínimo 6 caracteres"
+            id={'password'}
+            classWrapper="form-group relative"
+            inputClass="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
+          />
 
           {/* Confirmar contraseña */}
-          <div>
-            <label className="block mb-1">Confirmar Contraseña <span className="text-red-500">*</span></label>
-            <input
-              type="password"
-              {...register('confirmPassword')}
-              placeholder="Repite tu contraseña"
-              className="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
-            />
-            {errors.confirmPassword && <p className="text-red-500 mt-1">{errors.confirmPassword.message}</p>}
-          </div>
+          <SecretInput
+            register={register}
+            errors={errors}
+            label="Confirmar Contraseña"
+            placeHolder="Repite tu contraseña"
+            id={'confirmPassword'}
+            classWrapper="form-group relative"
+            inputClass="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
+          />
 
           {/* Botón Crear cuenta */}
           <button

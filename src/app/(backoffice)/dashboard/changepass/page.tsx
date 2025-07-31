@@ -1,5 +1,13 @@
+import ChangePassForm from "@/components/organlism/backoffice/backoffice/chancePass/changePassForm";
+import { Metadata } from "next";
+
+
+export const metadata:Metadata ={
+    title: 'Cambiar Contraseña',
+    description: 'Página para cambiar la contraseña del usuario',
+}
+
+
 export default function ChangePass() {
-    return(
-        <h1>Cambio de contraseña</h1>
-    )
+return <ChangePassForm />
 }
