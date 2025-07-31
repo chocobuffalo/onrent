@@ -1,4 +1,5 @@
 'use client';
+import { interestLinks } from "@/constants/routes/frontend";
 import { useUIAppSelector } from "@/libs/redux/hooks";
 import { redirect, RedirectType } from 'next/navigation'
 
@@ -15,7 +16,8 @@ export default function useSendAction(){
             } else if (catalogue && 'value' in catalogue) {
                 catalogueValue = catalogue.value;
             }
-            const path = `/catalogo/${catalogueValue}`;
+            console.log(catalogueValue);
+            const path = interestLinks.find(link => link.machine_category === catalogueValue)?.slug || '/catalogo';
             redirect(path, RedirectType.push);
         }
     }

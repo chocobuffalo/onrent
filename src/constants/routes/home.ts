@@ -24,7 +24,8 @@ export const sliderItems:SliderInterface[]=[
 
 export const typeOptions:SelectInterface[]=[
     {value:'',label:'Todas las categorías',color:'#fff'},
-    {value:'maquinaria-pesada',label:'Maquinaria Pesada',color:'#fff'},
-    {value:'maquinaria-ligeras',label:'Maquinaria Ligera',color:'#fff'},
-    {value:'materiales',label:'Materiales',color:'#fff'},
+    {value:'heavy',label:'Maquinaria Pesada',color:'#fff', slug:'/catalogo/maquinaria-pesada' },
+    {value:'light',label:'Maquinaria Ligera',color:'#fff',slug:'/catalogo/maquinaria-ligera'},
+    {value:'special',label:'Materiales',color:'#fff',slug:'/catalogo/especializada'},
+    {value:'other',label:'Otras',color:'#fff',slug:'/catalogo/otros'},
 ]

@@ -15,6 +15,7 @@ export interface SelectInterface{
     readonly isDisabled?: boolean;
     readonly lat?: number;
     readonly lon?: number;
+    readonly slug?: string;
 }
 
 export interface ModalStateInterface{

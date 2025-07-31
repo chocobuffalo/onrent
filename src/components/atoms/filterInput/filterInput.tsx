@@ -19,6 +19,7 @@ export default function FilterInput({checkpersist}: {checkpersist?: boolean}) {
                 onFocus={() => handlerFocus(inputValue)}
                 type="text"
                 value={inputValue}
+                name="location"
                 onChange={(e) =>{handlerInputChange(e.target.value)}}
                 placeholder="Indica tu ubicación"
                 className="italic rounded-md p-2 w-full focus-visible:outline-none focus:border-secondary focus:ring-0"

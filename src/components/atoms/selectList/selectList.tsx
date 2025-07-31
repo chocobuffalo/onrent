@@ -9,8 +9,7 @@ export default function SelectList() {
         <Select 
         defaultValue={filterStateType}
         value={selectedType}
-        isMulti
-        name="colors"
+        name="category_machine"
         options={typeOptions}
         className="basic-multi-select"
         classNamePrefix="select"

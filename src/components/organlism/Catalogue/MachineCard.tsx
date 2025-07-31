@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { CatalogueItem } from "./types";
+import { interestLinks } from "@/constants/routes/frontend";
 
 interface Props {
   data: CatalogueItem;
@@ -16,6 +17,10 @@ export default function MachineCard({ data }: Props) {
 
   // Generamos la ruta dinámica con machinetype + id
   const machineType = data.machinetype || "maquinaria";
+
+  const machineCategory = interestLinks.find(item=>item.machine_category === data.machine_category);
+
+  console.log(machineCategory);
 
   return (
     <Link href={`/catalogo/${machineType}/${data.id}`} passHref>
@@ -46,9 +51,8 @@ export default function MachineCard({ data }: Props) {
           <span className="text-green-600 font-bold text-sm italic">
             {data.price}$<span className="not-italic">/USD</span>
           </span>
-
           <Image
-            src="/icons/maquinariaLigera.png"
+            src={machineCategory?.type_icon || "/typemachine/ligera.svg"}
             alt="Icono maquinaria"
             width={24}
             height={24}

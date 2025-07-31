@@ -52,10 +52,10 @@ export const legalLinks: RouteItem[] = [
  */
 
 export const interestLinks: RouteItem[] = [
-    {id: 2, name: 'maquinaria-ligera', title: 'Maquinarias Ligera', slug:'/catalogo/maquinaria-ligera' , target: false,image:'/images/ligera.webp',typeMachine:'light'},
-    {id: 1, name: 'maquinaria-pesada', title: 'Maquinarias Pesada', slug:'/catalogo/maquinaria-pesada' , target: false,image:'/images/pesada.webp',typeMachine:'heavy'},
-    {id: 3, name: 'especializada', title: 'Especializada', slug:'/catalogo/especializada' , target: false,image:'/images/materiales.webp',typeMachine:'special'},
-    {id: 4, name: 'otros', title: 'Otros', slug:'/catalogo/otros' , target: false,typeMachine:'other'},
+    {id: 2, name: 'maquinaria-ligera', title: 'Maquinarias Ligera', slug:'/catalogo/maquinaria-ligera' , target: false,image:'/images/ligera.webp',machine_category:'light',type_icon:'/typemachine/ligera.svg'},
+    {id: 1, name: 'maquinaria-pesada', title: 'Maquinarias Pesada', slug:'/catalogo/maquinaria-pesada' , target: false,image:'/images/pesada.webp',machine_category:'heavy',type_icon:'/typemachine/pesada.svg'},
+    {id: 3, name: 'especializada', title: 'Especializada', slug:'/catalogo/especializada' , target: false,image:'/images/materiales.webp',machine_category:'special',type_icon:'/typemachine/materiales.svg'},
+    {id: 4, name: 'otros', title: 'Otros', slug:'/catalogo/otros' , target: false,machine_category:'other',type_icon:'/typemachine/materiales.svg'},
 ]
 
 /**
