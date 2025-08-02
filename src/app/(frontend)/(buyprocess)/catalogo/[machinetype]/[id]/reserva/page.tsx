@@ -5,37 +5,32 @@ import { useParams } from "next/navigation"; // ← Necesario en Next 15
 import { sampleData } from "@/components/organlism/Catalogue/sampleCatalogueData";
 import { CatalogueItem } from "@/components/organlism/Catalogue/types";
 import SeguimientoMapa from "@/components/organlism/MapSLA/seguimientoMapa";
-
-
+import Image from "next/image";
 export default function ReservaPage() {
   // Obtener params desde la URL
 
-   
-    const [showSeguimiento, setShowSeguimiento] = useState(false);
-    const [nombreResponsable, setNombreResponsable] = useState("");
-    const [nombreProyecto, setNombreProyecto] = useState("");
-    const [ubicacionObra, setUbicacionObra] = useState("");
-    const [duracion, setDuracion] = useState("");
+  const [showSeguimiento, setShowSeguimiento] = useState(false);
+  const [nombreResponsable, setNombreResponsable] = useState("");
+  const [nombreProyecto, setNombreProyecto] = useState("");
+  const [ubicacionObra, setUbicacionObra] = useState("");
+  const [duracion, setDuracion] = useState("");
 
-    const handleGuardar = () => {
-        // Simula guardar la info
-        console.log("Guardando proyecto:", nombreProyecto);
+  const handleGuardar = () => {
+    // Simula guardar la info
+    console.log("Guardando proyecto:", nombreProyecto);
 
-        // Mostrar el modal del mapa
-        setShowSeguimiento(true);
-    };
-    const params = useParams();
-    const machineId = parseInt(params.id as string);
-  
+    // Mostrar el modal del mapa
+    setShowSeguimiento(true);
+  };
+  const params = useParams();
+  const machineId = parseInt(params.id as string);
 
   // Buscar máquina
-    const machine: CatalogueItem | undefined = sampleData.find(
-        (item) => item.id === machineId
-    );
+  const machine: CatalogueItem | undefined = sampleData.find(
+    (item) => item.id === machineId
+  );
 
-    // Estados básicos del formulario
-    
-
+  // Estados básicos del formulario
 
   // Si no se encuentra la máquina
   if (!machine) {
@@ -46,31 +41,32 @@ export default function ReservaPage() {
     );
   }
 
- 
-
   return (
     <div className="max-w-4xl mx-auto p-6 py-20 space-y-8">
       {/* Resumen de la máquina */}
       <div className="flex items-center gap-4 mb-6">
-        <img
+        <Image
           src={machine.image}
           alt={machine.name}
           className="w-24 h-24 object-cover rounded-lg border"
         />
         <div>
           <h1 className="text-xl font-bold">{machine.name}</h1>
-          <p className="text-green-600 font-semibold">{machine.price} USD/Día</p>
+          <p className="text-green-600 font-semibold">
+            {machine.price} USD/Día
+          </p>
           <p className="text-sm text-gray-500">{machine.location}</p>
         </div>
       </div>
-
 
       {/* 1. Datos Básicos */}
       <section>
         <h2 className="text-xl font-semibold mb-4">1. Datos Básicos</h2>
 
         {/* Nombre del responsable */}
-        <label className="block text-sm font-medium mb-1">Nombre del responsable</label>
+        <label className="block text-sm font-medium mb-1">
+          Nombre del responsable
+        </label>
         <input
           type="text"
           value={nombreResponsable}
@@ -80,7 +76,9 @@ export default function ReservaPage() {
         />
 
         {/* Nombre del proyecto */}
-        <label className="block text-sm font-medium mb-1">Nombre del proyecto</label>
+        <label className="block text-sm font-medium mb-1">
+          Nombre del proyecto
+        </label>
         <input
           type="text"
           value={nombreProyecto}
@@ -90,7 +88,9 @@ export default function ReservaPage() {
         />
 
         {/* Ubicación */}
-        <label className="block text-sm font-medium mb-1">Ubicación de la obra</label>
+        <label className="block text-sm font-medium mb-1">
+          Ubicación de la obra
+        </label>
         <input
           type="text"
           value={ubicacionObra}
@@ -100,7 +100,9 @@ export default function ReservaPage() {
         />
 
         {/* Duración */}
-        <label className="block text-sm font-medium mb-1">Duración estimada</label>
+        <label className="block text-sm font-medium mb-1">
+          Duración estimada
+        </label>
         <input
           type="text"
           value={duracion}
@@ -115,7 +117,9 @@ export default function ReservaPage() {
         <h2 className="text-xl font-semibold mb-4">2. Condiciones del sitio</h2>
 
         {/* Tipo de trabajo */}
-        <label className="block text-sm font-medium mb-1">Tipo de trabajo</label>
+        <label className="block text-sm font-medium mb-1">
+          Tipo de trabajo
+        </label>
         <input
           type="text"
           placeholder="Verter cimientos"
@@ -123,7 +127,9 @@ export default function ReservaPage() {
         />
 
         {/* Condiciones del terreno */}
-        <label className="block text-sm font-medium mb-1">Condiciones del terreno</label>
+        <label className="block text-sm font-medium mb-1">
+          Condiciones del terreno
+        </label>
         <div className="flex gap-2 mb-4">
           {["Firme", "Lodoso", "Inclinado", "Obstáculos"].map((cond) => (
             <button
@@ -136,14 +142,18 @@ export default function ReservaPage() {
         </div>
 
         {/* Lugar del resguardo */}
-        <label className="block text-sm font-medium mb-1">Lugar del resguardo</label>
+        <label className="block text-sm font-medium mb-1">
+          Lugar del resguardo
+        </label>
         <input type="file" className="w-full border rounded-lg p-2 mb-2" />
         <p className="text-xs text-gray-400 mb-4">
           Esto nos ayuda a validar el terreno y asignar maquinaria compatible
         </p>
 
         {/* Seguridad en el sitio */}
-        <label className="block text-sm font-medium mb-1">Seguridad en el sitio</label>
+        <label className="block text-sm font-medium mb-1">
+          Seguridad en el sitio
+        </label>
         <div className="flex items-center gap-4 mb-4">
           <label className="flex items-center gap-1">
             <input type="radio" name="seguridad" /> Sí
@@ -157,7 +167,9 @@ export default function ReservaPage() {
         </div>
 
         {/* Acceso a la obra */}
-        <label className="block text-sm font-medium mb-1">Acceso a la obra</label>
+        <label className="block text-sm font-medium mb-1">
+          Acceso a la obra
+        </label>
         <input
           type="text"
           placeholder="Describa el acceso al sitio"
@@ -167,10 +179,14 @@ export default function ReservaPage() {
 
       {/* 3. Requerimientos de maquinaria */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">3. Requerimientos de maquinaria</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          3. Requerimientos de maquinaria
+        </h2>
 
         {/* Tipo de maquinaria */}
-        <label className="block text-sm font-medium mb-1">Tipo de maquinaria requerida</label>
+        <label className="block text-sm font-medium mb-1">
+          Tipo de maquinaria requerida
+        </label>
         <select className="w-full border rounded-lg p-2 mb-4">
           <option>Seleccione el tipo de maquinaria</option>
           <option>Retroexcavadora</option>
@@ -179,14 +195,16 @@ export default function ReservaPage() {
         </select>
 
         {/* Repuestos requeridos */}
-        <label className="block text-sm font-medium mb-1">Repuestos requeridos</label>
+        <label className="block text-sm font-medium mb-1">
+          Repuestos requeridos
+        </label>
         <input
           type="text"
           placeholder="Ej: 2 baldes, filtros..."
           className="w-full border rounded-lg p-2 mb-4"
         />
-    </section>
-       <button
+      </section>
+      <button
         onClick={handleGuardar}
         className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
       >
@@ -205,12 +223,16 @@ export default function ReservaPage() {
               ✕
             </button>
 
-            <h2 className="text-2xl font-bold mb-6">Seguimiento de Proveedor</h2>
+            <h2 className="text-2xl font-bold mb-6">
+              Seguimiento de Proveedor
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Columna izquierda: barra de progreso */}
               <div className="space-y-6">
-                <p className="font-semibold">Buscando proveedores más cercanos</p>
+                <p className="font-semibold">
+                  Buscando proveedores más cercanos
+                </p>
                 <p className="text-sm text-gray-500">
                   El proveedor ha aceptado tu solicitud
                 </p>
@@ -257,4 +279,3 @@ export default function ReservaPage() {
     </div>
   );
 }
-

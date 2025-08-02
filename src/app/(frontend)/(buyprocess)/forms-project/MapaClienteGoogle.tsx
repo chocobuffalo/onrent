@@ -1,11 +1,17 @@
 "use client";
+
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// 🛠️ Corrige íconos de Leaflet que no se cargan bien en Vite/Next
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+// ✅ Corrige íconos de Leaflet (sin usar `any`)
+const LeafletDefaultIcon = L.Icon.Default.prototype as {
+  _getIconUrl?: () => string;
+};
+
+delete LeafletDefaultIcon._getIconUrl;
+
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -13,13 +19,15 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-export default function MapaCliente({
-  ubicacion,
-  setUbicacion,
-}: {
+interface MapaClienteGoogleProps {
   ubicacion: [number, number] | null;
   setUbicacion: (coords: [number, number]) => void;
-}) {
+}
+
+export default function MapaClienteGoogle({
+  ubicacion,
+  setUbicacion,
+}: MapaClienteGoogleProps) {
   const [position, setPosition] = useState<[number, number]>(
     ubicacion || [22.1565, -100.9855]
   );

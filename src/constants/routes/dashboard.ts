@@ -2,17 +2,18 @@
  * src/constants/routes/dashboard.ts
  * Menú lateral del dashboard con control granular por rol.
  **********************************************************************/
-import { signOut } from "@/auth";
+// import { signOut } from "@/auth";
 import BulldozerIcon from "@/components/atoms/customIcons/bulldozers";
 import DashboardIcon from "@/components/atoms/customIcons/dashboard";
-import ExitIcon from "@/components/atoms/customIcons/ExitIcon";
+// import ExitIcon from "@/components/atoms/customIcons/ExitIcon";
 import HearthIcon from "@/components/atoms/customIcons/hearthIcon";
 import PencilWrite from "@/components/atoms/customIcons/pencilWrite";
 import EnvelopeIcon from "@/components/atoms/customIcons/reviewIcon";
 import UserProfileIcon from "@/components/atoms/customIcons/userProfileIcon";
 import WrenckIcon from "@/components/atoms/customIcons/wrenkIcon";
+import { SidebarMenuProps } from "@/types/menu";
 
-import type { SidebarMenuProps, UserRole } from "@/types/menu";
+// import type { SidebarMenuProps, UserRole } from "@/types/menu";
 
 /**
  * Nota de roles:
