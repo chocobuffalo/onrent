@@ -9,8 +9,8 @@ export default function DashboardLogo({color}:{color:'white'|'dark'}){
         <a href={`/`} className="d-flex gap-2" title="OnRentX">
           <Image
             className="site-logo"
-            alt="autodecar"
-            src="/favicon.png"
+            alt="OnRentX Logo"
+            src="/images/isotipo-blanco.svg"
             width={40}
             height={40}
           />

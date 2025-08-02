@@ -1,10 +1,11 @@
-import { cookies } from 'next/headers'
+import { unstable_ViewTransition as ViewTransition } from 'react'
 import { auth } from "@/auth"
 import Sidebar from '@/components/organlism/sidebar/sidebar';
 import TopDashboard from '@/components/organlism/TopDashboard/TopDashboard';
 import '@/assets/scss/app.scss'
 import '@/assets/css/backoffice.css'
 import { redirect } from 'next/navigation';
+import ModalForm from '@/components/organlism/modalForm/modalForm';
 
 export default  async function DashboardLayout({
     children,
@@ -25,8 +26,22 @@ export default  async function DashboardLayout({
             <TopDashboard/>
             </div>
             <div id="themesflat-content"></div>
-        
-        {children}
+        <ViewTransition>
+            <div className="container">
+                <div className="row">
+                    <div className="col-md-12">
+                        <div className="content-area">
+                             <main id="main" className="main-content">
+                                <div className="tfcl-dashboard">
+                                    {children}
+                                </div>
+                            </main>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ViewTransition>
+        <ModalForm/>
       </div>
       
        </>

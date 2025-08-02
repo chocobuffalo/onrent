@@ -1,0 +1,10 @@
+export default function DocIcon() {
+    return(
+        <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M16.7156 4.18821V0L0 0.0744571V18H20V4.18821H16.7156ZM0.862385 17.1251V0.930714L15.8716 0.874871V4.18821H3.72477V5.06308H19.156V17.1251H0.862385Z" fill="#B2B2B2"/>
+<path d="M16.2936 7.61324H3.72477V8.48811H16.2936V7.61324Z" fill="#B2B2B2"/>
+<path d="M16.2936 10.4054H3.72477V11.2802H16.2936V10.4054Z" fill="#B2B2B2"/>
+<path d="M16.2936 13.1789H3.72477V14.0538H16.2936V13.1789Z" fill="#B2B2B2"/>
+</svg>
+    )
+}

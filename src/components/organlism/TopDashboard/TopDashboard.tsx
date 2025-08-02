@@ -1,12 +1,20 @@
-'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 
-import  Link  from "next/link";
+// import  Link  from "next/link";
 import MobileNav from "../../molecule/MobileNav/MobileNav";
 import DashboardLogo from "@/components/molecule/dashboardLogo/dashboardLogo";
 import AddEnginery from "@/components/atoms/AddEnginery/AddEnginery";
 import DashboardAvatar from "@/components/molecule/dashboardAvatar/dashboardAvatar";
+import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
+// import { openModal, toggleModal } from "@/libs/redux/features/ui/modalSlicer";
 export default function TopDashboard() {
-  const active = false;
+  const active = useUIAppSelector((state) => state.modal.isOpen);
+  const dispatch = useUIAppDispatch();
+  const handleAddEnginery = () => {
+    dispatch(toggleModal());
+  };
+
   return (
     <header className="main-header">
       {/* Header Lower */}
@@ -17,22 +25,20 @@ export default function TopDashboard() {
               <div className="inner-container flex justify-space align-center">
                 {/* Logo Box */}
                 <div className="logo-box flex">
-                  <DashboardLogo color="dark"/>
+                  <DashboardLogo color="dark" />
                 </div>
-                <div className="nav-outer flex align-center">
-                 
-                </div>
-                <div className="header-account flex align-center">
-          
-                  <AddEnginery active={active} func={()=>console.log('open')} />
-                </div>
-                <div
-                  className="mobile-nav-toggler mobile-button"
-                  onClick={() =>
-                    document.body.classList.add("mobile-menu-visible")
-                  }
-                >
-                  <span />
+                <div className="nav-outer flex align-center"></div>
+                <div className="flex align-center">
+                  <AddEnginery active={active} func={handleAddEnginery} />
+
+                  <div
+                    className="mobile-nav-toggler mobile-button"
+                    onClick={() =>
+                      document.body.classList.add("mobile-menu-visible")
+                    }
+                  >
+                    <span />
+                  </div>
                 </div>
               </div>
             </div>
@@ -54,13 +60,13 @@ export default function TopDashboard() {
         />
         <nav className="menu-box">
           <div className="nav-logo">
-             <DashboardLogo color="dark"/>
+            <DashboardLogo color="dark" />
           </div>
           <div className="bottom-canvas">
-            <DashboardAvatar/>
+            <DashboardAvatar />
             <MobileNav />
             <div className="button-mobi-sell">
-              <AddEnginery active={active} func={()=>console.log('open')} />
+              <AddEnginery active={active} func={handleAddEnginery} />
             </div>
           </div>
         </nav>
@@ -68,4 +74,7 @@ export default function TopDashboard() {
       {/* End Mobile Menu */}
     </header>
   );
+}
+function toggleModal(): any {
+  throw new Error("Function not implemented.");
 }

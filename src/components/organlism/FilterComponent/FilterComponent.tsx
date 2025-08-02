@@ -4,10 +4,15 @@ import PriceSelector from "@/components/molecule/priceSelector/priceSelector";
 import SelectList from "@/components/atoms/selectList/selectList";
 import DateRentInput from "@/components/molecule/dateRentInput/dateRentInput";
 import SearchButton from "@/components/atoms/SearchButton/SearchButton";
+import useSendAction from "@/hooks/frontend/buyProcess/useSendAction";
 
 export default function FilterComponent() {
+    const { handlerSubmit } = useSendAction();
     return(
-        <div className="filter-component flex flex-col gap-4.5 ">
+        <form onSubmit={(e)=>{
+            e.preventDefault();
+            handlerSubmit(e);
+            }} className="filter-component flex flex-col gap-4.5 ">
             {/* Aquí puedes agregar los filtros necesarios */}
             <div className="rounded-[5px] flex flex-col gap-3.5 border-[#B2B2B2] border-1 p-4">
                 <div className="flex flex-col gap-2 ">
@@ -33,6 +38,6 @@ export default function FilterComponent() {
                 <DateRentInput/>
                 <SearchButton />
             </div>
-        </div>
+        </form>
     )
 }

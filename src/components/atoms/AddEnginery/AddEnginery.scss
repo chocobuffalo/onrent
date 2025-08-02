@@ -1,0 +1,21 @@
+.active{
+    background-color: #ff7101 !important;
+    color: #fff !important;
+}
+.active svg path{
+    fill: #fff;
+}
+@media only screen and (width <= 1200px){
+    .addEnginery{
+        display: flex !important;
+    }
+.addEnginery span{
+    display: none !important;
+}
+.header-account .flat-bt-top .sc-button svg{
+    margin-right: 0 !important;
+}
+.header-account .flat-bt-top .sc-button {
+    padding: 14px 18px !important;
+}
+}

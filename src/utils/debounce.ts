@@ -1,4 +1,8 @@
-export const debounce = <F extends (...args: any[]) => Promise<any>>(func: F, wait: number) => {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const debounce = <F extends (...args: any[]) => Promise<any>>(
+  func: F,
+  wait: number
+) => {
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<F>): Promise<ReturnType<F>> => {
     clearTimeout(timeout);
