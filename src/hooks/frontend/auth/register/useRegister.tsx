@@ -5,8 +5,8 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { redirect, RedirectType } from 'next/navigation'
+//import { signIn } from "next-auth/react";
+//import { redirect, RedirectType } from 'next/navigation'
 import createUser from "@/services/createUser";
 
 

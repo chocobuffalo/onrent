@@ -7,7 +7,8 @@ import { AdapterUser } from "@auth/core/adapters";
 // import { Session } from "@auth/core/types";
 import { NextAuthConfig } from "next-auth";
 export const callbacks: NextAuthConfig["callbacks"] = {
-  authorized({ auth, request: { nextUrl } }) {
+  authorized({ auth }) {
+    
     const isLoggedIn = !!auth?.user;
     if (auth?.user?.email == "admin@example.com") {
       return false;
@@ -19,22 +20,22 @@ export const callbacks: NextAuthConfig["callbacks"] = {
     }
     return true;
   },
-  async jwt({ token, user, account, trigger, session }) {
-    // Solo en el inicio de sesión, agregamos info del usuario al token
-    if (user) {
-      token.user = user;
-    }
-    //  console.log(token, user, account, trigger, session, 'jwt');
-    // Refrescar token si es necesario
-    if (trigger === "update") {
-      return { ...token, ...session.user };
-    }
+  // async jwt({ token, user, account, trigger, session }) {
+  //   // Solo en el inicio de sesión, agregamos info del usuario al token
+  //   if (user) {
+  //     token.user = user;
+  //   }
+  //   //  console.log(token, user, account, trigger, session, 'jwt');
+  //   // Refrescar token si es necesario
+  //   if (trigger === "update") {
+  //     return { ...token, ...session.user };
+  //   }
 
-    return token;
-  },
+  //   return token;
+  // },
 
 
-  async redirect({ url, baseUrl }) {
+  async redirect({ url}) {
     return `${url}`;
   },
 
