@@ -4,27 +4,37 @@ export default function Input({
   type = "text",
   name,
   placeHolder,
+  inputClass,
+  labelClass,
+  containerClass,
+  required,
   register,
   errors,
 }: {
   label: string;
   type: string;
   name: string;
+  required?: boolean;
+  inputClass?: string;
+  containerClass?: string;
+  labelClass?: string;
   placeHolder: string;
   register: any;
   errors: any;
 }) {
+  
+
   return (
-    <div className="form-group">
-      <label htmlFor={name}>{label}</label>
+    <div className={`form-group ${containerClass}`}>
+      <label className={labelClass} htmlFor={name}>{label} {required ? <span className="text-red-500">*</span> : ""}</label>
       <input
         {...register(name)}
         type={type}
-        className="form-control mb-1"
+        className={`form-control mb-1 ${inputClass}`}
         placeholder={placeHolder}
       />
       {errors[name] && (
-        <span className="text-danger">{errors[name].message}</span>
+        <span className="text-danger text-red-500">{errors[name].message}</span>
       )}
     </div>
   );
