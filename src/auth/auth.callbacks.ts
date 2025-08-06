@@ -7,39 +7,36 @@ import { AdapterUser } from "@auth/core/adapters";
 // import { Session } from "@auth/core/types";
 import { NextAuthConfig } from "next-auth";
 export const callbacks: NextAuthConfig["callbacks"] = {
-  // authorized({ auth, request: { nextUrl } }) {
-  //   const isLoggedIn = !!auth?.user;
-  //   if (auth?.user?.email == "admin@example.com") {
-  //     return false;
-  //   }
-  //   // const isOnDashboard = nextUrl.pathname.startsWith('/dashboard')
+  authorized({ auth, request: { nextUrl } }) {
+    const isLoggedIn = !!auth?.user;
+    if (auth?.user?.email == "admin@example.com") {
+      return false;
+    }
+    // const isOnDashboard = nextUrl.pathname.startsWith('/dashboard')
 
-  //   if (!isLoggedIn) {
-  //     return false;
-  //   }
-  //   return true;
-  // },
-  // async jwt({ token, user, account, trigger, session }) {
-  //   // Solo en el inicio de sesión, agregamos info del usuario al token
-  //   if (user) {
-  //     token.user = user;
-  //   }
-  //   //  console.log(token, user, account, trigger, session, 'jwt');
-  //   // Refrescar token si es necesario
-  //   if (trigger === "update") {
-  //     return { ...token, ...session.user };
-  //   }
+    if (!isLoggedIn) {
+      return false;
+    }
+    return true;
+  },
+  async jwt({ token, user, account, trigger, session }) {
+    // Solo en el inicio de sesión, agregamos info del usuario al token
+    if (user) {
+      token.user = user;
+    }
+    //  console.log(token, user, account, trigger, session, 'jwt');
+    // Refrescar token si es necesario
+    if (trigger === "update") {
+      return { ...token, ...session.user };
+    }
 
-  //   return token;
-  // },
+    return token;
+  },
 
-  // async signIn({ user, account, profile, email, credentials }) {
-  //   return true;
-  // },
 
-  // async redirect({ url, baseUrl }) {
-  //   return `${url}`;
-  // },
+  async redirect({ url, baseUrl }) {
+    return `${url}`;
+  },
 
   async session({ session, token }) {
     // Agregamos info del token a la sesión

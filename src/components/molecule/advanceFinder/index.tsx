@@ -35,7 +35,7 @@ export default function AdvanceFinder() {
           <button
             type="submit"
             onClick={handlerSubmit}
-            className="bg-secondary cursor-pointer hover:text-secondary hover:bg-white text-white px-5 py-2 rounded-sm  duration-300"
+            className="bg-secondary cursor-pointer uppercase font-futura hover:text-secondary hover:bg-white text-white px-5 py-2 rounded-sm  duration-300"
           >
             Buscar
           </button>
