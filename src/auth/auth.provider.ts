@@ -1,3 +1,4 @@
+
 import createUser from "@/services/createUser";
 import Credentials from "@auth/core/providers/credentials";
 import Apple from "next-auth/providers/apple";
@@ -12,7 +13,7 @@ export const providers =  [
           email: { label: "Email", type: "email" },
           password: { label: "Password", type: "password" },
         },
-        async authorize(credentials, req) {
+        async authorize(credentials) {
         
           
           // contact with backend
