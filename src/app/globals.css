@@ -1,14 +1,151 @@
 @import "leaflet/dist/leaflet.css";
+@import "tailwindcss";
+
+@font-face {
+    font-family: 'futura', sans-serif;
+    src: url('../assets/fonts/futura/FuturaBT-Medium.woff2') format('woff2'),
+        url('../assets/fonts/futura/FuturaBT-Medium.woff') format('woff'),
+        url('../assets/fonts/futura/FuturaBT-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'futura', sans-serif;
+    src: url('../assets/fonts/futura/Futura-Light.woff2') format('woff2'),
+        url('../assets/fonts/futura/Futura-Light.woff') format('woff'),
+        url('../assets/fonts/futura/Futura-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'futura', sans-serif;
+    src: url('../assets/fonts/futura/FuturaBT-MediumItalic.woff2') format('woff2'),
+        url('../assets/fonts/futura/FuturaBT-MediumItalic.woff') format('woff'),
+        url('../assets/fonts/futura/FuturaBT-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'futura', sans-serif;
+    src: url('../assets/fonts/futura/FuturaLT-Bold.woff2') format('woff2'),
+        url('../assets/fonts/futura/FuturaLT-Bold.woff') format('woff'),
+        url('../assets/fonts/futura/FuturaLT-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'futura', sans-serif;
+    src: url('../assets/fonts/futura/FuturaBT-MediumItalic_1.woff2') format('woff2'),
+        url('../assets/fonts/futura/FuturaBT-MediumItalic_1.woff') format('woff'),
+        url('../assets/fonts/futura/FuturaBT-MediumItalic_1.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Lato', sans-serif;
+    src: url('../assets/fonts/lato/Lato-Bold.woff2') format('woff2'),
+        url('../assets/fonts/lato/Lato-Bold.woff') format('woff'),
+        url('../assets/fonts/lato/Lato-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Lato', sans-serif;
+    src: url('../assets/fonts/lato/Lato-BoldItalic.woff2') format('woff2'),
+        url('../assets/fonts/lato/Lato-BoldItalic.woff') format('woff'),
+        url('../assets/fonts/lato/Lato-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Lato', sans-serif;
+    src: url('../assets/fonts/lato/Lato-Italic.woff2') format('woff2'),
+        url('../assets/fonts/lato/Lato-Italic.woff') format('woff'),
+        url('../assets/fonts/lato/Lato-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Lato', sans-serif;
+    src: url('../assets/fonts/lato/Lato-Light.woff2') format('woff2'),
+        url('../assets/fonts/lato/Lato-Light.woff') format('woff'),
+        url('../assets/fonts/lato/Lato-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Lato', sans-serif;
+    src: url('../assets/fonts/lato/Lato-LightItalic.woff2') format('woff2'),
+        url('../assets/fonts/lato/Lato-LightItalic.woff') format('woff'),
+        url('../assets/fonts/lato/Lato-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Lato', sans-serif;
+    src: url('../assets/fonts/lato/Lato-Regular.woff2') format('woff2'),
+        url('../assets/fonts/lato/Lato-Regular.woff') format('woff'),
+        url('../assets/fonts/lato/Lato-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --font-inter: "Inter", sans-serif;
+  --futura-font: 'futura', sans-serif;
+  --lato-font: 'Lato', sans-serif;
 }
+
+
+@theme{
+    --color-primary:#13123D;
+    --color-secondary:#EA6300;
+    --container:1500px;
+    --futura-font: 'futura', sans-serif;
+    --lato-font: 'Lato', sans-serif;
+}
+html,
 body{
-  font-family: var(--font-inter);
+  font-family: var(--lato-font);
   font-size: 16px;
+  scroll-behavior: smooth;
 }
+h1,h2{
+  font-family: var(--futura-font);
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.futura-font {
+  font-family: var(--futura-font);
+}
+.lato-font {
+  font-family: var(--lato-font);
+}
+
 @view-transition{
   navigation:auto;
 }

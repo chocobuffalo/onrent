@@ -1,3 +1,4 @@
+import createUser from "@/services/createUser";
 import Credentials from "@auth/core/providers/credentials";
 import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
@@ -6,12 +7,26 @@ export const providers =  [
     Credentials({
         name: "Credentials",
         credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials, req) {
-        console.log(credentials, req);
-        // contact with backend
+          name: { label: "Name", type: "text" },
+          role: { label: "User Type", type: "select", options: ["cliente", "proveedor", "cliente_proveedor"] },
+          email: { label: "Email", type: "email" },
+          password: { label: "Password", type: "password" },
+        },
+        async authorize(credentials, req) {
+        
+          
+          // contact with backend
+          const res = await createUser({
+            email: credentials.email as string,
+            name: credentials.name as string,
+            password: credentials.password as string,
+            role: credentials.role as string,
+          })
+          console.log(res, "authorize response");
+        if (res.responseStatus === 200) {
+         return res.response;
+        }        
+        
         return null;
       }
     }),

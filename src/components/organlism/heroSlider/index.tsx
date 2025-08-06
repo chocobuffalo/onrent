@@ -35,7 +35,7 @@ export default function HeroSlider() {
       >
         {sliderItems.map((item: SliderInterface) => {
           return (
-            <SwiperSlide className="w-full" key={1}>
+            <SwiperSlide className="w-full" key={item.id}>
               <SliderPanel sliderItem={item} />
             </SwiperSlide>
           );

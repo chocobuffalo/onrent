@@ -131,7 +131,7 @@ export default function Registro() {
           }
           className="hover:bg-[#0f0f26] hover:text-white w-full flex cursor-pointer items-center justify-center gap-3 bg-white border px-6 py-4 rounded-md shadow-sm hover:shadow-md transition text-[12px] font-light"
         >
-          <Image src="/icons/google.svg" alt="Google" className="w-5 h-5" />
+          <Image src="/icons/google.svg" width={30} height={30} alt="Google" className="w-5 h-5" />
           Continuar con Google
         </button>
       </div>

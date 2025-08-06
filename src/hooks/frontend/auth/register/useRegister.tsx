@@ -5,6 +5,10 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { redirect, RedirectType } from 'next/navigation'
+import createUser from "@/services/createUser";
+
 
 const schema = Yup.object({
   name: Yup.string().required("Este campo es obligatorio"),
@@ -30,16 +34,37 @@ export default function useRegister() {
     mode: "onChange",
   });
 
-  const onSubmit = (data: any) => {
-    console.log("Datos de registro:", data);
-    alert("Registro simulado");
+  const onSubmit = async (data: any) => {
+
+    
+    //alert("Registro simulado");
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      // Aquí podrías llamar a una función para manejar el registro real
-      // Por ejemplo, usando signIn de next-auth
-      // signIn('credentials', { ...data, redirect: false });
-    }, 500);
+    console.log(data);
+    try {
+      const createUserResponse = await createUser({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.tipoUsuario,
+      })
+      console.log(createUserResponse , "createUser response");
+      
+      // const response = await signIn("credentials",{
+      //   name: data.name,
+      //   email: data.email,
+      //   password: data.password,
+      //   role: data.tipoUsuario,
+      //   redirect: false,
+      // })
+      // if (!response.error) {
+      //   // Manejar el exito aquí
+      //  redirect('/dashboard/profile', RedirectType.push)
+
+      // }
+    } catch (error) {
+      console.error("Error al registrar el usuario:", error);
+      // Aquí podrías manejar errores específicos de registro
+    }
   };
 
   return {
