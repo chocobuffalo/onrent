@@ -1,5 +1,5 @@
 // data/sampleCatalogueData.ts
-import { CatalogueItem } from "@/components/organlism/Catalogue/types";
+import { CatalogueItem } from "@/components/organism/Catalogue/types";
 
 export const sampleData: CatalogueItem[] = [
   {

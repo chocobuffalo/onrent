@@ -1,4 +1,4 @@
-import ProfileForm from "@/components/organlism/backoffice/backoffice/profileForm/profileForm"
+import ProfileForm from "@/components/organism/backoffice/backoffice/profileForm/profileForm"
 import { Metadata } from "next"
 
 export const metadata:Metadata ={

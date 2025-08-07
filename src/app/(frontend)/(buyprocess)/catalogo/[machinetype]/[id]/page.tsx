@@ -1,5 +1,5 @@
-import MachineDetail from "@/components/organlism/MachineDetail/MachineDetail";
-import { sampleData } from "@/components/organlism/Catalogue/sampleCatalogueData";
+import MachineDetail from "@/components/organism/MachineDetail/MachineDetail";
+import { sampleData } from "@/components/organism/Catalogue/sampleCatalogueData";
 
 interface MachineDetailPageProps {
   params: Promise<{ machinetype: string; id: string }>;

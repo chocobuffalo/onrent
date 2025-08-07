@@ -1,11 +1,11 @@
 import { unstable_ViewTransition as ViewTransition } from 'react'
 import { auth } from "@/auth"
-import Sidebar from '@/components/organlism/sidebar/sidebar';
-import TopDashboard from '@/components/organlism/TopDashboard/TopDashboard';
+import Sidebar from '@/components/organism/sidebar/sidebar';
+import TopDashboard from '@/components/organism/TopDashboard/TopDashboard';
 import '@/assets/scss/app.scss'
 import '@/assets/css/backoffice.css'
 import { redirect } from 'next/navigation';
-import ModalForm from '@/components/organlism/modalForm/modalForm';
+import ModalForm from '@/components/organism/modalForm/modalForm';
 
 export default  async function DashboardLayout({
     children,
