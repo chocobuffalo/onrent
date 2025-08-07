@@ -1,4 +1,4 @@
-import ChangePassForm from "@/components/organlism/backoffice/backoffice/chancePass/changePassForm";
+import ChangePassForm from "@/components/organism/backoffice/backoffice/chancePass/changePassForm";
 import { Metadata } from "next";
 
 

@@ -7,8 +7,8 @@ import { SessionProvider } from "next-auth/react";
 
 import { makeStore, UIAppStore } from "./redux/uistore";
 
-import AuthSync from "@/components/organlism/syncs/authSync";
-import FilterSync from "@/components/organlism/syncs/FilterSync";
+import AuthSync from "@/components/organism/syncs/authSync";
+import FilterSync from "@/components/organism/syncs/FilterSync";
 
 const Providers = ({
   children,

@@ -1,5 +1,5 @@
-import Footer from "@/components/organlism/footer/footer";
-import Header from "@/components/organlism/header";
+import Footer from "@/components/organism/footer/footer";
+import Header from "@/components/organism/header";
 import '../../assets/css/frontend.css'
 
 

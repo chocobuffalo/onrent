@@ -1,6 +1,6 @@
 import FrontSectionWrapper from "@/components/molecule/frontSectionWrapper/frontSectionWrapper";
-import Catalogue from "@/components/organlism/Catalogue/CatalogueContainer";
-import FilterComponent from "@/components/organlism/FilterComponent/FilterComponent";
+import Catalogue from "@/components/organism/Catalogue/CatalogueContainer";
+import FilterComponent from "@/components/organism/FilterComponent/FilterComponent";
 
 
 export const metadata = {

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation"; // ← Necesario en Next 15
-import { sampleData } from "@/components/organlism/Catalogue/sampleCatalogueData";
-import { CatalogueItem } from "@/components/organlism/Catalogue/types";
-import SeguimientoMapa from "@/components/organlism/MapSLA/seguimientoMapa";
+import { sampleData } from "@/components/organism/Catalogue/sampleCatalogueData";
+import { CatalogueItem } from "@/components/organism/Catalogue/types";
+import SeguimientoMapa from "@/components/organism/MapSLA/seguimientoMapa";
 import Image from "next/image";
 export default function ReservaPage() {
   // Obtener params desde la URL
