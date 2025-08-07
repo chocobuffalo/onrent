@@ -20,9 +20,9 @@ export default function ChangePassForm() {
     return(
         
             <>
-                <h1 className="admin-title">Cambiar Contraseña</h1>
+                <h1 className="admin-title mb-4">Cambiar Contraseña</h1>
                 <form onSubmit={handleSubmit(onSubmit)} className="tfcl-add-listing profile-inner">
-                  <div className="tfcl-add-listing profile-password">
+                  <div className="profile-password">
                     <SecretInput 
                         register={register} 
                         errors={errors} 

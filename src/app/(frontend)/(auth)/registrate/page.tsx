@@ -6,6 +6,8 @@ import { signIn } from "next-auth/react";
 import { ImSpinner8 } from "react-icons/im";
 import SecretInput from "@/components/atoms/secretInput/secretInput";
 import Image from "next/image";
+import Input from "@/components/atoms/Input/Input";
+import SelectInput from "@/components/atoms/selectInput/selectInput";
 
 export default function Registro() {
   const { errors, isValid, register, isLoading, handleSubmit, onSubmit } =
@@ -23,57 +25,46 @@ export default function Registro() {
           className="space-y-6 text-[12px] font-light text-gray-700"
         >
           {/* Nomber del usuario */}
-          <div>
-            <label className="block mb-1">
-              Nombre de Usuario <span className="text-red-500">*</span>
-            </label>
-            <input
+            <Input
               type="text"
-              {...register("name")}
-              placeholder="Introduce tu nombre de usuario"
-              className="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
-            />
-            {errors.name && (
-              <p className="text-red-500 mt-1">{errors.name.message}</p>
-            )}
-          </div>
+              register={register}
+              placeHolder="Introduce tu nombre de usuario"
+              containerClass="mb-2"
+              inputClass="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
+              label="Nombre de Usuario "
+              labelClass="block mb-1"
+              required
+              errors={errors}
+              name="name"
+            />  
           {/* Tipo de usuario */}
-          <div>
-            <label className="block mb-1">Tipo de usuario</label>
-            <select
-              {...register("tipoUsuario")}
-              className="w-full rounded-md px-4 py-4 bg-[#E9E9E9] appearance-none focus:outline-none"
-              defaultValue=""
-            >
-              <option value="" disabled>
-                Selecciona el tipo de usuario
-              </option>
-              {userRoles.map((role) => (
-                <option key={role.id} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-            {errors.tipoUsuario && (
-              <p className="text-red-500 mt-1">{errors.tipoUsuario.message}</p>
-            )}
-          </div>
+          <SelectInput
+            options={userRoles}
+            name="tipoUsuario"
+            
+            register={register}
+            label="Tipo de usuario"
+            placeHolder="Selecciona el tipo de usuario"
+            required
+            classLabel="block mb-1"
+            selectClass="w-full rounded-[4px] px-4 py-4 bg-[#E9E9E9] appearance-none focus:outline-none"
+            containerClass="relative select-container mb-2"
+            errors={errors}
+          />
 
           {/* Correo / Teléfono */}
-          <div>
-            <label className="block mb-1">
-              Correo electrónico<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              {...register("email")}
-              placeholder="Introduce tu correo electrónico"
-              className="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
-            />
-            {errors.email && (
-              <p className="text-red-500 mt-1">{errors.email.message}</p>
-            )}
-          </div>
+          <Input
+            type="email"
+            register={register}
+            placeHolder="Introduce tu correo electrónico"
+            inputClass="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
+            label="Correo electrónico"
+            labelClass="block mb-1"
+            containerClass="mb-2"
+            required
+            errors={errors}
+            name="email"
+          />
 
           {/* Contraseña */}
           <SecretInput
@@ -82,7 +73,7 @@ export default function Registro() {
             label="Contraseña"
             placeHolder="Mínimo 6 caracteres"
             id={"password"}
-            classWrapper="form-group relative"
+            classWrapper="form-group relative mb-2"
             inputClass="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
           />
 
@@ -93,14 +84,14 @@ export default function Registro() {
             label="Confirmar Contraseña"
             placeHolder="Repite tu contraseña"
             id={"confirmPassword"}
-            classWrapper="form-group relative"
+            classWrapper="form-group relative mb-6"
             inputClass="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
           />
 
           {/* Botón Crear cuenta */}
           <button
             type="submit"
-            className={`w-full py-4 rounded-md font-semibold text-white text-[12px] tracking-wide transition-colors ${
+            className={`w-full py-4 rounded-md font-semibold text-white  text-[12px] tracking-wide transition-colors ${
               isValid
                 ? "bg-[#1C1B3A] hover:bg-[#0f0f26]"
                 : "bg-gray-300 cursor-not-allowed"

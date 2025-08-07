@@ -6,6 +6,7 @@ import useLogin from "@/hooks/frontend/auth/iniciarSession/useLogin";
 import { ImSpinner8 } from "react-icons/im";
 import SecretInput from "@/components/atoms/secretInput/secretInput";
 import Image from "next/image";
+import Input from "@/components/atoms/Input/Input";
 
 export default function IniciarSesion() {
   const { errors, isValid, register, handleSubmit, isLoading, onSubmit } =
@@ -23,21 +24,17 @@ export default function IniciarSesion() {
           className="space-y-6 text-[12px] font-light text-gray-700"
         >
           {/* Email o Teléfono */}
-          <div>
-            <label className="block mb-1">
-              Correo electrónico o teléfono{" "}
-              <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              {...register("emailOrPhone")}
-              placeholder="Introduce tu correo electrónico o teléfono"
-              className="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
-            />
-            {errors.emailOrPhone && (
-              <p className="text-red-500 mt-1">{errors.emailOrPhone.message}</p>
-            )}
-          </div>
+          <Input
+            type="text"
+            register={register}
+            placeHolder="Introduce tu correo electrónico o teléfono"
+            inputClass="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
+            label="Correo electrónico o Teléfono"
+            labelClass="block mb-1"
+            required
+            errors={errors}
+            name="emailOrPhone"
+          />
 
           {/* Contraseña */}
           <SecretInput

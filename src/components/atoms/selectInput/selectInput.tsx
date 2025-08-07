@@ -9,24 +9,33 @@ export default function SelectInput({
   register,
   label,
   placeHolder,
+  required,
+  classLabel,
+  selectClass,
+  containerClass,
+  defaultValue,
   errors,
 }: {
   errors: any;
   name: string;
   options: SelectInterface[];
   register: any;
-  value?: SelectInterface;
+  classLabel?: string;
+  selectClass?: string;
+  required?: boolean;
+  containerClass?: string;
+  defaultValue?: SelectInterface;
   label: string;
   placeHolder?: string;
 }) {
   return (
-    <div className="form-group relative">
-      <label htmlFor={name}>{label}</label>
+    <div className={`form-group relative ${containerClass}`}>
+      <label className={classLabel} htmlFor={name}>{label}  {required ? <span className="text-red-500">*</span> : ""}</label>
       <div className="relative select-container">
-        <select className="form-control mb-1" {...register(name)}>
+        <select className={`form-control mb-1 ${selectClass}`} {...register(name)}>
           {placeHolder && <option value="">{placeHolder}</option>}
           {options.map((option) => (
-            <option key={option.value}>{option.label}</option>
+            <option key={option.value} value={option.value} selected={  defaultValue?.value === option.value}>{option.label}</option>
           ))}
         </select>
         <div className="absolute right-0 top-0 pt-3 px-3" aria-hidden="true">
@@ -44,7 +53,7 @@ export default function SelectInput({
       </div>
 
       {errors[name] && (
-        <span className="text-danger">{errors[name].message}</span>
+        <span className="text-danger text-red-500">{errors[name].message}</span>
       )}
     </div>
   );

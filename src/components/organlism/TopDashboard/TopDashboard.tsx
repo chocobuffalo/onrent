@@ -7,6 +7,7 @@ import DashboardLogo from "@/components/molecule/dashboardLogo/dashboardLogo";
 import AddEnginery from "@/components/atoms/AddEnginery/AddEnginery";
 import DashboardAvatar from "@/components/molecule/dashboardAvatar/dashboardAvatar";
 import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
+import { toggleModal } from "@/libs/redux/features/ui/modalSlicer";
 // import { openModal, toggleModal } from "@/libs/redux/features/ui/modalSlicer";
 export default function TopDashboard() {
   const active = useUIAppSelector((state) => state.modal.isOpen);
@@ -74,7 +75,4 @@ export default function TopDashboard() {
       {/* End Mobile Menu */}
     </header>
   );
-}
-function toggleModal(): any {
-  throw new Error("Function not implemented.");
 }
