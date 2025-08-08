@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from "react";
 import { useParams } from "next/navigation"; // ← Necesario en Next 15
 import { sampleData } from "@/components/organism/Catalogue/sampleCatalogueData";
