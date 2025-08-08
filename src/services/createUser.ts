@@ -33,13 +33,17 @@ export default async function
     }
   }
 
+  const newUser ={email, name, password, role}
+  console.log(JSON.stringify(newUser), "createUser request");
+
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/user/register`, {
         method: "POST",
-        mode: 'no-cors',
+        
         headers: {
             "Content-Type": "application/json",
+            "Accept": "application/json"
         },
-        body: JSON.stringify({email, name, password, role}),
+        body: JSON.stringify(newUser),
     });
 
   if (!response.ok) {

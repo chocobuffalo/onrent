@@ -42,10 +42,10 @@ export default function useRegister() {
     console.log(data);
     try {
       const createUserResponse = await createUser({
-        name: data.name,
-        email: data.email,
-        password: data.password,
-        role: data.tipoUsuario,
+        name: data.name.trim(),
+        email: data.email.trim(),
+        password: data.password.trim(),
+        role: data.tipoUsuario.trim(),
       })
       console.log(createUserResponse , "createUser response");
       

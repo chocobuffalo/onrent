@@ -1,25 +1,23 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
-import { useRouter } from "next/navigation"; // <-- Importar router
+
 import { CatalogueItem } from "../Catalogue/types";
+import ToggleButton from "@/components/atoms/toggleButton/toggleButton";
+import useMachineDetail from "@/hooks/frontend/buyProcess/useMachineDetail";
 
 interface MachineDetailProps {
   machine: CatalogueItem;
 }
 
 export default function MachineDetail({ machine }: MachineDetailProps) {
-  const [extras, setExtras] = useState({
-    operador: true,
-    certificado: true,
-    combustible: true,
-  });
 
-  const router = useRouter(); // <-- Inicializar router
-
-  const toggleExtra = (key: keyof typeof extras) => {
-    setExtras((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
+  const {
+    extras,
+    saveAddress,
+    toggleExtra,
+    toggleSaveAddress,
+    router,
+  } = useMachineDetail(machine.id);
 
   return (
     <>
@@ -77,44 +75,23 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                 <Image src="/icons/user.svg" alt="Operator" width={35} height={35} />
                 <div>
                   <p className="text-sm font-semibold">Operador</p>
-                  <p className="text-xs text-gray-500 italic text-green-600">+18USD / Día</p>
+                  <p className="text-xs italic text-green-600">+18USD / Día</p>
                 </div>
               </div>
-              <button
-                onClick={() => toggleExtra("operador")}
-                className={`relative w-12 h-6 rounded-full transition-colors ${
-                  extras.operador ? "bg-orange-500" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                    extras.operador ? "translate-x-6" : "translate-x-0"
-                  }`}
-                />
-              </button>
+              <ToggleButton isChecked={extras.operador} onChange={() => toggleExtra("operador")} />
             </div>
 
             {/* Certificado */}
             <div className="flex items-center justify-between border-b pb-3">
               <div className="flex items-center gap-3">
-                <Image src="/icons/certificado.svg" alt="Certificado" width={35} height={35} />
+                <Image src="/icons/certificade.svg" alt="Certificado" width={50} height={50} />
                 <div>
                   <p className="text-sm font-semibold">Certificado OnRentX</p>
                   <p className="text-xs text-gray-500 italic">Estándar de calidad superior</p>
                 </div>
               </div>
-              <button
-                onClick={() => toggleExtra("certificado")}
-                className={`relative w-12 h-6 rounded-full transition-colors ${
-                  extras.certificado ? "bg-orange-500" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                    extras.certificado ? "translate-x-6" : "translate-x-0"
-                  }`}
-                />
-              </button>
+             <ToggleButton isChecked={extras.certificado} onChange={() => toggleExtra("certificado")} />
+
             </div>
 
             {/* Combustible */}
@@ -123,18 +100,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                 <Image src="/icons/fuel.svg" alt="Combustible" width={35} height={35} />
                 <p className="text-sm font-semibold">Combustible incluido</p>
               </div>
-              <button
-                onClick={() => toggleExtra("combustible")}
-                className={`relative w-12 h-6 rounded-full transition-colors ${
-                  extras.combustible ? "bg-orange-500" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                    extras.combustible ? "translate-x-6" : "translate-x-0"
-                  }`}
-                />
-              </button>
+              <ToggleButton isChecked={extras.combustible} onChange={() => toggleExtra("combustible")} />
             </div>
           </div>
 
@@ -150,7 +116,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
           </div>
 
           {/* Datos de reserva */}
-          <div className="mt-10 border rounded-lg p-6 space-y-6 shadow-sm">
+          <div className="mt-10 p-6 space-y-6 ">
             <h3 className="font-semibold text-lg mb-2">Datos de reserva</h3>
 
             {/* Dirección */}
@@ -166,9 +132,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
             {/* Switch guardar dirección */}
             <div className="flex items-center justify-between">
               <span className="text-sm">Guardar esta dirección</span>
-              <button className="relative w-12 h-6 rounded-full bg-orange-500">
-                <span className="absolute left-6 top-0.5 w-5 h-5 bg-white rounded-full shadow"></span>
-              </button>
+               <ToggleButton isChecked={saveAddress} onChange={toggleSaveAddress} />
             </div>
 
             {/* Nombre dirección */}
