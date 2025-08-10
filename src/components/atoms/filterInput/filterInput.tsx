@@ -11,7 +11,7 @@ export default function FilterInput({
   inputClass,
   name="location",
 }: {
-  name:string
+  name?:string
   checkpersist?: boolean;
   inputClass?:string
 }) {
