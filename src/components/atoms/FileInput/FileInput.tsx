@@ -22,6 +22,7 @@ export default function FileInput({
         id={name}
         {...register(name)}
       />
+      
       <button
         className="d-flex gap-2 form-control w-fit max-w-[200px]"
         onClick={() => {
