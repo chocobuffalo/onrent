@@ -30,13 +30,15 @@ export default function FilterComponent() {
                 </div>
                  
                     <PriceSelector/>
-                
+                 <SearchButton />
                 
             </div>
             <div className="rounded-[5px] border-[#B2B2B2] border-1 p-4 flex flex-col gap-3.5">
-               
+                <h3 className="Arrendamiento text-[16px] font-bold text-center">
+                               Tiempo de Arrendamiento
+                </h3>
                 <DateRentInput/>
-                <SearchButton />
+               
             </div>
         </form>
     )

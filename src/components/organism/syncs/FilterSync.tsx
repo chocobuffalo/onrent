@@ -6,6 +6,7 @@ import {
   setLocation,
   setMaxPrice,
   setMinPrice,
+  setNeedProject,
   setStartDate,
   setType,
   setUserID,
@@ -20,13 +21,15 @@ export default function FilterSync() {
     if (typeof window !== "undefined") {
       const storageFilters = localStorage.getItem("filters");
       if (storageFilters) {
-        const { location, userID, type, startDate, endDate, rangePrice } =
+        const { location, userID, type, startDate, endDate, rangePrice , needProject} =
           JSON.parse(storageFilters);
         if (location) dispatch(setLocation(location));
         if (userID) dispatch(setUserID(userID));
         if (type) dispatch(setType(type));
         if (startDate) dispatch(setStartDate(startDate));
         if (endDate) dispatch(setEndDate(endDate));
+        if (needProject) dispatch(setNeedProject(needProject));
+
         if (rangePrice) {
           dispatch(setMinPrice(rangePrice.min));
           dispatch(setMaxPrice(rangePrice.max));
