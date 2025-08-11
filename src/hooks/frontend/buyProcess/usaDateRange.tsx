@@ -4,8 +4,10 @@ import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
 import {
   setStartDate,
   setEndDate,
+  setNeedProject,
 } from "@/libs/redux/features/ui/filterSlicer";
 import { storage } from "@/utils/storage";
+import { compareDate } from "@/utils/compareDate";
 
 export default function useDateRange() {
   const dispatch = useUIAppDispatch();
@@ -16,36 +18,32 @@ export default function useDateRange() {
   //   const getStorage = storage.getItem("filters");
   const filters = useUIAppSelector((state) => state.filters);
 
+  const needProject = useUIAppSelector((state) => state.filters.needProject);
+
+  
+
   //setStartDate,setEndDate
   const handleStartDateChange = (date: string) => {
-    console.log(date);
+    
+    
     dispatch(setStartDate(date));
-    storage.setItem("filters", { ...filters, startDate: date });
+    dispatch(setNeedProject(compareDate(date || "", endDateSelector || "")));
+    storage.setItem("filters", { ...filters, startDate: date, needProject: compareDate(date || "", endDateSelector || "") });
   };
 
   const handleEndDateChange = (date: string) => {
-    console.log(date);
     dispatch(setEndDate(date));
-    storage.setItem("filters", { ...filters, endDate: date });
+    dispatch(setNeedProject(compareDate(startDateSelector || "", date || "")));
+    storage.setItem("filters", { ...filters, endDate: date, needProject: compareDate(startDateSelector || "", date || "") });
   };
 
-  // useEffect(() => {
-
-  //     if(typeof window !== 'undefined' ) {
-  //         const storageFilters = localStorage.getItem('filters');
-  //         if (storageFilters) {
-  //             const { startDate, endDate } = JSON.parse(storageFilters);
-  //             if(startDate !== null)dispatch(setStartDateAction(startDate));
-  //             if(endDate !== null)dispatch(setEndDateAction(endDate));
-  //         }
-  //     }
-
-  // }, [])
 
   return {
     startDate: startDateSelector || "",
     endDate: endDateSelector || "",
     handleStartDateChange,
     handleEndDateChange,
+    needProject,
+
   };
 }

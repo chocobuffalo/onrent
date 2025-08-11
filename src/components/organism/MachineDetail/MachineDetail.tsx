@@ -1,44 +1,55 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
-import { useRouter } from "next/navigation"; // <-- Importar router
+
 import { CatalogueItem } from "../Catalogue/types";
+import ToggleButton from "@/components/atoms/toggleButton/toggleButton";
+import useMachineDetail from "@/hooks/frontend/buyProcess/useMachineDetail";
+import DateRentInput from "@/components/molecule/dateRentInput/dateRentInput";
+import FilterInput from "@/components/atoms/filterInput/filterInput";
+import { Book } from "lucide-react";
+import { BookingForm } from "@/components/molecule/bookingForm/bookingForm";
+import SpecsDetail from "@/components/molecule/specsDetail/specsDetail";
+import PriceDetail from "@/components/priceDetail/priceDetail";
+import { parse } from "querystring";
 
 interface MachineDetailProps {
   machine: CatalogueItem;
 }
 
 export default function MachineDetail({ machine }: MachineDetailProps) {
-  const [extras, setExtras] = useState({
-    operador: true,
-    certificado: true,
-    combustible: true,
-  });
 
-  const router = useRouter(); // <-- Inicializar router
-
-  const toggleExtra = (key: keyof typeof extras) => {
-    setExtras((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
+  const {
+    extras,
+    saveAddress,
+    toggleExtra,
+    toggleSaveAddress,
+    router,
+  } = useMachineDetail(machine.id);
 
   return (
-    <>
-      <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <section className="machine-detail py-20 px-4">
+      <div className="container mx-auto lg:flex  gap-4 ">
         {/* Columna izquierda */}
-        <div className="lg:col-span-2">
+        <div className="lg:w-2/3">
           {/* Imagen */}
-          <div className="w-full h-80 relative rounded-xl overflow-hidden shadow-md">
+          <div className="w-full h-80 relative rounded-xl overflow-hidden shadow-md ">
             <Image
               src={machine.image}
               alt={machine.name}
-              fill
-              className="object-cover"
-              unoptimized
+              width={850}
+              height={330}
+              className="object-cover object-center aspect-[16/6] w-full h-full"
             />
+          </div>
+          {/*mobile info*/}
+          <div className="block lg:hidden mt-6">
+             <h2 className="text-2xl font-bold">{machine.name}</h2>
+                 {/* Especificaciones */}
+          {machine.specs && <SpecsDetail specsMachinary={machine.specs} />}
           </div>
 
           {/* Descripción */}
-          <div className="mt-4">
+          <div className="mt-6 block">
             <p className="text-sm text-gray-700">
               <span className="font-bold">Descripción:</span> La {machine.name} combina potencia,
               versatilidad y eficiencia en un solo equipo. Ideal para excavación, carga y transporte
@@ -50,20 +61,14 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
           </div>
 
           {/* Fechas */}
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col gap-3.5">
+            <div className="block lg:hidden mb-6">
+               <PriceDetail price={parseFloat(machine.price)} />
+            </div>
             <p className="font-semibold mb-2">Disponible del 5 de agosto al 23 diciembre</p>
-            <div className="flex gap-3">
-              <input
-                type="date"
-                className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500"
-              />
-              <input
-                type="date"
-                className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500"
-              />
-              <button className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm">
-                Reservar
-              </button>
+            <div className="flex flex-col gap-3.5 w-full">
+               <DateRentInput grid={true} />
+             
             </div>
           </div>
 
@@ -72,49 +77,29 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
             <p className="font-semibold">Complementos para tu renta</p>
 
             {/* Operador */}
-            <div className="flex items-center justify-between border-b pb-3">
+            <div className="flex items-center justify-between border-[#B2B2B2] border-b pb-3">
               <div className="flex items-center gap-3">
                 <Image src="/icons/user.svg" alt="Operator" width={35} height={35} />
                 <div>
                   <p className="text-sm font-semibold">Operador</p>
-                  <p className="text-xs text-gray-500 italic text-green-600">+18USD / Día</p>
+                  <p className="text-xs text-gray-500 italic">Incluye un operador certificado</p>
+                  <p className="text-xs italic text-green-600">+18USD / Día</p>
                 </div>
               </div>
-              <button
-                onClick={() => toggleExtra("operador")}
-                className={`relative w-12 h-6 rounded-full transition-colors ${
-                  extras.operador ? "bg-orange-500" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                    extras.operador ? "translate-x-6" : "translate-x-0"
-                  }`}
-                />
-              </button>
+              <ToggleButton isChecked={extras.operador} onChange={() => toggleExtra("operador")} />
             </div>
 
             {/* Certificado */}
-            <div className="flex items-center justify-between border-b pb-3">
+            <div className="flex items-center justify-between border-[#B2B2B2] border-b pb-3">
               <div className="flex items-center gap-3">
-                <Image src="/icons/certificado.svg" alt="Certificado" width={35} height={35} />
+                <Image src="/icons/certificade.svg" alt="Certificado" width={50} height={50} />
                 <div>
                   <p className="text-sm font-semibold">Certificado OnRentX</p>
                   <p className="text-xs text-gray-500 italic">Estándar de calidad superior</p>
                 </div>
               </div>
-              <button
-                onClick={() => toggleExtra("certificado")}
-                className={`relative w-12 h-6 rounded-full transition-colors ${
-                  extras.certificado ? "bg-orange-500" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                    extras.certificado ? "translate-x-6" : "translate-x-0"
-                  }`}
-                />
-              </button>
+             <ToggleButton isChecked={extras.certificado} onChange={() => toggleExtra("certificado")} />
+
             </div>
 
             {/* Combustible */}
@@ -123,23 +108,12 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                 <Image src="/icons/fuel.svg" alt="Combustible" width={35} height={35} />
                 <p className="text-sm font-semibold">Combustible incluido</p>
               </div>
-              <button
-                onClick={() => toggleExtra("combustible")}
-                className={`relative w-12 h-6 rounded-full transition-colors ${
-                  extras.combustible ? "bg-orange-500" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                    extras.combustible ? "translate-x-6" : "translate-x-0"
-                  }`}
-                />
-              </button>
+              <ToggleButton isChecked={extras.combustible} onChange={() => toggleExtra("combustible")} />
             </div>
           </div>
 
           {/* Mapa */}
-          <div className="mt-6">
+          <div className="mt-6 block">
             <p className="font-semibold mb-2">Ubicación de tu obra</p>
             <div className="w-full h-64 rounded-lg overflow-hidden border">
               <iframe
@@ -150,26 +124,20 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
           </div>
 
           {/* Datos de reserva */}
-          <div className="mt-10 border rounded-lg p-6 space-y-6 shadow-sm">
+          <div className="mt-10 py-6 space-y-6 ">
             <h3 className="font-semibold text-lg mb-2">Datos de reserva</h3>
 
             {/* Dirección */}
             <div>
               <label className="block text-sm font-medium mb-1">Dirección de entrega</label>
-              <input
-                type="text"
-                className="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500"
-                placeholder="Ej: San Pedro Garza García 967, Nuevo León, México"
-              />
+              <FilterInput checkpersist={true} name=""  inputClass="w-full border rounded-lg px-2 py-1 text-sm" />
             </div>
 
             {/* Switch guardar dirección */}
-            <div className="flex items-center justify-between">
+            {/* <div className="flex items-center justify-between">
               <span className="text-sm">Guardar esta dirección</span>
-              <button className="relative w-12 h-6 rounded-full bg-orange-500">
-                <span className="absolute left-6 top-0.5 w-5 h-5 bg-white rounded-full shadow"></span>
-              </button>
-            </div>
+               <ToggleButton isChecked={saveAddress} onChange={toggleSaveAddress} />
+            </div> */}
 
             {/* Nombre dirección */}
             <input
@@ -188,71 +156,28 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
             </div>
 
             {/* Detalles precio */}
-            <div className="border rounded-lg p-5 bg-white space-y-3">
-              <h4 className="font-medium text-sm mb-2">Detalles del precio</h4>
+            <BookingForm machine={machine} router={router} />
 
-              <div className="flex items-center space-x-2 mb-2">
-                <button className="w-6 h-6 flex items-center justify-center border rounded-md">-</button>
-                <span className="px-3 text-sm border rounded-md">1</span>
-                <button className="w-6 h-6 flex items-center justify-center border rounded-md">+</button>
-                <span className="text-sm font-semibold ml-2">{machine.name}</span>
-              </div>
-
-              <p className="text-red-500 text-sm">
-                Precio normal: <span className="font-bold">800$/USD</span>
-              </p>
-              <p className="text-sm text-gray-600">
-                Descuento: <span className="font-bold">15%</span>
-              </p>
-              <p className="text-green-600 font-bold text-base">Precio con descuento: 680$/USD</p>
-              <p className="text-sm text-gray-600">Fechas: 1 Sep - 29 Sep</p>
-
-              {/* Cambiar modal por navegación */}
-               <button
-                  onClick={() => router.push(`/catalogo/${machine.machinetype}/${machine.id}/reserva`)}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold mt-4"
-                >
-                  RESERVAR
-                </button>
-            </div>
           </div>
         </div>
 
         {/* Columna derecha */}
-        <div className="space-y-4">
+        <div className="lg:w-1/3 hidden lg:block">
           <h1 className="text-2xl font-bold">{machine.name}</h1>
 
           {/* Estrellas y usuario */}
-          <div className="flex items-center space-x-2">
-            <Image src="/icons/user.svg" alt="User" width={24} height={24} />
-            <span className="font-medium text-sm">Nameuser Nameuser</span>
-            <span className="text-blue-500">✔</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <span key={star} className="text-yellow-400 text-lg">★</span>
-            ))}
-            <span className="text-sm text-gray-600 ml-2">(4.5)</span>
-          </div>
-
-          {/* Precio */}
-          <div className="p-3 border rounded-lg bg-green-50">
-            <p className="text-green-700 font-bold text-lg">{machine.price} USD/Día</p>
-            <p className="text-xs text-gray-600">Cancelación sin costo en cualquier momento</p>
-          </div>
+          {/* 
+          //no aplicable 
+          {<CarUserProvider/>} */}
+          
 
           {/* Especificaciones */}
-          <div className="grid grid-cols-2 gap-3 mt-4">
-            <div className="p-3 border rounded-lg text-center text-sm"><p>Peso: 1.5 Toneladas</p></div>
-            <div className="p-3 border rounded-lg text-center text-sm"><p>Motor: 4 HP</p></div>
-            <div className="p-3 border rounded-lg text-center text-sm"><p>Alto: 3 Metros</p></div>
-            <div className="p-3 border rounded-lg text-center text-sm"><p>Combustible: Diesel</p></div>
-            <div className="p-3 border rounded-lg text-center text-sm"><p>Ancho: 2 Metros</p></div>
-            <div className="p-3 border rounded-lg text-center text-sm"><p>Asientos: 2</p></div>
-          </div>
+          {machine.specs && <SpecsDetail specsMachinary={machine.specs} />}
+          {/* Precio */}
+          <PriceDetail price={parseFloat(machine.price)} />
         </div>
       </div>
     
-    </>
+    </section>
   );
 }

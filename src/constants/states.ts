@@ -4,6 +4,7 @@ export const filterInitialState:FilterInterface = {
     location:null,
     userID:null,
     type:null,
+    needProject:false,
     rangePrice:{
         min:0,
         max:0,

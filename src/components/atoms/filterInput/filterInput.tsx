@@ -8,12 +8,17 @@ import "./filterInput.scss";
 
 export default function FilterInput({
   checkpersist,
+  inputClass,
+  name="location",
 }: {
+  name?:string
   checkpersist?: boolean;
+  inputClass?:string
 }) {
   const {
     inputValue,
     setInputValue,
+   
     options,
     debouncedFilterColors,
     handlerChange,
@@ -23,15 +28,17 @@ export default function FilterInput({
     setOpen,
   } = useAutoComplete(checkpersist);
 
+  const inputClasses = inputClass ? `${inputClass} input-item flex items-center gap-2` : "input-item flex items-center gap-2 bg-white border border-gray-300 rounded-md px-2";
+
   return (
     <div className="search-input relative w-full">
-      <div className="input-item flex items-center gap-2 bg-white border border-gray-300 rounded-md px-2">
+      <div className={inputClasses}>
         <FaMapMarkerAlt className="text-black" />
         <input
           onFocus={() => handlerFocus(inputValue)}
           type="text"
           value={inputValue}
-          name="location"
+          name={name}
           onChange={(e) => {
             handlerInputChange(e.target.value);
           }}

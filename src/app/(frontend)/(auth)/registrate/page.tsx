@@ -44,7 +44,7 @@ export default function Registro() {
             
             register={register}
             label="Tipo de usuario"
-            placeHolder="Selecciona el tipo de usuario"
+           
             required
             classLabel="block mb-1"
             selectClass="w-full rounded-[4px] px-4 py-4 bg-[#E9E9E9] appearance-none focus:outline-none"

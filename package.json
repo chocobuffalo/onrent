@@ -2,8 +2,9 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://18.117.182.83:8010",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -19,6 +20,7 @@
     "aos": "^2.3.4",
     "axios": "^1.10.0",
     "csrf": "^3.1.0",
+    "date-fns": "^4.1.0",
     "flatpickr": "^4.6.13",
     "jose": "^6.0.11",
     "jsonwebtoken": "^9.0.2",
@@ -54,6 +56,7 @@
     "@types/yup": "^0.29.14",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
+    "eslint-config-prettier": "^10.1.8",
     "sass": "^1.89.2",
     "tailwindcss": "^4",
     "typescript": "^5"
