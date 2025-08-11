@@ -1,3 +1,5 @@
+import { SpecsInterface } from "@/types/machinary";
+
 // components/organism/Catalogue/types.ts
 export interface CatalogueItem {
   id: number;
@@ -7,6 +9,7 @@ export interface CatalogueItem {
   image: string;
   machinetype?: string; // <-- nuevo
   machine_category: string;
+  specs?: SpecsInterface;
 }
 
 export interface CatalogueProps {

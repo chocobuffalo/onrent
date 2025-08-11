@@ -15,6 +15,9 @@ export const filterSlicer = createSlice({
     setEndDate: (state, action) => {
       state.endDate = action.payload;
     },
+    setNeedProject: (state, action) => {
+      state.needProject = action.payload;
+    },
     setMinPrice: (state, action) => {
       state.rangePrice.min = action.payload;
     },
@@ -45,5 +48,6 @@ export const {
   setType,
   setFilters,
   setUserID,
+  setNeedProject
 } = filterSlicer.actions;
 export default filterSlicer.reducer;
