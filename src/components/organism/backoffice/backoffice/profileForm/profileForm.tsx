@@ -14,7 +14,7 @@ export default function ProfileForm() {
                 <PersonalForm />
             </div>
             <FiscalInfo/>
-            <CompanyForm/>         
+            <CompanyForm/>
         </div>
     );
 }
