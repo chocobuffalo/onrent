@@ -9,3 +9,10 @@ export const customMetadata:CustomMetadata = {
         ]
     }
 }
+
+
+export const currency = {
+    symbol: "$",
+    code: "MXN",
+    name: "Peso mexicano"
+} 

@@ -69,13 +69,14 @@ export default function useAutoComplete(checkpersist?: boolean) {
       .catch(() => {
         // setIsLoading(false)
         callback(options);
-      });
+      }).catch(() => setIsLoading(false));
   };
 
   //setLocation,setType
   const handlerChange = (optionSelected: string) => {
     // setInputValue(optionSelected.label)
     fecthLocation(optionSelected);
+    setOpen(false);
   };
 
   const fecthLocation = async (placeID: string) => {
@@ -100,8 +101,16 @@ export default function useAutoComplete(checkpersist?: boolean) {
             ...getStorage,
             location: { value: data.PlaceId, label: data.Title, lat, lon },
           });
+        }else{
+          dispatch(setLocation(null));
+          const getStorage = storage.getItem("filters");
+          storage.setItem("filters", {
+            ...getStorage,
+            location: null,
+          });
+
         }
-      });
+      }).finally(() => setIsLoading(false));
   };
 
   return {

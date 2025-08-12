@@ -83,7 +83,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                 <div>
                   <p className="text-sm font-semibold">Operador</p>
                   <p className="text-xs text-gray-500 italic">Incluye un operador certificado</p>
-                  <p className="text-xs italic text-green-600">+18USD / Día</p>
+                  {/* <p className="text-xs italic text-green-600">+18USD / Día</p> */}
                 </div>
               </div>
               <ToggleButton isChecked={extras.operador} onChange={() => toggleExtra("operador")} />

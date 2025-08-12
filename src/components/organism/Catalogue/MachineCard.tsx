@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { CatalogueItem } from "./types";
 import { interestLinks } from "@/constants/routes/frontend";
+import { currency } from "@/constants";
 
 interface Props {
   data: CatalogueItem;
@@ -49,7 +50,7 @@ export default function MachineCard({ data }: Props) {
         {/* Precio e icono */}
         <div className="flex items-center justify-between mt-3">
           <span className="text-green-600 font-bold text-sm italic">
-            {data.price}$<span className="not-italic">/USD</span>
+            {data.price}$<span className="not-italic">/{currency.code}</span>
           </span>
           <Image
             src={machineCategory?.type_icon || "/typemachine/ligera.svg"}
