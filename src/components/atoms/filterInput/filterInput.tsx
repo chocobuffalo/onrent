@@ -30,6 +30,7 @@ export default function FilterInput({
 console.log(isLoading);
   const inputClasses = inputClass ? `${inputClass} input-item flex items-center gap-2` : "input-item flex items-center gap-2 bg-white border border-gray-300 rounded-md px-2";
 
+ 
   return (
     <div className="search-input relative w-full">
       <div className={inputClasses}>
