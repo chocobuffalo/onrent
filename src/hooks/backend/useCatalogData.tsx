@@ -15,45 +15,49 @@ export default function useCatalog(slug?: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const isValidDate = (d: unknown): d is string | number | Date => {
+    if (!d) return false;
+    const dateObj = new Date(d as any);
+    return !isNaN(dateObj.getTime());
+  };
+
   useEffect(() => {
     async function fetchCatalogue() {
       try {
         setLoading(true);
         setError(null);
 
-        const params = new URLSearchParams();
+        const params = new URLSearchParams({
+          page: "1",
+          page_size: "20",
+          national_only: "false",
+        });
 
-        // Categoría desde Redux (type)
-        if (type) {
-          const selectedTypes: SelectInterface[] = Array.isArray(type)
+        const slugLower = slug?.toLowerCase() || "";
+
+        if (slugLower && slugLower !== "catalogo") {
+          const interestLink = interestLinks.find(
+            (link) => link.name.toLowerCase() === slugLower
+          );
+          if (interestLink?.machine_category) {
+            params.append("machine_category", interestLink.machine_category);
+          } else {
+            params.append("machine_category", slugLower);
+          }
+        } else if (type) {
+          const selectedTypes = Array.isArray(type)
             ? type
             : [type as SelectInterface];
-
           selectedTypes.forEach((t) => {
             const interestLink = interestLinks.find(
-              (link) =>
-                link.name.toLowerCase() === t.label.toLowerCase()
+              (link) => link.name.toLowerCase() === t.label.toLowerCase()
             );
             if (interestLink?.machine_category) {
-              params.append("category", interestLink.machine_category);
+              params.append("machine_category", interestLink.machine_category);
             }
           });
         }
 
-        // Categoría desde slug (si viene)
-        if (slug) {
-          const interestLink = interestLinks.find(
-            (link) => link.name.toLowerCase() === slug.toLowerCase()
-          );
-          if (interestLink?.machine_category) {
-            params.append("category", interestLink.machine_category);
-          } else {
-            // si no está en interestLinks, lo usamos tal cual
-            params.append("category", slug);
-          }
-        }
-
-        // Rango de precios
         if (rangePrice?.min != null) {
           params.append("min_price", rangePrice.min.toString());
         }
@@ -61,11 +65,14 @@ export default function useCatalog(slug?: string) {
           params.append("max_price", rangePrice.max.toString());
         }
 
-        // Fechas
-        if (startDate) params.append("start_date", startDate);
-        if (endDate) params.append("end_date", endDate);
+        if (isValidDate(startDate)) {
+          params.append("start_date", new Date(startDate).toISOString());
+        }
+        if (isValidDate(endDate)) {
+          params.append("end_date", new Date(endDate).toISOString());
+        }
 
-        const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN || "";
+        const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN;
         const url = apiBase
           ? `${apiBase}/api/catalog?${params.toString()}`
           : `/api/catalog?${params.toString()}`;
@@ -81,12 +88,22 @@ export default function useCatalog(slug?: string) {
 
         const result = await res.json();
 
+        if (!Array.isArray(result)) {
+          throw new Error("Respuesta inesperada del servidor");
+        }
+
+        if (result.length === 0) {
+          setError("No hay máquinas que coincidan con los filtros.");
+          setData([]);
+          return;
+        }
+
         const mappedData: CatalogueItem[] = result.map((machine: any) => ({
           id: machine.id,
           name: machine.name,
           location: machine.location || "Ubicación no disponible",
-          price: machine.price_per_day?.toString() || "0.00",
-          image: machine.image_url || "/images/catalogue/machine5.jpg",
+          price: machine.list_price?.toString() || "0.00",
+          image: machine.image || "/images/catalogue/machine5.jpg",
           machinetype:
             (Array.isArray(type) && type[0]?.label) ||
             (type as SelectInterface)?.label ||

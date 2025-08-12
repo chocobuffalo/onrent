@@ -1,7 +1,7 @@
 "use client";
 
 import CatalogueList from "./CatalogueList";
-import useCatalog from "@/hooks/backend/useCatalog";
+import useCatalog from "@/hooks/backend/useCatalogData";
 
 export default function CatalogueContainer({ slug }: { slug?: string }) {
   const { data, loading, error } = useCatalog(slug);
