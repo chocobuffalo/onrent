@@ -1,17 +1,22 @@
 import { SpecsInterface } from "@/types/machinary";
 
-// components/organism/Catalogue/types.ts
+export interface PricingInterface {
+  price_per_day: number;
+  discount_week: number;
+  discount_month: number;
+  no_operator_discount: number;
+  no_fuel_discount: number;
+}
+
 export interface CatalogueItem {
   id: number;
   name: string;
-  location: string;
-  price: string;
+  location?: string; // API puede no enviarlo
+  price?: string; // para compatibilidad anterior
   image: string;
-  machinetype?: string; // <-- nuevo
-  machine_category: string;
+  machinetype?: string;
+  machine_category?: string;
+  description?: string; // <-- agregado
   specs?: SpecsInterface;
-}
-
-export interface CatalogueProps {
-  slug?: string;
+  pricing?: PricingInterface; // <-- agregado
 }

@@ -6,8 +6,17 @@ interface MachineDetailPageProps {
 }
 
 export default async function MachineDetailPage({ params }: MachineDetailPageProps) {
-  const { machinetype, id } = await params; // Await requerido en Next 15
-  const machine = sampleData.find((item) => item.id === parseInt(id));
+  const { machinetype, id } = await params;
+
+  const res = await fetch(`http://18.117.182.83:8010/api/catalog/${id}`, {
+    cache: 'no-store'
+  });
+
+  if (!res.ok) {
+    return <div className="text-red-500 text-center mt-10">Error al cargar datos</div>;
+  }
+
+  const machine = await res.json();
 
   if (!machine) {
     return <div className="text-red-500 text-center mt-10">Máquina no encontrada</div>;
@@ -15,4 +24,3 @@ export default async function MachineDetailPage({ params }: MachineDetailPagePro
 
   return <MachineDetail machine={{ ...machine, machinetype }} />;
 }
-
