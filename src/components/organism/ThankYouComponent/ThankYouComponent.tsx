@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { useTracking } from "../../../hooks/backend/useTracking";
+import React from "react";
+import { useThankYouPage } from "../../../hooks/backend/useThankYouPage";
 import ContentContainer from "../ContentContainer/ContentContainer";
 import SuccessMessage from "../../molecule/SuccessMessage/SuccessMessage";
 import Separator from "../../atoms/Separator/Separator";
@@ -21,27 +20,9 @@ const ThankYouComponent: React.FC<ThankYouComponentProps> = ({
   buttonText,
   onButtonClick,
 }) => {
-  const { trackPurchase } = useTracking();
-  const searchParams = useSearchParams();
-  const [isClient, setIsClient] = useState(false);
+  const { isLoading } = useThankYouPage();
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient) return;
-
-    const value = searchParams.get("value")
-      ? parseFloat(searchParams.get("value")!)
-      : 1.0;
-    const transactionId =
-      searchParams.get("transactionId") || Date.now().toString();
-
-    trackPurchase({ value, transactionId });
-  }, [isClient, searchParams, trackPurchase]);
-
-  if (!isClient) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center px-4">
         <div className="text-center">
@@ -61,9 +42,7 @@ const ThankYouComponent: React.FC<ThankYouComponentProps> = ({
       <div className="relative z-10 w-full">
         <ContentContainer>
           <SuccessMessage title={title} subtitle={subtitle} className="mb-8" />
-
           <Separator className="mb-8" />
-
           <ActionSection
             buttonText={buttonText}
             onButtonClick={onButtonClick}
