@@ -36,6 +36,15 @@ export const filterSlicer = createSlice({
     setUserID: (state, action) => {
       state.userID = action.payload;
     },
+    setPage: (state, action) => {
+    state.page = action.payload;
+    },
+    setPageSize: (state, action) => {
+        state.pageSize = action.payload;
+    },
+    setNationalOnly: (state, action) => {
+        state.nationalOnly = action.payload;
+    },
   },
 });
 
@@ -48,6 +57,9 @@ export const {
   setType,
   setFilters,
   setUserID,
-  setNeedProject
+  setNeedProject,
+  setPage,
+  setPageSize,
+  setNationalOnly
 } = filterSlicer.actions;
 export default filterSlicer.reducer;
