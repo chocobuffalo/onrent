@@ -6,11 +6,9 @@ import ToggleButton from "@/components/atoms/toggleButton/toggleButton";
 import useMachineDetail from "@/hooks/frontend/buyProcess/useMachineDetail";
 import DateRentInput from "@/components/molecule/dateRentInput/dateRentInput";
 import FilterInput from "@/components/atoms/filterInput/filterInput";
-import { Book } from "lucide-react";
 import { BookingForm } from "@/components/molecule/bookingForm/bookingForm";
 import SpecsDetail from "@/components/molecule/specsDetail/specsDetail";
-import PriceDetail from "@/components/priceDetail/priceDetail";
-import { parse } from "querystring";
+import PriceDetail from "@/components/atoms/priceDetail/priceDetail";
 
 interface MachineDetailProps {
   machine: CatalogueItem;
@@ -83,7 +81,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                 <div>
                   <p className="text-sm font-semibold">Operador</p>
                   <p className="text-xs text-gray-500 italic">Incluye un operador certificado</p>
-                  <p className="text-xs italic text-green-600">+18USD / Día</p>
+                  {/* <p className="text-xs italic text-green-600">+18USD / Día</p> */}
                 </div>
               </div>
               <ToggleButton isChecked={extras.operador} onChange={() => toggleExtra("operador")} />

@@ -18,7 +18,7 @@ export default function FilterInput({
   const {
     inputValue,
     setInputValue,
-   
+    isLoading,
     options,
     debouncedFilterColors,
     handlerChange,
@@ -27,9 +27,10 @@ export default function FilterInput({
     open,
     setOpen,
   } = useAutoComplete(checkpersist);
-
+console.log(isLoading);
   const inputClasses = inputClass ? `${inputClass} input-item flex items-center gap-2` : "input-item flex items-center gap-2 bg-white border border-gray-300 rounded-md px-2";
 
+ 
   return (
     <div className="search-input relative w-full">
       <div className={inputClasses}>
@@ -51,7 +52,9 @@ export default function FilterInput({
           open ? "block" : "hidden"
         }`}
       >
-        {options.length > 0 ? (
+
+        {
+        options.length  > 0 ? (
           options.map((option) => (
             <li key={option.value} className="list-item">
               <button
@@ -68,11 +71,11 @@ export default function FilterInput({
           ))
         ) : (
           <li className="list-item w-full py-3.5 px-1.5  cursor-pointer duration-300 transition-colors">
-            <ImSpinner8
-              color="#ea6300"
-              size={20}
-              className="animate-spin mx-auto"
-            />
+            {isLoading ? (
+              <ImSpinner8 color="#ea6300" size={20} className="animate-spin mx-auto" />
+            ) : (
+              <span>No hay resultados</span>
+            )}
           </li>
         )}
       </ul>

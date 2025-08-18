@@ -5,6 +5,7 @@ import { countDays, shortDate } from "@/utils/compareDate";
 import { useState } from "react";
 import DateRentInput from "../dateRentInput/dateRentInput";
 import useAddFormItems from "@/hooks/frontend/buyProcess/useAddFormItems";
+import { currency } from "@/constants";
 
 export function BookingForm({machine,router}: {machine: any, router: any}) {
     const {
@@ -17,7 +18,9 @@ export function BookingForm({machine,router}: {machine: any, router: any}) {
 
     const price = machine.price * count;
 
-    const totalPrice = price * countDays(startDate, endDate);
+    const dayLength =  countDays(startDate, endDate) + 1;
+
+    const totalPrice = price * dayLength;
 
     return (
         <form  className="border rounded-lg p-5 bg-white space-y-3">
@@ -31,13 +34,14 @@ export function BookingForm({machine,router}: {machine: any, router: any}) {
             <div className="normalPrice py-5 items-center flex justify-between w-full border-b border-[#bbb]">
                 <p className="text-black">Precio unidad:</p>
                 <p className="text-red-500 text-sm">
-                    <span className="font-bold">{price.toLocaleString('es-ES')}$/USD</span>
+                    <span className="font-bold">{price.toLocaleString('es-ES')} {currency.code}/Día</span>
                 </p>
             </div>
             <div className="normalPrice py-5 items-center flex flex-col justify-between w-full gap-3.5 border-b border-[#bbb]">
                 <div className="flex justify-between w-full items-center">
                     <div className="list">
-                        <p className="text-md ">Duración: {countDays(startDate, endDate)} {countDays(startDate, endDate) === 1 ? 'día' : 'días'}</p>
+                        <p className="text-md ">Duración: {dayLength} {dayLength === 1 ? 'día' : 'días'}</p>
+
 
                         <p className="text-sm text-gray-600">Desde el {shortDate(startDate)}  al {shortDate(endDate)}</p>
 
@@ -48,7 +52,7 @@ export function BookingForm({machine,router}: {machine: any, router: any}) {
             </div>
             <div className="normalPrice py-5 items-center flex justify-between w-full border-b border-[#bbb]">
                 <p className="text-black">Precio total:</p>
-                <p className="text-green-600 font-bold text-base">{totalPrice.toLocaleString('es-ES')}$/USD</p>
+                <p className="text-green-600 font-bold text-base">{totalPrice.toLocaleString('es-ES')} {currency.code}/Día</p>
             </div>
             
 

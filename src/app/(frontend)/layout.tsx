@@ -1,7 +1,7 @@
 import Footer from "@/components/organism/footer/footer";
 import Header from "@/components/organism/header";
 import '../../assets/css/frontend.css'
-import TrackingPixels from '../../components/tracking/TrackingPixels';
+import TrackingPixels from '../../components/molecule/tracking/TrackingPixels';
 
 
 

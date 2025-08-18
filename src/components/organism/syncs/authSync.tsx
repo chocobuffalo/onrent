@@ -17,7 +17,7 @@ export default function AuthSync() {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    console.log(session, "AuthSync session");
+   //// console.log(session, "AuthSync session");
     if (session?.user && !isLogin) {
       dispatch(setLogin(true));
       dispatch(setName(session.user.name || ""));
