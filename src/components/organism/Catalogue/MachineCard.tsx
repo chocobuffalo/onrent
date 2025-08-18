@@ -24,7 +24,7 @@ export default function MachineCard({ data }: Props) {
   console.log(machineCategory);
 
   return (
-    <Link href={`/catalogo/${machineType}/${data.id}`} passHref>
+    <Link href={`/${data.id}`} passHref>
       <div className="rounded-xl border border-gray-200 shadow-sm hover:shadow-md p-3 w-full max-w-xs flex flex-col justify-between cursor-pointer">
         
         {/* Imagen de la máquina */}

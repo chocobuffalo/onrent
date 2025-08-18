@@ -42,6 +42,14 @@ export const providers =  [
         response_type: "code",
         scope: "openid email profile"
       }
+    },
+    profile(profile) {
+      return {
+        id: profile.sub,
+        name: profile.name,
+        email: profile.email,
+        image: profile.picture
+      }
     }
   }),
     Apple({
