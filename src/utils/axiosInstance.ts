@@ -3,11 +3,12 @@ import axios from "axios";
 
 export default async function createAxiosinstance(axiosInfo:AxiosInfoInterface){
     const instance = axios.create({
-        baseURL: axiosInfo.baseURL||process.env.NEXT_PUBLIC_API_URL,
+        baseURL: axiosInfo.baseURL||process.env.NEXT_PUBLIC_API_URL_ORIGIN,
         headers: axiosInfo.headers||{
             'Content-Type': 'application/json',
         },
-        timeout:10000,
+       params: axiosInfo.params,
+        timeout: axiosInfo.timeout || 10000,
     });
 
     instance.interceptors.request.use((config) => {

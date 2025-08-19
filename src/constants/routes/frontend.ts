@@ -7,7 +7,7 @@ export const headerLinks: RouteItem[] = [
     {id: 3, name: 'iniciar-session', title: 'Iniciar Sesión', slug:'/iniciar-session', target: false, isLogged:false,protected:true},
     {id: 4, name: 'registrate', title: 'Regístrate', slug:'/registrate',extraClass:'button', target: false,isLogged:false,protected:true},
     {id: 5, name: 'Mi cuenta', title: 'Dashboard', slug:'/dashboard',extraClass:'button',protected:true, target: false,isLogged:true},
-
+    {id: 6, name: 'logout', title: 'Cerrar Sesión', slug:'#logout', target: false, isLogged: true, protected: true},
 ]
 
 /*

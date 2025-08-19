@@ -1,6 +1,7 @@
 import { CustomMetadata } from "@/types";
 import { customMetadata } from "@/constants";
 import  Providers  from "@/libs/providers";
+import Toast from "@/components/atoms/Toast/Toast";
 import { auth } from "@/auth";
 import "./globals.css";
 
@@ -24,6 +25,7 @@ export default async function RootLayout({
           className={``}
           >
           {children}
+          <Toast />
         </body>
       </html>
     </Providers>
