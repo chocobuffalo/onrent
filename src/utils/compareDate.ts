@@ -24,7 +24,7 @@ export function compareDate(startDate: string, endDate: string): boolean {
 
 
 export function fixDate(dateString: string): {day:number,month:number,year:number} {
-    
+
     const [day, month, year] = dateString.split('-').map(Number);
     return{
         month,
