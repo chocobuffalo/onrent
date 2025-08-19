@@ -1,7 +1,7 @@
 'use client';
 import AddFormItems from "@/components/atoms/addFormITems/addFormItems";
 import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
-import { countDays, shortDate } from "@/utils/compareDate";
+import { countDays, shortDate, fixDate } from "@/utils/compareDate";
 import { useState } from "react";
 import DateRentInput from "../dateRentInput/dateRentInput";
 import useAddFormItems from "@/hooks/frontend/buyProcess/useAddFormItems";
@@ -17,9 +17,13 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
     const unitPrice = machine?.pricing?.price_per_day || 0;
     const price = unitPrice * count;
 
-    // Si falta fecha, asumimos 0 días
     const days = startDate && endDate ? countDays(startDate, endDate) : 0;
     const totalPrice = price * days;
+
+    function formatDateForBackend(dateString: string): string {
+        const { day, month, year } = fixDate(dateString);
+        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,15 +35,13 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
 
         try {
             const preorderPayload = {
-                session_id: "web-session",
                 project_id: 0,
-                client_notes: "Reserva desde el formulario",
                 location: { lat: 0, lng: 0 },
                 items: [
                     {
                         product_id: machine.id,
-                        start_date: startDate,  // string (YYYY-MM-DD)
-                        end_date: endDate,      // string (YYYY-MM-DD)
+                        start_date: formatDateForBackend(startDate),
+                        end_date: formatDateForBackend(endDate),
                         quantity: count,
                         requires_operator: false,
                         requires_fuel: false,

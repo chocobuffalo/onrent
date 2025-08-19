@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function CatalogPage() {
   return (
-    <FrontSectionWrapper identicator="catalogSection" extraClass="py-20">
+    <FrontSectionWrapper identicator="catalogSection" extraClass="py-5">
       <CatalogClient />
     </FrontSectionWrapper>
   );

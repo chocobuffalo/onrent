@@ -1,5 +1,4 @@
 import MachineDetail from "@/components/organism/MachineDetail/MachineDetail";
-import { sampleData } from "@/components/organism/Catalogue/sampleCatalogueData";
 
 interface MachineDetailPageProps {
   params: Promise<{ machinetype: string; id: string }>;
@@ -8,7 +7,8 @@ interface MachineDetailPageProps {
 export default async function MachineDetailPage({ params }: MachineDetailPageProps) {
   const { machinetype, id } = await params;
 
-  const res = await fetch(`http://18.117.182.83:8010/api/catalog/${id}`, {
+  const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN;
+  const res = await fetch(`${apiBase}/api/catalog/${id}`, {
     cache: 'no-store'
   });
 

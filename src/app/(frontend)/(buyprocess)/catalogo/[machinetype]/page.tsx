@@ -21,7 +21,7 @@ export default function MachineTypePage({ params }: { params: Params }) {
   const { machinetype } = params;
 
   return (
-    <FrontSectionWrapper identicator="catalogSection" extraClass="py-20">
+    <FrontSectionWrapper identicator="catalogSection" extraClass="py-5">
       <CatalogClient slug={machinetype} />
     </FrontSectionWrapper>
   );

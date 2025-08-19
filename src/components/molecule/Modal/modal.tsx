@@ -1,10 +1,8 @@
 "use client";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/libs/redux/store";
-import { closeModal } from "@/libs/redux/features/ui/modalSlicer";
+import { useSelector } from "react-redux";
+import { RootState } from "@/libs/redux/uistore";
 
 export default function Modal({ children }: { children: React.ReactNode }) {
-  const dispatch = useDispatch();
   const isOpen = useSelector((state: RootState) => state.modal.isOpen);
 
   if (!isOpen) return null;
