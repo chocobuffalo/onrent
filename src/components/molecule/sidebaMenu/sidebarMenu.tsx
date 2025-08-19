@@ -57,6 +57,6 @@ export default function SidebarMenu() {
 // Extiende el tipo User para incluir 'role'
 declare module "next-auth" {
   interface User {
-    role?: UserRole;
+    role?: string;
   }
 }

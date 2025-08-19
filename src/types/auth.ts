@@ -9,3 +9,21 @@ export interface AuthStateInterface {
         token: string;
     };
 }
+
+
+export interface LoginResponse {
+  message: string;
+  access_token: string;
+  token_type: string;
+  user: {
+    user_id: number;
+    email: string;
+    name: string;
+    role: string;
+  };
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}

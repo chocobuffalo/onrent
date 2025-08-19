@@ -6,6 +6,7 @@ export default function Dashboard() {
       <h1 className="admin-title">Dashboard</h1>
       <div className="tfcl-dashboard-overview">
         <div className="row">
+          {/* 
           <div className="col-sm-6 col-xl-3">
             <a className="tfcl-card" href="#">
               <div className="card-body">
@@ -95,6 +96,7 @@ export default function Dashboard() {
               </div>
             </a>
           </div>
+          */}
         </div>
       </div>
       <div className="tfcl-dashboard-middle mt-2">
