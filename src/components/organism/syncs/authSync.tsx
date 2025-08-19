@@ -22,7 +22,7 @@ export default function AuthSync() {
       dispatch(setLogin(true));
       dispatch(setName(session.user.name || ""));
       dispatch(setEmail(session.user.email || ""));
-      dispatch(setAvatar(session.user.image || "/path/to/default/avatar.png"));
+      dispatch(setAvatar(session.user.image || "./user-circle.svg"));
     }
   }, [isLogin, status, session]);
 
