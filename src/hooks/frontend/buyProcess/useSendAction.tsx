@@ -1,3 +1,4 @@
+
 "use client";
 import { interestLinks } from "@/constants/routes/frontend";
 import { useUIAppSelector } from "@/libs/redux/hooks";
@@ -6,17 +7,18 @@ import { SelectInterface } from "@/types/iu";
 
 export default function useSendAction() {
   const router = useRouter();
-  const uiSelector = useUIAppSelector((state) => state.filters);
+  const filters = useUIAppSelector((state) => state.filters);
+
+  const getFirstSelected = (
+    v: SelectInterface[] | SelectInterface | null
+  ): SelectInterface | null => {
+    if (!v) return null;
+    return Array.isArray(v) ? v[0] ?? null : v;
+  };
 
   const handlerSubmit = () => {
-    const catalogue = uiSelector.type;
-    let catalogueValue = "";
-    if (Array.isArray(catalogue)) {
-      catalogueValue =
-        catalogue.length > 0 && catalogue[0]?.value ? catalogue[0].value : "";
-    } else if (catalogue && "value" in catalogue) {
-      catalogueValue = catalogue.value;
-    }
+    const firstType = getFirstSelected(filters.type);
+    const catalogueValue = firstType?.value || "";
 
     const basePath =
       interestLinks.find((link) => link.machine_category === catalogueValue)
@@ -24,21 +26,21 @@ export default function useSendAction() {
 
     const params = new URLSearchParams();
 
-    params.set("page", String(uiSelector.page || 1));
-    params.set("page_size", String(uiSelector.pageSize || 20));
-    params.set("national_only", String(uiSelector.nationalOnly ?? false));
+    const locationValue = filters.location?.value;
+    if (locationValue) params.set("location", locationValue);
 
-    if (uiSelector.location && (uiSelector.location as SelectInterface).value) {
-      params.set("location", (uiSelector.location as SelectInterface).value);
+    if (filters.rangePrice?.min != null && filters.rangePrice.min > 0) {
+      params.set("min_price", String(filters.rangePrice.min));
     }
-    if (uiSelector.rangePrice?.min)
-      params.set("min_price", String(uiSelector.rangePrice.min));
-    if (uiSelector.rangePrice?.max)
-      params.set("max_price", String(uiSelector.rangePrice.max));
-    if (uiSelector.startDate) params.set("start_date", uiSelector.startDate);
-    if (uiSelector.endDate) params.set("end_date", uiSelector.endDate);
+    if (filters.rangePrice?.max != null && filters.rangePrice.max > 0) {
+      params.set("max_price", String(filters.rangePrice.max));
+    }
 
-    router.push(`${basePath}?${params.toString()}`);
+    if (filters.startDate) params.set("start_date", filters.startDate);
+    if (filters.endDate) params.set("end_date", filters.endDate);
+
+    const query = params.toString();
+    router.push(query ? `${basePath}?${query}` : basePath);
   };
 
   return { handlerSubmit };
