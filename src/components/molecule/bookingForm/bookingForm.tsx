@@ -6,6 +6,7 @@ import { useState } from "react";
 import DateRentInput from "../dateRentInput/dateRentInput";
 import useAddFormItems from "@/hooks/frontend/buyProcess/useAddFormItems";
 import useBookingPreorder from "@/hooks/frontend/buyProcess/useBookingPreorder";
+import { currency } from "@/constants";
 
 export function BookingForm({ machine, router }: { machine: any, router: any }) {
     const { startDate, endDate } = useDateRange();
@@ -17,9 +18,11 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
     const unitPrice = machine?.pricing?.price_per_day || 0;
     const price = unitPrice * count;
 
-    const days = startDate && endDate ? countDays(startDate, endDate) : 0;
-    const totalPrice = price * days;
+    // calculamos duración en días (inclusive)
+    const dayLength = startDate && endDate ? countDays(startDate, endDate) + 1 : 0;
+    const totalPrice = price * dayLength;
 
+    // función para enviar la fecha en formato YYYY-MM-DD al backend
     function formatDateForBackend(dateString: string): string {
         const { day, month, year } = fixDate(dateString);
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -81,14 +84,14 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
             <div className="py-5 flex justify-between w-full border-b border-[#bbb]">
                 <p className="text-black">Precio unidad:</p>
                 <p className="text-red-500 text-sm">
-                    <span className="font-bold">{unitPrice.toLocaleString('es-ES')}$/USD</span>
+                    <span className="font-bold">{unitPrice.toLocaleString('es-ES')} {currency.code}/Día</span>
                 </p>
             </div>
 
             <div className="py-5 flex justify-between w-full border-b border-[#bbb]">
                 <p className="text-black">Precio por {count} máquinas:</p>
                 <p className="text-red-500 text-sm">
-                    <span className="font-bold">{price.toLocaleString('es-ES')}$/USD</span>
+                    <span className="font-bold">{price.toLocaleString('es-ES')} {currency.code}/Día</span>
                 </p>
             </div>
 
@@ -96,7 +99,7 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
                 <div className="flex justify-between w-full items-center">
                     <div>
                         <p className="text-md">
-                            Duración: {days} {days === 1 ? 'día' : 'días'}
+                            Duración: {dayLength} {dayLength === 1 ? 'día' : 'días'}
                         </p>
                         <p className="text-sm text-gray-600">
                             {startDate && endDate ? `Desde el ${shortDate(startDate)} al ${shortDate(endDate)}` : "Selecciona fechas"}
@@ -116,7 +119,7 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
             <div className="py-5 flex justify-between w-full border-b border-[#bbb]">
                 <p className="text-black">Precio total:</p>
                 <p className="text-green-600 font-bold text-base">
-                    {totalPrice.toLocaleString('es-ES')}$/USD
+                    {totalPrice.toLocaleString('es-ES')} {currency.code}
                 </p>
             </div>
 

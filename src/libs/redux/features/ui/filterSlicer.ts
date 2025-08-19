@@ -2,7 +2,6 @@
 "use client";
 import { filterInitialState } from "@/constants/states";
 import { createSlice } from "@reduxjs/toolkit";
-import { set } from "react-hook-form";
 
 export const filterSlicer = createSlice({
   name: "filters",

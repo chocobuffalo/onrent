@@ -8,7 +8,7 @@ import DateRentInput from "@/components/molecule/dateRentInput/dateRentInput";
 import FilterInput from "@/components/atoms/filterInput/filterInput";
 import { BookingForm } from "@/components/molecule/bookingForm/bookingForm";
 import SpecsDetail from "@/components/molecule/specsDetail/specsDetail";
-import PriceDetail from "@/components/priceDetail/priceDetail";
+import PriceDetail from "@/components/atoms/priceDetail/priceDetail";
 
 interface MachineDetailProps {
   machine: CatalogueItem;
@@ -87,10 +87,12 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
             <div className="flex items-center justify-between border-[#B2B2B2] border-b pb-3">
               <div className="flex items-center gap-3">
                 <Image
-                  src="/icons/user.svg"
-                  alt="Operator"
-                  width={35}
-                  height={35}
+                src={`${process.env.NEXT_PUBLIC_API_URL}${machine.image}`}
+                alt={machine.name}
+                width={850}
+                height={330}
+                className="object-cover object-center aspect-[16/6] w-full h-full"
+                unoptimized
                 />
                 <div>
                   <p className="text-sm font-semibold">Operador</p>
