@@ -1,106 +1,111 @@
+// src/hooks/backend/useCatalogData.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useUIAppSelector } from "@/libs/redux/hooks";
 import { CatalogueItem } from "@/components/organism/Catalogue/types";
 import { interestLinks } from "@/constants/routes/frontend";
 import { SelectInterface } from "@/types/iu";
 
-/**
- * Hook personalizado para obtener el catálogo de máquinas desde la API,
- * aplicando filtros por categoría, rango de precio y fechas.
- *
- * @param slug - Parámetro opcional proveniente de la URL, que puede indicar una categoría.
- * @returns Objeto con:
- *  - `data`: lista de máquinas filtradas
- *  - `loading`: estado de carga
- *  - `error`: mensaje de error si ocurre
- *
- * Ejemplo de uso:
- * ```tsx
- * const { data, loading, error } = useCatalog("maquinaria-pesada");
- * ```
- */
 export default function useCatalog(slug?: string) {
-  // Estado global de filtros tomado desde Redux
-  const { type, rangePrice, startDate, endDate } = useUIAppSelector(
-    (state) => state.filters
-  );
+  const searchParams = useSearchParams();
+  const { type, rangePrice } = useUIAppSelector((state) => state.filters);
 
-  // Estado local para los datos y control de carga/errores
   const [data, setData] = useState<CatalogueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Verifica si un valor es una fecha válida.
-   * @param d - Valor a verificar.
-   * @returns `true` si es fecha válida, `false` en caso contrario.
-   */
-  const isValidDate = (d: unknown): d is string | number | Date => {
-    if (!d) return false;
-    const dateObj = new Date(d as any);
-    return !isNaN(dateObj.getTime());
+  // Para que el efecto se dispare al cambiar la URL, usamos el string completo
+  const spKey = useMemo(() => searchParams.toString(), [searchParams]);
+
+  // --- helpers ---
+  const fromInterestByName = (name?: string) =>
+    interestLinks.find((l) => l.name.toLowerCase() === (name || "").toLowerCase());
+
+  const isKnownCategory = (val?: string) =>
+    ["heavy", "light", "special", "other"].includes((val || "").toLowerCase());
+
+  const extractCategoryFromRedux = (t: unknown): string | undefined => {
+    // type puede ser SelectInterface[] | SelectInterface | null
+    if (Array.isArray(t) && t.length > 0) {
+      const first = t[0] as SelectInterface;
+      if (first?.value && typeof first.value === "string") return first.value; // ya es heavy/light/...
+      const mapped = fromInterestByName(first?.label)?.machine_category;
+      return mapped;
+    }
+    if (t && typeof t === "object") {
+      const obj = t as SelectInterface;
+      if (obj?.value && typeof obj.value === "string") return obj.value;
+      const mapped = fromInterestByName(obj?.label)?.machine_category;
+      return mapped;
+    }
+    return undefined;
   };
 
   useEffect(() => {
-    /**
-     * Función principal que construye la URL y obtiene los datos de la API.
-     */
     async function fetchCatalogue() {
       try {
         setLoading(true);
         setError(null);
 
-        // Parámetros base de la petición
-        const params = new URLSearchParams({
-          page: "1",
-          page_size: "20",
-          national_only: "false",
-        });
+        const params = new URLSearchParams();
 
-        // Procesar el parámetro slug de la URL
-        const slugLower = slug?.toLowerCase() || "";
+        // --- PRIORIDAD: URL query > slug > Redux ---
+        // Paginación y bandera
+        params.set("page", searchParams.get("page") || "1");
+        params.set("page_size", searchParams.get("page_size") || "20");
+        params.set("national_only", searchParams.get("national_only") || "false");
 
-        // Si hay slug y no es "catalogo", filtrar por categoría correspondiente
-        if (slugLower && slugLower !== "catalogo") {
-          const interestLink = interestLinks.find(
-            (link) => link.name.toLowerCase() === slugLower
-          );
-          params.append(
-            "machine_category",
-            interestLink?.machine_category || slugLower
-          );
-        }
-        // Si no hay slug, usar las categorías seleccionadas desde Redux
-        else if (type && Array.isArray(type) && type.length > 0) {
-          type.forEach((t) => {
-            const interestLink = interestLinks.find(
-              (link) => link.name.toLowerCase() === t.label.toLowerCase()
-            );
-            if (interestLink?.machine_category) {
-              params.append("machine_category", interestLink.machine_category);
-            }
-          });
+        // --- machine_category ---
+        // 1) Si viene en la URL, usarlo tal cual
+        let machineCategory =
+          searchParams.get("machine_category") || undefined;
+
+        // 2) Si no viene en URL y tenemos slug (e.g. "maquinaria-pesada"), mapear a heavy/light/...
+        if (!machineCategory) {
+          const slugLower = (slug || "").toLowerCase();
+          if (slugLower && slugLower !== "catalogo") {
+            // Busca por name del interestLink (e.g. "maquinaria-pesada") y saca machine_category
+            const mapped = fromInterestByName(slugLower)?.machine_category;
+            if (mapped) machineCategory = mapped;
+            // Si ya viniera como heavy/light/..., úsalo directo
+            else if (isKnownCategory(slugLower)) machineCategory = slugLower;
+          }
         }
 
-        // Filtro de precios: solo se envían si son mayores a 0
-        if (rangePrice?.min != null && rangePrice.min > 0) {
-          params.append("min_price", rangePrice.min.toString());
-        }
-        if (rangePrice?.max != null && rangePrice.max > 0) {
-          params.append("max_price", rangePrice.max.toString());
+        // 3) Si no hay slug ni URL param, usar Redux (type)
+        if (!machineCategory) {
+          machineCategory = extractCategoryFromRedux(type);
         }
 
-        // Filtros de fecha: se envían en formato ISO si son válidas
-        if (isValidDate(startDate)) {
-          params.append("start_date", new Date(startDate).toISOString());
-        }
-        if (isValidDate(endDate)) {
-          params.append("end_date", new Date(endDate).toISOString());
+        if (machineCategory) {
+          params.set("machine_category", machineCategory);
         }
 
-        // Construcción de la URL final con base en variables de entorno
+        // --- machine_type (si lo pasas por URL, se respeta) ---
+        const machineType = searchParams.get("machine_type");
+        if (machineType) params.set("machine_type", machineType);
+
+        // --- precios: URL > Redux ---
+        const minUrl = searchParams.get("min_price");
+        const maxUrl = searchParams.get("max_price");
+
+        if (minUrl) {
+          params.set("min_price", minUrl);
+        } else if (rangePrice?.min != null && rangePrice.min > 0) {
+          params.set("min_price", String(rangePrice.min));
+        }
+
+        if (maxUrl) {
+          params.set("max_price", maxUrl);
+        } else if (rangePrice?.max != null && rangePrice.max > 0) {
+          params.set("max_price", String(rangePrice.max));
+        }
+
+        // ⚠️ NOTA: El backend actual no documenta location/start_date/end_date,
+        // así que NO los enviamos para evitar confusiones.
+
         const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN;
         const url = apiBase
           ? `${apiBase}/api/catalog?${params.toString()}`
@@ -108,60 +113,36 @@ export default function useCatalog(slug?: string) {
 
         console.log("🔍 URL Final de petición:", url);
 
-        // Petición HTTP GET
-        const res = await fetch(url, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        const res = await fetch(url, { method: "GET" });
+        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
 
-        // Si la API responde con error HTTP
-        if (!res.ok) {
-          throw new Error(`Error HTTP: ${res.status}`);
-        }
-
-        // Convertir la respuesta a JSON
         const result = await res.json();
-
-        // Validar formato de respuesta
-        if (!Array.isArray(result)) {
+        if (!Array.isArray(result))
           throw new Error("Respuesta inesperada del servidor");
-        }
 
-        // Si no hay resultados, mostrar mensaje y limpiar datos
-        if (result.length === 0) {
-          setError("No hay máquinas que coincidan con los filtros.");
-          setData([]);
-          return;
-        }
-
-        // Transformar datos de la API al formato usado en el frontend
-        const mappedData: CatalogueItem[] = result.map((machine: any) => ({
-          id: machine.id,
-          name: machine.name,
-          location: machine.location || "Ubicación no disponible",
-          price: machine.list_price?.toString() || "0.00",
-          image: machine.image || "/images/catalogue/machine5.jpg",
-          machinetype:
-            (Array.isArray(type) && type[0]?.label) ||
-            (type as SelectInterface)?.label ||
-            slug ||
-            "maquinaria",
-          machine_category: machine.machine_category || "other",
+        // Normalizamos al tipo CatalogueItem esperado por el front
+        const mapped: CatalogueItem[] = result.map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          location: m.location || "Ubicación no disponible",
+          price: String(m.list_price ?? "0"),
+          image: m.image || "/images/catalogue/machine5.jpg",
+          machinetype: machineCategory || "maquinaria",
+          machine_category: machineCategory || "other",
         }));
 
-        // Guardar datos procesados en el estado
-        setData(mappedData);
+        setData(mapped);
       } catch (err: any) {
         setError(err.message || "Error al cargar el catálogo");
+        setData([]);
       } finally {
         setLoading(false);
       }
     }
 
-    // Ejecutar la carga de datos cuando cambian los filtros o el slug
     fetchCatalogue();
-  }, [type, rangePrice, startDate, endDate, slug]);
+    // Dispara cuando cambian: slug, querystring, o filtros base relevantes
+  }, [slug, spKey, type, rangePrice]);
 
-  // Retornar datos y estados al componente que use el hook
   return { data, loading, error };
 }
