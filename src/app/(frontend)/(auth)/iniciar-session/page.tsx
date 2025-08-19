@@ -1,6 +1,8 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import useLogin from "@/hooks/frontend/auth/iniciarSession/useLogin";
 import { ImSpinner8 } from "react-icons/im";
@@ -9,8 +11,31 @@ import Image from "next/image";
 import Input from "@/components/atoms/Input/Input";
 
 export default function IniciarSesion() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   const { errors, isValid, register, handleSubmit, isLoading, onSubmit } =
     useLogin();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/dashboard");
+    }
+  }, [status, router]);
+
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <ImSpinner8 size={30} className="animate-spin text-[#1C1B3A]" />
+      </div>
+    );
+  }
+
+
+  if (status === "authenticated") {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -46,6 +71,7 @@ export default function IniciarSesion() {
             classWrapper="form-group relative"
             inputClass="w-full rounded-md px-4 py-4 bg-[#E9E9E9] focus:outline-none"
           />
+
           {/* Botón Iniciar sesión */}
           <button
             type="submit"
@@ -78,7 +104,13 @@ export default function IniciarSesion() {
           onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
           className=" hover:bg-[#0f0f26] hover:text-white w-full flex cursor-pointer items-center justify-center gap-3 bg-white border px-6 py-4 rounded-md shadow-sm hover:shadow-md transition text-[12px] font-light"
         >
-          <Image src="/icons/google.svg" width={30} height={30} alt="Google" className="w-5 h-5" />
+          <Image
+            src="/icons/google.svg"
+            width={30}
+            height={30}
+            alt="Google"
+            className="w-5 h-5"
+          />
           Continuar con Google
         </button>
 
