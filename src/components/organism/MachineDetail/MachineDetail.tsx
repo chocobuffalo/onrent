@@ -64,12 +64,10 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
             <div className="block lg:hidden mb-6">
               <PriceDetail
                 price={
-                  machine.pricing?.price_per_day ??
-                  parseFloat(machine.price || "0")
+                    machine.pricing?.price_per_day ??
+                    parseFloat(machine.price || "0")
                 }
-                discountWeek={machine.pricing?.discount_week}
-                discountMonth={machine.pricing?.discount_month}
-              />
+                />
             </div>
             <p className="font-semibold mb-2">
               Disponible del 5 de agosto al 23 diciembre
@@ -221,12 +219,10 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
           {machine.specs && <SpecsDetail specsMachinary={machine.specs} />}
           <PriceDetail
             price={
-              machine.pricing?.price_per_day ??
-              parseFloat(machine.price || "0")
+                machine.pricing?.price_per_day ??
+                parseFloat(machine.price || "0")
             }
-            discountWeek={machine.pricing?.discount_week}
-            discountMonth={machine.pricing?.discount_month}
-          />
+            />
         </div>
       </div>
     </section>
