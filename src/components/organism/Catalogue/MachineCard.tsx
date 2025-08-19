@@ -12,9 +12,9 @@ interface Props {
 
 export default function MachineCard({ data }: Props) {
   // Imagen por defecto si no existe
-  const imageUrl = data.image?.startsWith("/")
-    ? data.image
-    : "/images/catalogue/machine5.jpg";
+  const imageUrl = data.image
+  ? `${process.env.NEXT_PUBLIC_API_URL}${data.image}`
+  : "/images/catalogue/machine5.jpg";
 
   // Generamos la ruta dinámica con machinetype + id
   const machineType = data.machinetype || "maquinaria";
@@ -26,7 +26,7 @@ export default function MachineCard({ data }: Props) {
   return (
     <Link href={`/${data.id}`} passHref>
       <div className="rounded-xl border border-gray-200 shadow-sm hover:shadow-md p-3 w-full max-w-xs flex flex-col justify-between cursor-pointer">
-        
+
         {/* Imagen de la máquina */}
         <div className="relative w-full h-40 rounded-lg overflow-hidden">
           <Image
@@ -53,12 +53,12 @@ export default function MachineCard({ data }: Props) {
             {data.price}$<span className="not-italic">/{currency.code}</span>
           </span>
           <Image
-            src={machineCategory?.type_icon || "/typemachine/ligera.svg"}
-            alt="Icono maquinaria"
-            width={24}
-            height={24}
-            className="object-contain"
-          />
+            src={imageUrl}
+            alt={data.name}
+            fill
+            className="object-cover"
+            unoptimized
+            />
         </div>
       </div>
     </Link>
