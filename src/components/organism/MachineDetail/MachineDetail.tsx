@@ -83,33 +83,30 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
 
             {/* Operador */}
             <div className="flex items-center justify-between border-[#B2B2B2] border-b pb-3">
-              <div className="flex items-center gap-3">
-                <Image
-                src={`${process.env.NEXT_PUBLIC_API_URL}${machine.image}`}
-                alt={machine.name}
-                width={850}
-                height={330}
-                className="object-cover object-center aspect-[16/6] w-full h-full"
-                unoptimized
-                />
-                <div>
-                  <p className="text-sm font-semibold">Operador</p>
-                  <p className="text-xs text-gray-500 italic">
-                    Incluye un operador certificado
-                  </p>
-                  {machine.pricing?.no_operator_discount && (
-                    <p className="text-xs italic text-green-600">
-                      -{machine.pricing.no_operator_discount}% si no incluye
-                      operador
+                <div className="flex items-center gap-3">
+                    <Image
+                    src="/icons/user.svg"
+                    alt="Operator"
+                    width={35}
+                    height={35}
+                    />
+                    <div>
+                    <p className="text-sm font-semibold">Operador</p>
+                    <p className="text-xs text-gray-500 italic">
+                        Incluye un operador certificado
                     </p>
-                  )}
+                    {machine.pricing?.no_operator_discount && (
+                        <p className="text-xs italic text-green-600">
+                        -{machine.pricing.no_operator_discount}% si no incluye operador
+                        </p>
+                    )}
+                    </div>
                 </div>
-              </div>
-              <ToggleButton
-                isChecked={extras.operador}
-                onChange={() => toggleExtra("operador")}
-              />
-            </div>
+                <ToggleButton
+                    isChecked={extras.operador}
+                    onChange={() => toggleExtra("operador")}
+                />
+                </div>
 
             {/* Certificado */}
             <div className="flex items-center justify-between border-[#B2B2B2] border-b pb-3">
