@@ -22,20 +22,43 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
     toggleExtra,
     toggleSaveAddress,
     router,
+    error,
+    loading,
+    selectedLocation,
+    handleLocationSelect,
+    getLocationForBooking,
+    validateLocation,
+    clearLocation
   } = useMachineDetail(machine.id);
 
-  // Handler para cuando el usuario selecciona una ubicación en el mapa
-  const handleLocationSelect = (coordinates: { lat: number; lng: number }) => {
-    console.log('Ubicación seleccionada:', coordinates);
-    // Aquí puedes guardar las coordenadas en el estado o hacer lo que necesites
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
+
+  if (error && !error.includes('ubicación')) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section className="machine-detail py-20 px-4">
       <div className="container mx-auto lg:flex gap-4">
-        {/* Columna izquierda */}
         <div className="lg:w-2/3">
-          {/* Imagen */}
           <div className="w-full h-80 relative rounded-xl overflow-hidden shadow-md">
             <Image
               src={machine.image}
@@ -163,7 +186,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
             </div>
           </div>
 
-          {/* Mapa - REEMPLAZADO CON AMAZON LOCATION SERVICE */}
+          {/* Mapa - ACTUALIZADO CON NUEVA FUNCIONALIDAD */}
           <div className="mt-6 block">
             <p className="font-semibold mb-2">Ubicación de tu obra</p>
             <AmazonLocationMap
@@ -173,13 +196,43 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
               onLocationSelect={handleLocationSelect}
               className="shadow-sm"
             />
+
+            {/* Mostrar ubicación seleccionada si existe */}
+            {selectedLocation && (
+              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-green-800">
+                      ✓ Ubicación confirmada
+                    </p>
+                    <p className="text-xs text-green-600">
+                      {selectedLocation.address ||
+                       `Lat: ${selectedLocation.lat.toFixed(6)}, Lng: ${selectedLocation.lng.toFixed(6)}`}
+                    </p>
+                  </div>
+                  <button
+                    onClick={clearLocation}
+                    className="text-xs text-green-600 hover:text-green-800 underline"
+                  >
+                    Cambiar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Mostrar error de validación si existe */}
+            {error && error.includes('ubicación') && (
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+                {error}
+              </div>
+            )}
           </div>
 
           {/* Datos de reserva */}
           <div className="mt-10 py-6 space-y-6">
             <h3 className="font-semibold text-lg mb-2">Datos de reserva</h3>
 
-            {/* Dirección */}
+            {/* Dirección - ACTUALIZADA para mostrar ubicación seleccionada */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Dirección de entrega
@@ -189,6 +242,11 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                 name=""
                 inputClass="w-full border rounded-lg px-2 py-1 text-sm"
               />
+              {selectedLocation && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Coordenadas: {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
+                </p>
+              )}
             </div>
 
             {/* Nombre dirección */}
@@ -213,8 +271,13 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
               </p>
             </div>
 
-            {/* Detalles precio */}
-            <BookingForm machine={machine} router={router} />
+            <BookingForm
+              machine={machine}
+              router={router}
+              getLocationForBooking={getLocationForBooking}
+              validateLocation={validateLocation}
+              extras={extras}
+            />
           </div>
         </div>
 

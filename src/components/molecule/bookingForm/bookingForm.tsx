@@ -8,7 +8,26 @@ import useAddFormItems from "@/hooks/frontend/buyProcess/useAddFormItems";
 import useBookingPreorder from "@/hooks/frontend/buyProcess/useBookingPreorder";
 import { currency } from "@/constants";
 
-export function BookingForm({ machine, router }: { machine: any, router: any }) {
+// Props actualizadas para incluir las nuevas funciones de ubicación
+interface BookingFormProps {
+  machine: any;
+  router: any;
+  getLocationForBooking?: () => {lat: number, lng: number} | null;
+  validateLocation?: () => boolean;
+  extras?: {
+    operador: boolean;
+    certificado: boolean;
+    combustible: boolean;
+  };
+}
+
+export function BookingForm({
+  machine,
+  router,
+  getLocationForBooking,
+  validateLocation,
+  extras
+}: BookingFormProps) {
     const { startDate, endDate } = useDateRange();
     const [open, setOpen] = useState(false);
     const [clientNotes, setClientNotes] = useState("");
@@ -48,10 +67,21 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
             return;
         }
 
+        // NUEVA VALIDACIÓN DE UBICACIÓN
+        if (validateLocation && !validateLocation()) {
+            // El error ya se muestra en la UI del componente padre
+            console.error("No se ha seleccionado una ubicación");
+            return;
+        }
+
         try {
+            // OBTENER UBICACIÓN SELECCIONADA
+            const selectedLocation = getLocationForBooking ? getLocationForBooking() : null;
+
             const preorderPayload = {
                 project_id: 0,
-                location: { lat: 0, lng: 0 },
+                // USAR UBICACIÓN REAL O FALLBACK A COORDENADAS POR DEFECTO
+                location: selectedLocation || { lat: 0, lng: 0 },
                 client_notes: clientNotes,
                 items: [
                     {
@@ -59,9 +89,10 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
                         start_date: formatDateForBackend(startDate),
                         end_date: formatDateForBackend(endDate),
                         quantity: count,
-                        requires_operator: false,
-                        requires_fuel: false,
-                        certification_level: "standard",
+                        // USAR EXTRAS SI ESTÁN DISPONIBLES
+                        requires_operator: extras?.operador || false,
+                        requires_fuel: extras?.combustible || false,
+                        certification_level: extras?.certificado ? "OnRentX" : "standard",
                     },
                 ],
             };
@@ -75,7 +106,8 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
                 formattedEndDate: formatDateForBackend(endDate),
                 dayLength: dayLength,
                 machineId: machine.id,
-                count: count
+                count: count,
+                selectedLocation: selectedLocation // LOG DE LA UBICACIÓN
             });
 
             const preorder = await createPreorder(preorderPayload);
@@ -94,7 +126,8 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
                 count,
                 unitPrice,
                 totalPrice,
-                dayLength
+                dayLength,
+                selectedLocation: getLocationForBooking ? getLocationForBooking() : null
             });
         }
     };
@@ -149,6 +182,51 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
                 </div>
                 {open && <DateRentInput grid={true} />}
             </div>
+
+            {/* NUEVA SECCIÓN: Mostrar información de ubicación si está disponible */}
+            {getLocationForBooking && getLocationForBooking() && (
+                <div className="py-5 flex justify-between w-full border-b border-[#bbb]">
+                    <div>
+                        <p className="text-black">Ubicación confirmada:</p>
+                        <p className="text-xs text-green-600">
+                            ✓ Coordenadas: {getLocationForBooking()!.lat.toFixed(4)}, {getLocationForBooking()!.lng.toFixed(4)}
+                        </p>
+                    </div>
+                    <div className="text-green-600">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            )}
+
+            {/* NUEVA SECCIÓN: Mostrar extras seleccionados si están disponibles */}
+            {extras && (
+                <div className="py-5 flex flex-col gap-2 w-full border-b border-[#bbb]">
+                    <p className="text-black font-medium">Extras incluidos:</p>
+                    <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                            <span>Operador:</span>
+                            <span className={extras.operador ? "text-green-600" : "text-gray-500"}>
+                                {extras.operador ? "✓ Incluido" : "No incluido"}
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Combustible:</span>
+                            <span className={extras.combustible ? "text-green-600" : "text-gray-500"}>
+                                {extras.combustible ? "✓ Incluido" : "No incluido"}
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Certificación OnRentX:</span>
+                            <span className={extras.certificado ? "text-green-600" : "text-gray-500"}>
+                                {extras.certificado ? "✓ Incluido" : "Estándar"}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="py-5 flex justify-between w-full border-b border-[#bbb]">
                 <p className="text-black">Precio total:</p>
