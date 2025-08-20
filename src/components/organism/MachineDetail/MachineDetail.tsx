@@ -9,6 +9,7 @@ import FilterInput from "@/components/atoms/filterInput/filterInput";
 import { BookingForm } from "@/components/molecule/bookingForm/bookingForm";
 import SpecsDetail from "@/components/molecule/specsDetail/specsDetail";
 import PriceDetail from "@/components/atoms/priceDetail/priceDetail";
+import AmazonLocationMap from "@/components/molecule/AmazonLocationService/amazonLocationMap";
 
 interface MachineDetailProps {
   machine: CatalogueItem;
@@ -22,6 +23,12 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
     toggleSaveAddress,
     router,
   } = useMachineDetail(machine.id);
+
+  // Handler para cuando el usuario selecciona una ubicación en el mapa
+  const handleLocationSelect = (coordinates: { lat: number; lng: number }) => {
+    console.log('Ubicación seleccionada:', coordinates);
+    // Aquí puedes guardar las coordenadas en el estado o hacer lo que necesites
+  };
 
   return (
     <section className="machine-detail py-20 px-4">
@@ -156,15 +163,16 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
             </div>
           </div>
 
-          {/* Mapa */}
+          {/* Mapa - REEMPLAZADO CON AMAZON LOCATION SERVICE */}
           <div className="mt-6 block">
             <p className="font-semibold mb-2">Ubicación de tu obra</p>
-            <div className="w-full h-64 rounded-lg overflow-hidden border">
-              <iframe
-                className="w-full h-full"
-                src="https://maps.google.com/maps?q=San%20Luis%20Potosi&t=&z=13&ie=UTF8&iwloc=&output=embed"
-              ></iframe>
-            </div>
+            <AmazonLocationMap
+              center={[-123.115898, 49.295868]}
+              zoom={11}
+              height="256px"
+              onLocationSelect={handleLocationSelect}
+              className="shadow-sm"
+            />
           </div>
 
           {/* Datos de reserva */}

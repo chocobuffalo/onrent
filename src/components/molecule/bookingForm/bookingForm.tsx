@@ -11,6 +11,7 @@ import { currency } from "@/constants";
 export function BookingForm({ machine, router }: { machine: any, router: any }) {
     const { startDate, endDate } = useDateRange();
     const [open, setOpen] = useState(false);
+    const [clientNotes, setClientNotes] = useState("");
 
     const { count, increment, decrement, disableTop, disableBottom } = useAddFormItems();
     const { createPreorder, loading, error } = useBookingPreorder();
@@ -18,11 +19,9 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
     const unitPrice = machine?.pricing?.price_per_day || 0;
     const price = unitPrice * count;
 
-    // calculamos duración en días (inclusive)
     const dayLength = startDate && endDate ? countDays(startDate, endDate) + 1 : 0;
     const totalPrice = price * dayLength;
 
-    // función para enviar la fecha en formato YYYY-MM-DD al backend
     function formatDateForBackend(dateString: string): string {
         const { day, month, year } = fixDate(dateString);
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -33,6 +32,19 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
 
         if (!startDate || !endDate) {
             console.error("Faltan fechas");
+            alert("Por favor selecciona las fechas de inicio y fin");
+            return;
+        }
+
+        if (!machine?.id) {
+            console.error("Falta ID de la máquina");
+            alert("Error: No se pudo identificar la máquina");
+            return;
+        }
+
+        if (count <= 0) {
+            console.error("Cantidad inválida");
+            alert("Por favor selecciona al menos una máquina");
             return;
         }
 
@@ -40,6 +52,7 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
             const preorderPayload = {
                 project_id: 0,
                 location: { lat: 0, lng: 0 },
+                client_notes: clientNotes,
                 items: [
                     {
                         product_id: machine.id,
@@ -55,13 +68,34 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
 
             console.log("Payload enviado:", preorderPayload);
 
+            console.log("Date validation:", {
+                startDate: startDate,
+                endDate: endDate,
+                formattedStartDate: formatDateForBackend(startDate),
+                formattedEndDate: formatDateForBackend(endDate),
+                dayLength: dayLength,
+                machineId: machine.id,
+                count: count
+            });
+
             const preorder = await createPreorder(preorderPayload);
 
             if (preorder?.id) {
+                console.log("Pre-order created successfully:", preorder);
                 router.push(`/catalogo/${machine.machinetype}/${machine.id}/reserva?preorderId=${preorder.id}`);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error al crear la pre-orden:", err);
+
+            console.error("Machine data:", machine);
+            console.error("Form state:", {
+                startDate,
+                endDate,
+                count,
+                unitPrice,
+                totalPrice,
+                dayLength
+            });
         }
     };
 
@@ -123,6 +157,20 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
                 </p>
             </div>
 
+            <div className="py-5 border-b border-[#bbb]">
+                <label htmlFor="clientNotes" className="block text-sm font-medium mb-2">
+                    Notas adicionales (opcional)
+                </label>
+                <textarea
+                    id="clientNotes"
+                    value={clientNotes}
+                    onChange={(e) => setClientNotes(e.target.value)}
+                    placeholder="Añade cualquier información adicional sobre tu reserva..."
+                    className="w-full border rounded-lg p-3 text-sm resize-none"
+                    rows={3}
+                />
+            </div>
+
             <div className="pt-10">
                 <button
                     type="submit"
@@ -131,7 +179,12 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
                 >
                     {loading ? "Procesando..." : "RESERVAR"}
                 </button>
-                {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+                {error && (
+                    <div className="mt-2">
+                        <p className="text-red-600 text-sm font-semibold">Error:</p>
+                        <p className="text-red-600 text-xs">{error}</p>
+                    </div>
+                )}
             </div>
         </form>
     );
