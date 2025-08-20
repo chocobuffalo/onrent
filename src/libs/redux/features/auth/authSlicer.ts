@@ -32,6 +32,12 @@ const authSlicer = createSlice({
     setName: (state, action) => {
       state.profile.name = action.payload;
     },
+    setRole: (state, action) => {
+      state.profile.role = action.payload;
+    },
+    setUserID: (state, action) => {
+      state.profile.userID = action.payload;
+    },
     setEmail: (state, action) => {
       state.profile.email = action.payload;
     },

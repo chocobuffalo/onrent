@@ -1,19 +1,20 @@
 "use client";
 import { useUIAppSelector } from "@/libs/redux/hooks";
+import getProjects from "@/services/getProjects";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as Yup from "yup";
 
 
 const Schema = Yup.object({
-    name: Yup.string().required("Nombre es requerido"),
+  end_date: Yup.string().required("Fecha de finalización es requerida"),
+  name: Yup.string().required("Nombre es requerido"),
   location: Yup.string().required("Ubicación es requerida"),
   estimated_duration: Yup.string().required("Duración estimada es requerida"),
   start_date: Yup.string().required("Fecha de inicio es requerida"),
-  end_date: Yup.string().required("Fecha de finalización es requerida"),
   responsible_name: Yup.string().required("Nombre del responsable es requerido"),
   work_schedule: Yup.string().required("Horario de trabajo es requerido"),
   site_manager: Yup.string().required("Nombre del encargado de obra es requerido"),
@@ -38,20 +39,58 @@ const {
     resolver: yupResolver(Schema),
     mode: "onChange",
   });
-    const session = useSession();
-    console.log(session);
-       const router = useRouter();
-       useEffect(() => {
-            if( typeof window !== "undefined"){
-                if (session.status !== "authenticated") {
-                    router.push("/iniciar-session");
+  const [projects, setProjects] = useState([]);
+  const [project, setProject] = useState({
+    end_date: "",
+    name: "",
+    location: "",
+    estimated_duration: "",
+    start_date: "",
+    responsible_name: "",
+    work_schedule: "",
+    site_manager: "",
+    manager_phone: "",
+    work_type: "",
+    terrain_type: "",
+    access_terrain_condition: "",
+    access_notes: "",
+    has_reserve_space: false,
+    extra_requirements: "",
+    observations: "",
+    state: "planning",
+    resguardo_files: [],
+  })
+  const session = useSession();
+  const router = useRouter();
+  console.log(session);
+  useEffect(() => {
+          if( typeof window !== "undefined"){
+              if (session.status !== "authenticated") {
+                  router.push("/iniciar-session");
+              }
+                const accessToken = (session.data as (typeof session.data & { accessToken?: string }))?.accessToken;
+                if (typeof accessToken === "string") {
+                    getProjects(accessToken).then(data=>console.log(data));
                 }
-            }
-       }, [session.status]);
-       return {
-           register,
-           handleSubmit,
-           errors,
-           isValid
-       };
+
+          }
+      }, [session.status]);
+      const handlerStartDate = (date:string)=>{
+        setProject(prev => ({ ...prev, start_date: date }));
+      }
+      const handlerEndDate = (date:string)=>{
+        setProject(prev => ({ ...prev, end_date: date }));
+      }
+
+      return {
+          register,
+          handleSubmit,
+          handlerEndDate,
+          handlerStartDate,
+          project,
+          errors,
+          isValid
+      };
 }
+
+
