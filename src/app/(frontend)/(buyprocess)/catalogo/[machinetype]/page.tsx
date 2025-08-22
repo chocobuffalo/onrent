@@ -1,6 +1,7 @@
 import FrontSectionWrapper from "@/components/molecule/frontSectionWrapper/frontSectionWrapper";
 import CatalogClient from "@/hooks/frontend/buyProcess/useCatalogClient";
 import { interestLinks } from "@/constants/routes/frontend";
+import BackButton from "@/components/atoms/BackButton/BackButton";
 
 type Params = Promise<{ machinetype: string }>;
 
@@ -18,8 +19,11 @@ export async function generateMetadata({ params }: { params: Params }) {
 export default async function MachineTypePage({ params }: { params: Params }) {
   const { machinetype } = await params;
   return (
-    <FrontSectionWrapper identicator="catalogSection" extraClass="py-5">
-      <CatalogClient slug={machinetype} />
-    </FrontSectionWrapper>
+    <>
+      <BackButton size={24} className="pl-10 pt-4"/>
+      <FrontSectionWrapper identicator="catalogSection" extraClass="py-5">
+        <CatalogClient slug={machinetype} />
+      </FrontSectionWrapper>
+    </>
   );
 }

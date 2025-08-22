@@ -67,7 +67,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
   };
 
   return (
-    <section className="machine-detail py-20 px-4">
+    <section className="machine-detail py-5 px-4">
       <div className="container mx-auto lg:flex gap-4">
         <div className="lg:w-2/3">
           <div className="w-full h-80 relative rounded-xl overflow-hidden shadow-md">
