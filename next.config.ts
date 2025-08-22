@@ -1,14 +1,24 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
-    remotePatterns: [new URL('https://lh3.googleusercontent.com/**')],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '18.117.182.83',
+        port: '8069',
+        pathname: '/web/image/**',
+      },
+    ],
   },
   experimental: {
     viewTransition: true,
   },
-  
 };
 
 export default nextConfig;

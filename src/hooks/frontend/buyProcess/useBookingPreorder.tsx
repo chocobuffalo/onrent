@@ -15,11 +15,14 @@ interface PreorderPayload {
   session_id?: string;
   items: PreorderItem[];
   project_id?: number;
-  client_notes?: string;
+  client_notes: string;
   location?: {
     lat: number;
     lng: number;
   };
+  // Add any other potentially required fields here
+  // state?: string;
+  // user_id?: number;
 }
 
 export default function useBookingPreorder() {
@@ -43,13 +46,43 @@ export default function useBookingPreorder() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+      console.log("Response Status:", res.status);
+      console.log("Response Headers:", res.headers);
+
+      if (!res.ok) {
+        let errorDetails;
+        try {
+          errorDetails = await res.json();
+        } catch (jsonError) {
+          try {
+            errorDetails = await res.text();
+          } catch (textError) {
+            errorDetails = "Could not read error response";
+          }
+        }
+
+        console.error("HTTP Error Details:", {
+          status: res.status,
+          statusText: res.statusText,
+          url: res.url,
+          errorBody: errorDetails,
+          originalPayload: payload
+        });
+
+        const errorMessage = res.status === 422
+          ? `Validation Error (422): ${JSON.stringify(errorDetails)}`
+          : `HTTP Error ${res.status}: ${res.statusText}`;
+
+        throw new Error(errorMessage);
+      }
 
       const result = await res.json();
+      console.log("Successful response:", result);
       setData(result);
 
       return result;
     } catch (err: any) {
+      console.error("Full error object:", err);
       setError(err.message || "Error al crear la pre-orden");
       throw err;
     } finally {

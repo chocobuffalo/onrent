@@ -11,17 +11,32 @@ interface Props {
 }
 
 export default function MachineCard({ data }: Props) {
-  // Imagen por defecto si no existe
-  const imageUrl = data.image
-  ? `${process.env.NEXT_PUBLIC_API_URL}${data.image}`
-  : "/images/catalogue/machine5.jpg";
+  // Imagen por defecto si no existe — maneja http(s), rutas relativas y fallback
+  const imageUrl = (() => {
+    if (!data.image) return "/images/catalogue/machine5.jpg";
+
+    // Si ya es una URL completa, úsala tal como viene
+    if (data.image.startsWith("http://") || data.image.startsWith("https://"))
+        return data.image;
+
+    // Si es una ruta relativa, construye la URL completa
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    return data.image.startsWith("/")
+        ? `${baseUrl}${data.image}`
+        : `${baseUrl}/${data.image}`;
+    })();
 
   // Generamos la ruta dinámica con machinetype + id
   const machineType = data.machinetype || "maquinaria";
 
-  const machineCategory = interestLinks.find(item=>item.machine_category === data.machine_category);
+  const machineCategory = interestLinks.find(
+    (item) => item.machine_category === data.machine_category
+  );
 
   console.log(machineCategory);
+  console.log("Data image:", data.image);
+  console.log("Final imageUrl:", imageUrl);
+  console.log("NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
 
   return (
     <Link href={`/${data.id}`} passHref>
@@ -53,12 +68,12 @@ export default function MachineCard({ data }: Props) {
             {data.price}$<span className="not-italic">/{currency.code}</span>
           </span>
           <Image
-            src={imageUrl}
-            alt={data.name}
-            fill
-            className="object-cover"
-            unoptimized
-            />
+            src={machineCategory?.type_icon || "/typemachine/ligera.svg"}
+            alt="Icono maquinaria"
+            width={24}
+            height={24}
+            className="object-contain"
+          />
         </div>
       </div>
     </Link>

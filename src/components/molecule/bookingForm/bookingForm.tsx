@@ -1,28 +1,50 @@
 'use client';
 import AddFormItems from "@/components/atoms/addFormITems/addFormItems";
 import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
-import { countDays, shortDate, fixDate } from "@/utils/compareDate";
+import { countDays, fixDate } from "@/utils/compareDate";
 import { useState } from "react";
 import DateRentInput from "../dateRentInput/dateRentInput";
 import useAddFormItems from "@/hooks/frontend/buyProcess/useAddFormItems";
 import useBookingPreorder from "@/hooks/frontend/buyProcess/useBookingPreorder";
-import { currency } from "@/constants";
 
-export function BookingForm({ machine, router }: { machine: any, router: any }) {
+import PricingSection from "../PricingSection/PricingSection";
+import DurationSection from "../DurationSection/DurationSection";
+import LocationSection from "../LocationSection/LocationSection";
+import ExtrasSection from "@/components/atoms/ExtrasSection/ExtrasSection";
+import NotesSection from "@/components/atoms/NotesInputSection/NotesInputSection";
+import SubmitSection from "@/components/atoms/SubmitSection/SubmitSection";
+
+interface BookingFormProps {
+  machine: any;
+  router: any;
+  getLocationForBooking?: () => {lat: number, lng: number} | null;
+  validateLocation?: () => boolean;
+  extras?: {
+    operador: boolean;
+    certificado: boolean;
+    combustible: boolean;
+  };
+}
+
+export function BookingForm({
+  machine,
+  router,
+  getLocationForBooking,
+  validateLocation,
+  extras
+}: BookingFormProps) {
     const { startDate, endDate } = useDateRange();
     const [open, setOpen] = useState(false);
+    const [clientNotes, setClientNotes] = useState("");
 
     const { count, increment, decrement, disableTop, disableBottom } = useAddFormItems();
     const { createPreorder, loading, error } = useBookingPreorder();
 
     const unitPrice = machine?.pricing?.price_per_day || 0;
     const price = unitPrice * count;
-
-    // calculamos duración en días (inclusive)
     const dayLength = startDate && endDate ? countDays(startDate, endDate) + 1 : 0;
     const totalPrice = price * dayLength;
 
-    // función para enviar la fecha en formato YYYY-MM-DD al backend
     function formatDateForBackend(dateString: string): string {
         const { day, month, year } = fixDate(dateString);
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -33,22 +55,43 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
 
         if (!startDate || !endDate) {
             console.error("Faltan fechas");
+            alert("Por favor selecciona las fechas de inicio y fin");
+            return;
+        }
+
+        if (!machine?.id) {
+            console.error("Falta ID de la máquina");
+            alert("Error: No se pudo identificar la máquina");
+            return;
+        }
+
+        if (count <= 0) {
+            console.error("Cantidad inválida");
+            alert("Por favor selecciona al menos una máquina");
+            return;
+        }
+
+        if (validateLocation && !validateLocation()) {
+            console.error("No se ha seleccionado una ubicación");
             return;
         }
 
         try {
+            const selectedLocation = getLocationForBooking ? getLocationForBooking() : null;
+
             const preorderPayload = {
                 project_id: 0,
-                location: { lat: 0, lng: 0 },
+                location: selectedLocation || { lat: 0, lng: 0 },
+                client_notes: clientNotes,
                 items: [
                     {
                         product_id: machine.id,
                         start_date: formatDateForBackend(startDate),
                         end_date: formatDateForBackend(endDate),
                         quantity: count,
-                        requires_operator: false,
-                        requires_fuel: false,
-                        certification_level: "standard",
+                        requires_operator: extras?.operador || false,
+                        requires_fuel: extras?.combustible || false,
+                        certification_level: extras?.certificado ? "OnRentX" : "standard",
                     },
                 ],
             };
@@ -58,9 +101,10 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
             const preorder = await createPreorder(preorderPayload);
 
             if (preorder?.id) {
+                console.log("Pre-order created successfully:", preorder);
                 router.push(`/catalogo/${machine.machinetype}/${machine.id}/reserva?preorderId=${preorder.id}`);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error al crear la pre-orden:", err);
         }
     };
@@ -81,58 +125,37 @@ export function BookingForm({ machine, router }: { machine: any, router: any }) 
                 <span className="text-sm font-semibold ml-2">{machine?.name}</span>
             </div>
 
-            <div className="py-5 flex justify-between w-full border-b border-[#bbb]">
-                <p className="text-black">Precio unidad:</p>
-                <p className="text-red-500 text-sm">
-                    <span className="font-bold">{unitPrice.toLocaleString('es-ES')} {currency.code}/Día</span>
-                </p>
-            </div>
+            <PricingSection
+                unitPrice={unitPrice}
+                price={price}
+                count={count}
+                totalPrice={totalPrice}
+            />
 
-            <div className="py-5 flex justify-between w-full border-b border-[#bbb]">
-                <p className="text-black">Precio por {count} máquinas:</p>
-                <p className="text-red-500 text-sm">
-                    <span className="font-bold">{price.toLocaleString('es-ES')} {currency.code}/Día</span>
-                </p>
-            </div>
+            <DurationSection
+                dayLength={dayLength}
+                startDate={startDate}
+                endDate={endDate}
+                open={open}
+                onToggleOpen={() => setOpen(!open)}
+                DateRentInput={<DateRentInput grid={true} />}
+            />
 
-            <div className="py-5 flex flex-col gap-3.5 w-full border-b border-[#bbb]">
-                <div className="flex justify-between w-full items-center">
-                    <div>
-                        <p className="text-md">
-                            Duración: {dayLength} {dayLength === 1 ? 'día' : 'días'}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                            {startDate && endDate ? `Desde el ${shortDate(startDate)} al ${shortDate(endDate)}` : "Selecciona fechas"}
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => setOpen(!open)}
-                        className="py-2 px-4 bg-[#bbb]"
-                    >
-                        Cambiar fecha
-                    </button>
-                </div>
-                {open && <DateRentInput grid={true} />}
-            </div>
+            {getLocationForBooking && (
+                <LocationSection getLocationForBooking={getLocationForBooking} />
+            )}
 
-            <div className="py-5 flex justify-between w-full border-b border-[#bbb]">
-                <p className="text-black">Precio total:</p>
-                <p className="text-green-600 font-bold text-base">
-                    {totalPrice.toLocaleString('es-ES')} {currency.code}
-                </p>
-            </div>
+            {extras && <ExtrasSection extras={extras} />}
 
-            <div className="pt-10">
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full px-10 cursor-pointer block bg-secondary lg:w-fit hover:text-secondary border-1 duration-300 border-secondary hover:bg-transparent text-white py-3 rounded-sm font-semibold mt-4 mx-auto disabled:opacity-50"
-                >
-                    {loading ? "Procesando..." : "RESERVAR"}
-                </button>
-                {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
-            </div>
+            <NotesSection
+                clientNotes={clientNotes}
+                onNotesChange={setClientNotes}
+            />
+
+            <SubmitSection
+                loading={loading}
+                error={error}
+            />
         </form>
     );
 }

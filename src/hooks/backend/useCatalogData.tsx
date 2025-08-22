@@ -112,6 +112,8 @@ export default function useCatalog(slug?: string) {
           : `/api/catalog?${params.toString()}`;
 
         console.log("🔍 URL Final de petición:", url);
+        console.log("🔧 API URL:", process.env.NEXT_PUBLIC_API_URL);
+
 
         const res = await fetch(url, { method: "GET" });
         if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
@@ -126,10 +128,11 @@ export default function useCatalog(slug?: string) {
           name: m.name,
           location: m.location || "Ubicación no disponible",
           price: String(m.list_price ?? "0"),
-          image: m.image || "/images/catalogue/machine5.jpg",
+          image: m.image || m.image_url || m.product_image || "/images/catalogue/machine5.jpg",
           machinetype: machineCategory || "maquinaria",
           machine_category: machineCategory || "other",
         }));
+        console.log("Datos de imagen del backend:", result.map(m => ({ id: m.id, image: m.image })));
 
         setData(mapped);
       } catch (err: any) {
