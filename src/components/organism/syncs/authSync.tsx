@@ -6,7 +6,9 @@ import {
   setEmail,
   setLogin,
   setName,
+  setRole
 } from "@/libs/redux/features/auth/authSlicer";
+import { setUserID } from "@/libs/redux/features/ui/filterSlicer";
 import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
@@ -23,6 +25,9 @@ export default function AuthSync() {
       dispatch(setName(session.user.name || ""));
       dispatch(setEmail(session.user.email || ""));
       dispatch(setAvatar(session.user.image || "./user-circle.svg"));
+      dispatch(setRole(session.user.role || "cliente"));
+    //dispatch(setUserID(session.user.user_id || ""));
+
     }
   }, [isLogin, status, session]);
 

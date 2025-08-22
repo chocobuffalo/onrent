@@ -6,12 +6,12 @@
 import { ElementType } from "react";
 
 /* --------------------------------------------------------------------
- * 1. Roles disponibles en la app.  Añade más si lo necesitas (ADMIN…).
+ * 1. Roles disponibles en la app - ACTUALIZADOS
  * ------------------------------------------------------------------ */
-export type UserRole = "PROVIDER" | "CLIENT";
+export type UserRole = "cliente" | "proveedor" | "cliente_proveedor" | "operador";
 
 /* --------------------------------------------------------------------
- * 2. Modelos básicos ya existentes
+ * 2. Modelos básicos ya existentes
  * ------------------------------------------------------------------ */
 export interface LinkInterface {
   /** URL absoluta o relativa */
@@ -30,7 +30,7 @@ export type ListinsMenu = ListinsMenuInterface | LinkInterface;
 export type Menu = ListinsMenu[];
 
 /* --------------------------------------------------------------------
- * 3. Tipado de los enlaces que usa <SidebarLink />
+ * 3. Tipado de los enlaces que usa <SidebarLink />
  * ------------------------------------------------------------------ */
 /**
  * Enlace simple: se usa dentro de arrays como children.
@@ -42,19 +42,19 @@ export interface SidebarChildLink {
 
 /**
  * Props del objeto principal que renderiza el Sidebar.
- * - `roles` → qué tipo(s) de usuario pueden ver este elemento.
+ * - `roles` → qué tipo(s) de usuario pueden ver este elemento.
  *   Si se omite, se muestra a todos los roles.
  */
 export interface SidebarMenuProps extends SidebarChildLink {
   childrens?: SidebarChildLink[];
   icon?: ElementType;
   action?: (() => void) | (() => string);
-  /** Qué roles ven este ítem. Ej: ['PROVIDER'] */
+  /** Qué roles ven este ítem. Ej: ['cliente', 'proveedor'] */
   roles?: UserRole[];
 }
 
 /* --------------------------------------------------------------------
- * 4. Otros tipos auxiliares (se mantienen igual)
+ * 4. Otros tipos auxiliares (se mantienen igual)
  * ------------------------------------------------------------------ */
 export interface LinkItem {
   id: number;

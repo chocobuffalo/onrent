@@ -27,7 +27,7 @@ export default function FilterInput({
     open,
     setOpen,
   } = useAutoComplete(checkpersist);
-console.log(isLoading);
+//console.log(isLoading);
   const inputClasses = inputClass ? `${inputClass} input-item flex items-center gap-2` : "input-item flex items-center gap-2 bg-white border border-gray-300 rounded-md px-2";
 
  
