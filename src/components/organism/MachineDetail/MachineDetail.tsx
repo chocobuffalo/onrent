@@ -15,6 +15,12 @@ interface MachineDetailProps {
   machine: CatalogueItem;
 }
 
+interface LocationData {
+  lat: number;
+  lng: number;
+  address?: string;
+}
+
 export default function MachineDetail({ machine }: MachineDetailProps) {
   const {
     extras,
@@ -55,6 +61,11 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
     );
   }
 
+  // Función para manejar la selección de ubicación desde el mapa
+  const onMapLocationSelect = (locationData: LocationData) => {
+    handleLocationSelect(locationData);
+  };
+
   return (
     <section className="machine-detail py-20 px-4">
       <div className="container mx-auto lg:flex gap-4">
@@ -84,7 +95,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                 : `La ${machine.name} combina potencia, versatilidad y eficiencia en un solo equipo. Ideal para excavación, carga y transporte en obras civiles, agrícolas y de construcción.`}
             </p>
             <p className="mt-2 text-sm text-gray-600">
-              <span className="font-semibold">Ubicación:</span>{" "}
+              <span className="font-semibold">Ubicación de la máquina:</span>{" "}
               {machine.location || "Ubicación no especificada"}
             </p>
           </div>
@@ -186,91 +197,186 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
             </div>
           </div>
 
-          {/* Mapa - ACTUALIZADO CON NUEVA FUNCIONALIDAD */}
-          <div className="mt-6 block">
-            <p className="font-semibold mb-2">Ubicación de tu obra</p>
+          {/* Mapa de ubicación de la obra */}
+          <div className="mt-8 bg-white rounded-lg border border-gray-200 p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Ubicación de tu obra
+              </h3>
+              <p className="text-sm text-gray-600">
+                Selecciona la ubicación exacta donde necesitas la maquinaria para calcular el costo de flete y coordinar la entrega.
+              </p>
+            </div>
+
             <AmazonLocationMap
               center={[-123.115898, 49.295868]}
               zoom={11}
-              height="256px"
-              onLocationSelect={handleLocationSelect}
-              className="shadow-sm"
+              height="320px"
+              onLocationSelect={onMapLocationSelect}
+              initialLocation={selectedLocation}
+              showLocationInfo={false}
+              className="shadow-sm border-gray-200"
             />
 
-            {/* Mostrar ubicación seleccionada si existe */}
-            {selectedLocation && (
-              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-green-800">
-                      ✓ Ubicación confirmada
-                    </p>
-                    <p className="text-xs text-green-600">
-                      {selectedLocation.address ||
-                       `Lat: ${selectedLocation.lat.toFixed(6)}, Lng: ${selectedLocation.lng.toFixed(6)}`}
-                    </p>
+            {selectedLocation ? (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className="p-2 bg-green-500 rounded-full">
+                      <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-green-800 mb-1">
+                        Ubicación de obra confirmada
+                      </p>
+                      <p className="text-sm text-green-700 mb-1">
+                        <strong>Dirección:</strong> {selectedLocation.address || "Ubicación personalizada"}
+                      </p>
+                      <div className="flex flex-col sm:flex-row sm:gap-4 text-xs text-green-600">
+                        <span><strong>Latitud:</strong> {selectedLocation.lat.toFixed(6)}</span>
+                        <span><strong>Longitud:</strong> {selectedLocation.lng.toFixed(6)}</span>
+                      </div>
+                      <p className="text-xs text-green-600 mt-2 italic">
+                        Esta ubicación se usará para calcular el costo de flete y programar la entrega
+                      </p>
+                    </div>
                   </div>
                   <button
                     onClick={clearLocation}
-                    className="text-xs text-green-600 hover:text-green-800 underline"
+                    className="ml-3 px-3 py-1 text-xs text-green-700 hover:text-green-900 hover:bg-green-100 border border-green-300 rounded transition-colors flex-shrink-0"
                   >
                     Cambiar
                   </button>
                 </div>
               </div>
+            ) : (
+              <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-amber-500 rounded-full">
+                    <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.228 2.5 1.732 2.5z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800 mb-1">
+                      Selecciona la ubicación de tu obra
+                    </p>
+                    <p className="text-sm text-amber-700 mb-2">
+                      Es necesario especificar dónde necesitas la maquinaria para:
+                    </p>
+                    <ul className="text-xs text-amber-600 space-y-1 ml-4">
+                      <li>• Calcular el costo exacto de flete</li>
+                      <li>• Programar la entrega y recolección</li>
+                      <li>• Coordinar la logística del transporte</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             )}
 
-            {/* Mostrar error de validación si existe */}
             {error && error.includes('ubicación') && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
-                {error}
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <div className="p-1 bg-red-500 rounded-full">
+                    <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-red-800 mb-1">Error de ubicación</p>
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
           {/* Datos de reserva */}
           <div className="mt-10 py-6 space-y-6">
-            <h3 className="font-semibold text-lg mb-2">Datos de reserva</h3>
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                Datos de reserva
+              </h3>
 
-            {/* Dirección - ACTUALIZADA para mostrar ubicación seleccionada */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Dirección de entrega
-              </label>
-              <FilterInput
-                checkpersist={true}
-                name=""
-                inputClass="w-full border rounded-lg px-2 py-1 text-sm"
-              />
-              {selectedLocation && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Coordenadas: {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
-                </p>
-              )}
+              {/* Dirección de entrega */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Dirección de entrega
+                  </label>
+                  <FilterInput
+                    checkpersist={true}
+                    name="delivery_address"
+                    inputClass="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Proporciona detalles adicionales como referencias, número de obra, o instrucciones especiales para el transportista.
+                  </p>
+
+                  {/* ToggleButton debajo de Dirección de entrega */}
+                  <div className="mt-2">
+                    <ToggleButton
+                      isChecked={saveAddress}
+                      onChange={toggleSaveAddress}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Guardar esta dirección para futuras reservas
+                    </p>
+                  </div>
+                </div>
+
+                {/* Nombre para la dirección */}
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Nombre para esta ubicación
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Ej: Obra Residencial Sur, Proyecto Plaza Central, etc."
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Te ayudará a identificar esta ubicación en futuras reservas.
+                  </p>
+                </div>
+
+                {/* Imagen de la obra */}
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Imagen de la obra
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-300 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      id="work-image"
+                    />
+                    <label
+                      htmlFor="work-image"
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      <span className="text-sm text-gray-600">
+                        Haz clic para seleccionar una imagen
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        JPG, PNG o WebP • Máximo 5MB
+                      </span>
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Esto nos ayuda a validar el terreno, determinar la accesibilidad y asignar la maquinaria más compatible con las condiciones del sitio.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Nombre dirección */}
-            <input
-              type="text"
-              className="w-full border rounded-lg p-3 text-sm"
-              placeholder="Nombre para esta dirección"
-            />
-
-            {/* Imagen obra */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Imagen de la obra
-              </label>
-              <input
-                type="file"
-                className="w-full border rounded-lg p-3 text-sm"
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                Esto nos ayuda a validar el terreno y asignar maquinaria
-                compatible
-              </p>
-            </div>
-
+            {/* Formulario de reserva */}
             <BookingForm
               machine={machine}
               router={router}
@@ -281,16 +387,18 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
           </div>
         </div>
 
-        {/* Columna derecha */}
+        {/* Columna derecha - Desktop */}
         <div className="lg:w-1/3 hidden lg:block">
-          <h1 className="text-2xl font-bold">{machine.name}</h1>
-          {machine.specs && <SpecsDetail specsMachinary={machine.specs} />}
-          <PriceDetail
-            price={
-                machine.pricing?.price_per_day ??
-                parseFloat(machine.price || "0")
-            }
-            />
+          <div className="sticky top-6">
+            <h1 className="text-2xl font-bold">{machine.name}</h1>
+            {machine.specs && <SpecsDetail specsMachinary={machine.specs} />}
+            <PriceDetail
+              price={
+                  machine.pricing?.price_per_day ??
+                  parseFloat(machine.price || "0")
+              }
+              />
+          </div>
         </div>
       </div>
     </section>

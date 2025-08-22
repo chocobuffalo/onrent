@@ -1,5 +1,12 @@
 "use client";
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+
+interface LocationData {
+  lat: number;
+  lng: number;
+  address?: string;
+  placeId?: string;
+}
 
 interface AmazonLocationMapProps {
   center?: [number, number];
@@ -7,7 +14,9 @@ interface AmazonLocationMapProps {
   height?: string;
   width?: string;
   className?: string;
-  onLocationSelect?: (coordinates: { lat: number; lng: number }, address?: string) => void;
+  onLocationSelect?: (coordinates: LocationData) => void;
+  initialLocation?: LocationData | null;
+  showLocationInfo?: boolean;
 }
 
 declare global {
@@ -22,39 +31,140 @@ export default function AmazonLocationMap({
   height = "400px",
   width = "100%",
   className = "",
-  onLocationSelect
+  onLocationSelect,
+  initialLocation = null,
+  showLocationInfo = true
 }: AmazonLocationMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
   const marker = useRef<any>(null);
+
+  // Estados para la búsqueda
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number, address?: string} | null>(null);
 
-  useEffect(() => {
-    const loadMapLibre = () => {
-      return new Promise<void>((resolve, reject) => {
-        if (window.maplibregl) {
-          resolve();
-          return;
+  // Estados para la ubicación
+  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(initialLocation);
+  const [isDragging, setIsDragging] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  // Función para cargar MapLibre GL JS
+  const loadMapLibre = useCallback(() => {
+    return new Promise<void>((resolve, reject) => {
+      if (window.maplibregl) {
+        resolve();
+        return;
+      }
+
+      const cssLink = document.createElement('link');
+      cssLink.href = 'https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.css';
+      cssLink.rel = 'stylesheet';
+      document.head.appendChild(cssLink);
+
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.js';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load MapLibre GL JS'));
+      document.head.appendChild(script);
+    });
+  }, []);
+
+  // Función para obtener la dirección desde coordenadas (geocodificación inversa)
+  const reverseGeocode = useCallback(async (lat: number, lng: number): Promise<string> => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'OnRentX/1.0'
+          }
         }
+      );
 
-        const cssLink = document.createElement('link');
-        cssLink.href = 'https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.css';
-        cssLink.rel = 'stylesheet';
-        document.head.appendChild(cssLink);
+      if (response.ok) {
+        const data = await response.json();
+        return data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      }
+    } catch (error) {
+      console.error('Error in reverse geocoding:', error);
+    }
 
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.js';
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load MapLibre GL JS'));
-        document.head.appendChild(script);
-      });
+    return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  }, []);
+
+  // Función para actualizar la ubicación seleccionada
+  const updateSelectedLocation = useCallback(async (lat: number, lng: number, address?: string) => {
+    let finalAddress = address;
+
+    // Si no hay dirección, intentar obtenerla por geocodificación inversa
+    if (!finalAddress) {
+      finalAddress = await reverseGeocode(lat, lng);
+    }
+
+    const locationData: LocationData = {
+      lat,
+      lng,
+      address: finalAddress
     };
 
+    setSelectedLocation(locationData);
+
+    // Notificar al componente padre
+    if (onLocationSelect) {
+      onLocationSelect(locationData);
+    }
+  }, [reverseGeocode, onLocationSelect]);
+
+  // Función para actualizar el marcador en el mapa
+  const updateMarker = useCallback((lat: number, lng: number) => {
+    if (!map.current || !window.maplibregl) return;
+
+    // Remover marcador existente
+    if (marker.current) {
+      marker.current.remove();
+    }
+
+    // Crear nuevo marcador draggable
+    marker.current = new window.maplibregl.Marker({
+      color: '#FF6B35',
+      draggable: true
+    })
+      .setLngLat([lng, lat])
+      .addTo(map.current);
+
+    // Event listeners para el marcador
+    marker.current.on('dragstart', () => {
+      setIsDragging(true);
+    });
+
+    marker.current.on('dragend', async () => {
+      setIsDragging(false);
+      const newCoords = marker.current.getLngLat();
+      await updateSelectedLocation(newCoords.lat, newCoords.lng);
+    });
+
+    // Centrar el mapa en la nueva ubicación
+    map.current.flyTo({
+      center: [lng, lat],
+      zoom: Math.max(map.current.getZoom(), 15),
+      duration: 1000
+    });
+  }, [updateSelectedLocation]);
+
+  // Función para manejar clics en el mapa
+  const handleMapClick = useCallback(async (e: any) => {
+    if (isDragging) return; // No procesar si se está arrastrando el marcador
+
+    const { lat, lng } = e.lngLat;
+    updateMarker(lat, lng);
+    await updateSelectedLocation(lat, lng);
+  }, [isDragging, updateMarker, updateSelectedLocation]);
+
+  // Inicializar el mapa
+  useEffect(() => {
     const initializeMap = async () => {
       try {
         await loadMapLibre();
@@ -74,20 +184,23 @@ export default function AmazonLocationMap({
         map.current = new window.maplibregl.Map({
           container: mapContainer.current,
           style: `https://maps.geo.${region}.amazonaws.com/maps/v0/maps/${mapName}/style-descriptor?key=${apiKey}`,
-          center: center,
-          zoom: zoom,
+          center: initialLocation ? [initialLocation.lng, initialLocation.lat] : center,
+          zoom: initialLocation ? 15 : zoom,
         });
 
         map.current.addControl(new window.maplibregl.NavigationControl(), "top-left");
 
-        // Click event para seleccionar ubicación manualmente
-        map.current.on('click', (e: any) => {
-          const coordinates = {
-            lat: e.lngLat.lat,
-            lng: e.lngLat.lng
-          };
+        // Event listener para clics en el mapa
+        map.current.on('click', handleMapClick);
 
-          handleLocationSelection(coordinates, coordinates.lat, coordinates.lng);
+        // Evento cuando el mapa está completamente cargado
+        map.current.on('load', () => {
+          setMapLoaded(true);
+
+          // Si hay una ubicación inicial, mostrar el marcador
+          if (initialLocation) {
+            updateMarker(initialLocation.lat, initialLocation.lng);
+          }
         });
 
       } catch (error) {
@@ -101,12 +214,13 @@ export default function AmazonLocationMap({
       if (map.current) {
         map.current.remove();
         map.current = null;
+        marker.current = null;
       }
     };
-  }, [center, zoom]);
+  }, [center, zoom, initialLocation, handleMapClick, updateMarker, loadMapLibre]);
 
-  // Función para buscar lugares usando OpenStreetMap Nominatim (alternativa gratuita)
-  const searchPlacesAlternative = async (query: string) => {
+  // Función para buscar lugares usando AWS Location Service con fallback a Nominatim
+  const searchPlaces = useCallback(async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
       setShowResults(false);
@@ -116,11 +230,45 @@ export default function AmazonLocationMap({
     setIsSearching(true);
 
     try {
+      const apiKey = process.env.NEXT_PUBLIC_AWS_KEY;
+      const region = "us-east-2";
+      const indexName = "Ubicacion_obra";
+
+      // Intentar con AWS Location Service primero
+      if (apiKey) {
+        try {
+          const response = await fetch(
+            `https://places.geo.${region}.amazonaws.com/places/v0/indexes/${indexName}/search/text?key=${apiKey}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                Text: query,
+                MaxResults: 5,
+                BiasPosition: center,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            setSearchResults(data.Results || []);
+            setShowResults(true);
+            return;
+          }
+        } catch (awsError) {
+          console.warn('AWS Location Service failed, falling back to Nominatim:', awsError);
+        }
+      }
+
+      // Fallback a Nominatim
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
         {
           headers: {
-            'User-Agent': 'OnRentX/1.0' // Requerido por Nominatim
+            'User-Agent': 'OnRentX/1.0'
           }
         }
       );
@@ -149,97 +297,21 @@ export default function AmazonLocationMap({
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [center]);
 
-  // Función para buscar lugares usando Amazon Location Service (requiere configuración adicional)
-  const searchPlaces = async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      setShowResults(false);
-      return;
-    }
-
-    setIsSearching(true);
-
-    try {
-      const apiKey = process.env.NEXT_PUBLIC_AWS_KEY;
-      const region = "us-east-2";
-      const indexName = "Ubicacion_obra"; // Necesitas crear un Place Index en AWS
-
-      const response = await fetch(
-        `https://places.geo.${region}.amazonaws.com/places/v0/indexes/${indexName}/search/text?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            Text: query,
-            MaxResults: 5,
-            BiasPosition: center, // Bias hacia la posición actual
-          }),
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setSearchResults(data.Results || []);
-        setShowResults(true);
-      } else {
-        console.error('Error searching places:', response.statusText);
-        // Fallback a Nominatim si AWS falla
-        await searchPlacesAlternative(query);
-      }
-    } catch (error) {
-      console.error('Error searching places with AWS:', error);
-      // Fallback a Nominatim si AWS falla
-      await searchPlacesAlternative(query);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // Función para manejar la selección de ubicación
-  const handleLocationSelection = (coordinates: {lat: number, lng: number}, lat: number, lng: number, address?: string) => {
-    setSelectedLocation({ lat, lng, address });
-
-    // Actualizar marcador en el mapa
-    if (marker.current) {
-      marker.current.remove();
-    }
-
-    if (map.current && window.maplibregl) {
-      marker.current = new window.maplibregl.Marker({ color: '#FF6B35' })
-        .setLngLat([lng, lat])
-        .addTo(map.current);
-
-      // Centrar el mapa en la nueva ubicación
-      map.current.flyTo({
-        center: [lng, lat],
-        zoom: 15,
-        duration: 1000
-      });
-    }
-
-    // Callback al componente padre
-    if (onLocationSelect) {
-      onLocationSelect({ lat, lng }, address);
-    }
-
-    // Ocultar resultados de búsqueda
-    setShowResults(false);
-    setSearchQuery('');
-  };
-
-  // Función para seleccionar desde los resultados de búsqueda
-  const selectSearchResult = (result: any) => {
+  // Función para seleccionar un resultado de búsqueda
+  const selectSearchResult = useCallback(async (result: any) => {
     const coords = result.Place.Geometry.Point;
     const lat = coords[1];
     const lng = coords[0];
     const address = result.Place.Label;
 
-    handleLocationSelection({ lat, lng }, lat, lng, address);
-  };
+    updateMarker(lat, lng);
+    await updateSelectedLocation(lat, lng, address);
+
+    setShowResults(false);
+    setSearchQuery('');
+  }, [updateMarker, updateSelectedLocation]);
 
   // Debounce para la búsqueda
   useEffect(() => {
@@ -253,20 +325,33 @@ export default function AmazonLocationMap({
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  }, [searchQuery, searchPlaces]);
+
+  // Función para limpiar la ubicación
+  const clearLocation = useCallback(() => {
+    setSelectedLocation(null);
+    if (marker.current) {
+      marker.current.remove();
+      marker.current = null;
+    }
+    if (onLocationSelect) {
+      onLocationSelect({ lat: 0, lng: 0 });
+    }
+  }, [onLocationSelect]);
 
   return (
     <div className="relative">
-      {/* Barra de búsqueda */}
+      {/* Barra de búsqueda mejorada */}
       <div className="relative mb-4">
         <div className="relative">
           <input
             type="text"
-            placeholder="Buscar ubicación..."
+            placeholder="Buscar dirección, ciudad o punto de referencia..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setShowResults(searchResults.length > 0)}
-            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+            disabled={!mapLoaded}
           />
           <div className="absolute inset-y-0 right-0 flex items-center pr-3">
             {isSearching ? (
@@ -279,22 +364,22 @@ export default function AmazonLocationMap({
           </div>
         </div>
 
-        {/* Resultados de búsqueda */}
+        {/* Resultados de búsqueda mejorados */}
         {showResults && searchResults.length > 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
             {searchResults.map((result, index) => (
               <div
                 key={index}
                 onClick={() => selectSearchResult(result)}
-                className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                className="px-4 py-3 hover:bg-orange-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
               >
                 <div className="flex items-start gap-3">
-                  <svg className="h-5 w-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                   </svg>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{result.Place.Label}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{result.Place.Label}</p>
                     {result.Place.Country && (
                       <p className="text-xs text-gray-500">{result.Place.Country}</p>
                     )}
@@ -306,23 +391,33 @@ export default function AmazonLocationMap({
         )}
       </div>
 
-      {/* Ubicación seleccionada */}
-      {selectedLocation && (
-        <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-          <div className="flex items-start gap-3">
-            <svg className="h-5 w-5 text-orange-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-gray-900">Ubicación seleccionada</p>
-              <p className="text-xs text-gray-600">
-                {selectedLocation.address || `${selectedLocation.lat.toFixed(6)}, ${selectedLocation.lng.toFixed(6)}`}
-              </p>
-              <p className="text-xs text-orange-600 mt-1">
-                Lat: {selectedLocation.lat.toFixed(6)}, Lng: {selectedLocation.lng.toFixed(6)}
-              </p>
+      {/* Información de ubicación seleccionada */}
+      {selectedLocation && showLocationInfo && (
+        <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="p-1 bg-orange-500 rounded-full">
+                <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900">Ubicación de la obra</p>
+                <p className="text-xs text-gray-700 mt-1 break-words">
+                  {selectedLocation.address || "Ubicación personalizada"}
+                </p>
+                <p className="text-xs text-orange-700 mt-1 font-mono">
+                  {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
+                </p>
+              </div>
             </div>
+            <button
+              onClick={clearLocation}
+              className="ml-2 text-xs text-orange-600 hover:text-orange-800 underline flex-shrink-0"
+            >
+              Cambiar
+            </button>
           </div>
         </div>
       )}
@@ -331,13 +426,32 @@ export default function AmazonLocationMap({
       <div
         ref={mapContainer}
         style={{ height, width }}
-        className={`rounded-lg overflow-hidden border ${className}`}
-      />
+        className={`rounded-lg overflow-hidden border shadow-sm ${className} ${!mapLoaded ? 'bg-gray-100' : ''}`}
+      >
+        {!mapLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-2"></div>
+              <p className="text-sm text-gray-600">Cargando mapa...</p>
+            </div>
+          </div>
+        )}
+      </div>
 
-      {/* Instrucciones */}
-      <p className="text-xs text-gray-500 mt-2">
-        💡 Busca una ubicación arriba o haz clic en el mapa para seleccionar un punto
-      </p>
+      {/* Instrucciones mejoradas */}
+      <div className="mt-3 text-xs text-gray-500 space-y-1">
+        <p className="flex items-center gap-1">
+          <span>Busca una dirección arriba o haz clic en el mapa para seleccionar</span>
+        </p>
+        <p className="flex items-center gap-1">
+          <span>Arrastra el marcador para ajustar la posición exacta</span>
+        </p>
+        {isDragging && (
+          <p className="text-orange-600 font-medium">
+            Arrastrando marcador... Suelta para confirmar la ubicación
+          </p>
+        )}
+      </div>
     </div>
   );
 }

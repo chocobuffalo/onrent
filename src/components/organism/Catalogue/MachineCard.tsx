@@ -14,12 +14,17 @@ export default function MachineCard({ data }: Props) {
   // Imagen por defecto si no existe — maneja http(s), rutas relativas y fallback
   const imageUrl = (() => {
     if (!data.image) return "/images/catalogue/machine5.jpg";
+
+    // Si ya es una URL completa, úsala tal como viene
     if (data.image.startsWith("http://") || data.image.startsWith("https://"))
-      return data.image;
-    if (data.image.startsWith("/"))
-      return `${process.env.NEXT_PUBLIC_API_URL || ""}${data.image}`;
-    return data.image;
-  })();
+        return data.image;
+
+    // Si es una ruta relativa, construye la URL completa
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    return data.image.startsWith("/")
+        ? `${baseUrl}${data.image}`
+        : `${baseUrl}/${data.image}`;
+    })();
 
   // Generamos la ruta dinámica con machinetype + id
   const machineType = data.machinetype || "maquinaria";
@@ -29,6 +34,9 @@ export default function MachineCard({ data }: Props) {
   );
 
   console.log(machineCategory);
+  console.log("Data image:", data.image);
+  console.log("Final imageUrl:", imageUrl);
+  console.log("NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
 
   return (
     <Link href={`/${data.id}`} passHref>
