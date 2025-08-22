@@ -311,17 +311,13 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                     name="delivery_address"
                     inputClass="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Proporciona detalles adicionales como referencias, número de obra, o instrucciones especiales para el transportista.
-                  </p>
 
-                  {/* ToggleButton debajo de Dirección de entrega */}
-                  <div className="mt-2">
+                  <div className="mt-3 flex items-center gap-3">
                     <ToggleButton
                       isChecked={saveAddress}
                       onChange={toggleSaveAddress}
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500">
                       Guardar esta dirección para futuras reservas
                     </p>
                   </div>
