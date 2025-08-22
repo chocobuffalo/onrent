@@ -5,44 +5,27 @@ import Image from "next/image";
 import { CatalogueItem } from "./types";
 import { interestLinks } from "@/constants/routes/frontend";
 import { currency } from "@/constants";
+import { getImageUrl } from "@/utils/imageUrl";
 
 interface Props {
   data: CatalogueItem;
 }
 
 export default function MachineCard({ data }: Props) {
-  // Imagen por defecto si no existe — maneja http(s), rutas relativas y fallback
-  const imageUrl = (() => {
-    if (!data.image) return "/images/catalogue/machine5.jpg";
+  const imageUrl = data.image
+    ? getImageUrl(data.image)
+    : "/images/catalogue/machine5.jpg";
 
-    // Si ya es una URL completa, úsala tal como viene
-    if (data.image.startsWith("http://") || data.image.startsWith("https://"))
-        return data.image;
-
-    // Si es una ruta relativa, construye la URL completa
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-    return data.image.startsWith("/")
-        ? `${baseUrl}${data.image}`
-        : `${baseUrl}/${data.image}`;
-    })();
-
-  // Generamos la ruta dinámica con machinetype + id
   const machineType = data.machinetype || "maquinaria";
 
   const machineCategory = interestLinks.find(
     (item) => item.machine_category === data.machine_category
   );
 
-  console.log(machineCategory);
-  console.log("Data image:", data.image);
-  console.log("Final imageUrl:", imageUrl);
-  console.log("NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
-
   return (
     <Link href={`/${data.id}`} passHref>
       <div className="rounded-xl border border-gray-200 shadow-sm hover:shadow-md p-3 w-full max-w-xs flex flex-col justify-between cursor-pointer">
 
-        {/* Imagen de la máquina */}
         <div className="relative w-full h-40 rounded-lg overflow-hidden">
           <Image
             src={imageUrl}
@@ -53,7 +36,6 @@ export default function MachineCard({ data }: Props) {
           />
         </div>
 
-        {/* Información textual */}
         <div className="mt-3">
           <h3 className="text-sm font-medium leading-tight">{data.name}</h3>
           <p className="text-xs font-bold text-black uppercase">
@@ -62,7 +44,6 @@ export default function MachineCard({ data }: Props) {
           <p className="text-xs text-gray-500">{data.location}</p>
         </div>
 
-        {/* Precio e icono */}
         <div className="flex items-center justify-between mt-3">
           <span className="text-green-600 font-bold text-sm italic">
             {data.price}$<span className="not-italic">/{currency.code}</span>

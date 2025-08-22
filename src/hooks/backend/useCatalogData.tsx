@@ -103,9 +103,6 @@ export default function useCatalog(slug?: string) {
           params.set("max_price", String(rangePrice.max));
         }
 
-        // ⚠️ NOTA: El backend actual no documenta location/start_date/end_date,
-        // así que NO los enviamos para evitar confusiones.
-
         const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN;
         const url = apiBase
           ? `${apiBase}/api/catalog?${params.toString()}`
@@ -128,7 +125,7 @@ export default function useCatalog(slug?: string) {
           name: m.name,
           location: m.location || "Ubicación no disponible",
           price: String(m.list_price ?? "0"),
-          image: m.image || m.image_url || m.product_image || "/images/catalogue/machine5.jpg",
+          image: m.image || "/images/catalogue/machine5.jpg",
           machinetype: machineCategory || "maquinaria",
           machine_category: machineCategory || "other",
         }));

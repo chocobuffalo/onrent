@@ -1,4 +1,5 @@
 import MachineDetail from "@/components/organism/MachineDetail/MachineDetail";
+import BackButton from '../../../../components/atoms/BackButton/BackButton';
 
 interface MachineDetailPageProps {
   params: Promise<{ machinetype: string; id: string }>;
@@ -22,5 +23,10 @@ export default async function MachineDetailPage({ params }: MachineDetailPagePro
     return <div className="text-red-500 text-center mt-10">Máquina no encontrada</div>;
   }
 
-  return <MachineDetail machine={{ ...machine, machinetype }} />;
+  return (
+    <>
+      <BackButton size={24} className="pl-10 pt-4" />
+      <MachineDetail machine={{ ...machine, machinetype }} />
+    </>
+  );
 }

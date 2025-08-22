@@ -1,5 +1,6 @@
 import FrontSectionWrapper from "@/components/molecule/frontSectionWrapper/frontSectionWrapper";
 import CatalogClient from "@/hooks/frontend/buyProcess/useCatalogClient";
+import BackButton from "@/components/atoms/BackButton/BackButton";
 
 export const metadata = {
   title: "Catálogo - OnRentX",
@@ -8,8 +9,11 @@ export const metadata = {
 
 export default function CatalogPage() {
   return (
-    <FrontSectionWrapper identicator="catalogSection" extraClass="py-5">
-      <CatalogClient />
-    </FrontSectionWrapper>
+    <>
+        <BackButton size={24} className="pl-10 pt-4" />
+        <FrontSectionWrapper identicator="catalogSection" extraClass="py-5">
+            <CatalogClient />
+        </FrontSectionWrapper>
+    </>
   );
 }
