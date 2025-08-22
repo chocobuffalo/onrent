@@ -44,7 +44,8 @@ const authSlicer = createSlice({
   },
 });
 
-export const { setLogin, setProfile, setAvatar, setName, setEmail } =
+export const { setLogin, setProfile, setAvatar, setName, setEmail,
+  setRole  } =
   authSlicer.actions;
 
 export const selectProfile = (state: RootState) =>
