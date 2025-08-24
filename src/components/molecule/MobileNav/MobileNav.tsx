@@ -11,7 +11,7 @@ export default function MobileNav() {
         id="navbarSupportedContent"
       >
           <ul className={`navigation mobileNav`}>
-              {dashboardRoutes.map((route) => <SidebarLink key={route.title} route={route} />)}
+              {dashboardRoutes.map((route) => <SidebarLink key={route.link} route={route} />)}
           </ul>
       </div>
     </div>

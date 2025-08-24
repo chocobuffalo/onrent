@@ -61,8 +61,9 @@ export const callbacks: NextAuthConfig["callbacks"] = {
             access_token: account?.access_token,
           }),
         });
-
+        
         if (!response.ok) {
+          console.log('response',response);
           console.error('Error en social login:', response.statusText);
           return false;
         }

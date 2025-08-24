@@ -17,10 +17,10 @@ const Schema = Yup.object({
   estimated_duration: Yup.string(),
   start_date: Yup.string(),
   responsible_name: Yup.string(),
-  work_schedule: Yup.string(),
+  work_schedule: Yup.string().required("Este campo es requerido"),
   site_manager: Yup.string(),
-  manager_phone: Yup.string(),
-  work_type: Yup.string(),
+  manager_phone: Yup.string().required("Este campo es requerido"),
+  work_type: Yup.string().required("Este campo es requerido"),
   terrain_type: Yup.string(),
   access_terrain_condition: Yup.string(),
   access_notes: Yup.string(),
@@ -36,7 +36,8 @@ const {
     register,
     handleSubmit,
     formState: { errors, isValid },
-    setError
+    setError,
+    clearErrors
   } = useForm({
     resolver: yupResolver(Schema),
     mode: "onChange",
@@ -65,7 +66,7 @@ const {
   const [terrainType, setTerrainType] = useState<string[]>([]);
   const session = useSession();
   const router = useRouter();
-  console.log(session);
+
   useEffect(() => {
           if( typeof window !== "undefined"){
               if (session.status !== "authenticated") {
@@ -78,25 +79,52 @@ const {
                 
           }
       }, [session.status,project.start_date, project.end_date]);
+
+
   useEffect(()=>{
      setProject(prev => ({ ...prev, terrain_type: terrainType.join(", ") }));
   },[terrainType])
 
-      const handlerStartDate = (date:string)=>{
-        setProject(prev => ({ ...prev, start_date: date }));
-      }
-      const handlerEndDate = (date:string)=>{
-       
-        
-        setProject(prev => ({ ...prev, end_date: date }));
-      }
+
+
+      
+
+
       const onSubmit = (data:any) => {
-       // data.preventDefault();
-        console.log(Object.keys(data));
-        setError("name", {
-          type: "manual",
-          message: "Fecha de inicio es requerida"
-        });
+        console.log(data);
+        //revisarmos los errores
+        if(data.name ===''){
+          setError("name", {
+            type: "manual",
+            message: "Este campo es requerido"
+          });
+        }
+        if(data.responsible_name ===''){
+          setError("responsible_name", {
+            type: "manual",
+            message: "Este campo es requerido"
+          });
+  
+        }
+        if(data.start_date ===''){
+          setError("start_date", {
+            type: "manual",
+            message: "Este campo es requerido"
+          });
+  
+        }
+        if(data.end_date ===''){
+          setError("end_date", {
+            type: "manual",
+            message: "Este campo es requerido"
+          });
+  
+        }
+
+
+        
+    
+
 
       }
 
@@ -106,8 +134,7 @@ const {
       return {
           register,
           handleSubmit,
-          handlerEndDate,
-          handlerStartDate,
+        clearErrors,
           reserves_types,
           project,
           errors,

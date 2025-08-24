@@ -10,6 +10,7 @@ import { terrainTypes } from "@/constants";
 import { typeOptions } from "@/constants/routes/home";
 import useNewProjectForm from "@/hooks/frontend/buyProcess/useNewProjectForm";
 import { countDays, fixDate } from "@/utils/compareDate";
+import currentDate from "@/utils/currentDate";
 
 export default function NewProjectForm() {
 
@@ -17,13 +18,12 @@ export default function NewProjectForm() {
 
     const { register,
             handleSubmit,
-            handlerStartDate,
-            handlerEndDate,
             reserves_types,
             project,
             errors,
             terrainType, 
             setTerrainType,
+            clearErrors,
             onSubmit,
             setProject,
             isValid } = useNewProjectForm()
@@ -34,6 +34,15 @@ export default function NewProjectForm() {
             setProject(prev => ({ ...prev, estimated_duration: dayLength.toString() }));
 
           }
+          const handlerStartDate = (date:string)=>{
+            setProject(prev => ({ ...prev, start_date: date }));
+            clearErrors("start_date");
+          }
+          const handlerEndDate = (date:string)=>{       
+            setProject(prev => ({ ...prev, end_date: date }));
+            clearErrors("end_date");
+          }
+
           const dayValue = project.estimated_duration !== "NaN" ? `${project.estimated_duration}  ${project.estimated_duration === "1" ? "día" : "días" }` : "calculando..." ;
           const handlerGetTerrainType = (type:string) => {
             if (terrainType.includes(type)) {
@@ -89,7 +98,9 @@ export default function NewProjectForm() {
                     value={project.start_date}
                     endDate={ typeof fixDate(project.end_date) === "object" ? fixDate(project.end_date) : undefined } 
                     placeholder="Fecha de inicio de la obra"  />
-                    <input type="hidden" {...register("start_date")} name="start_date" value={project.start_date} />
+                    <input type="hidden" {...register("start_date")} className="hidden" name="start_date" value={project.start_date} />
+                    {errors.start_date && <p className="text-red-500 text-sm">{errors.start_date.message}</p>}
+
                 </div>
               </div>
               <div className="w-full lg:w-1/2">
@@ -98,10 +109,11 @@ export default function NewProjectForm() {
                   <DateInput 
                     action={(date:string)=>{handlerEndDate(date);handlerWorkSchedule(project.start_date, date)}} 
                     value={project.end_date}
-                    startDate={ typeof fixDate(project.start_date) === "object" ? fixDate(project.start_date) : undefined }
-
+                    startDate={ typeof fixDate(project.start_date) === "object" ? fixDate(project.start_date) : currentDate() }
+                    
                     placeholder="Fecha de fin de la obra"  />
                     <input type="hidden" {...register("end_date")} name="end_date" value={project.end_date} />
+                    {errors.end_date && <p className="text-red-500 text-sm">{errors.end_date.message}</p>}
                 </div>
               </div>
             </div>
