@@ -35,7 +35,7 @@ export default function SidebarMenu() {
 
       <ul className="db-dashboard-menu">
         {visibleRoutes.map((route) => (
-          <SidebarLink key={route.title} route={route} />
+          <SidebarLink key={route.link} route={route} />
         ))}
         
         {visibleRoutes.length === 0 && (

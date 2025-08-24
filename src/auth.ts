@@ -19,17 +19,21 @@ export const authOptions: AuthConfig = {
   callbacks,
   session: {
     strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 7 días
+    maxAge: 6 * 24 * 60 * 60, // 6 días
     updateAge: 24 * 60 * 60, // Actualizar diariamente
   },
   jwt: {
-    maxAge: 24 * 60 * 60 * 7,
+    maxAge: 24 * 60 * 60 * 6,
   },
   pages: {
     signIn: "/iniciar-session",
     newUser: "/complete-usuario",
   },
   events: {
+    async session(event){
+       console.log('Console log from session event: ', event);
+
+    },
     async signOut(event) {
       
       if ('token' in event && event.token?.accessToken) {

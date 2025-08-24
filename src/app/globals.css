@@ -251,3 +251,9 @@ h1,h2{
   min-width: 320px !important;
   max-width: 500px !important;
 }
+select.flatpickr-monthDropdown-months {
+    padding: 0 !important;
+}
+option.flatpickr-monthDropdown-month {
+    color: white !important;
+}
