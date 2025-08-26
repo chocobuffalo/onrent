@@ -11,6 +11,7 @@ import { typeOptions } from "@/constants/routes/home";
 import useNewProjectForm from "@/hooks/frontend/buyProcess/useNewProjectForm";
 import { countDays, fixDate } from "@/utils/compareDate";
 import currentDate from "@/utils/currentDate";
+import { get } from "axios";
 
 export default function NewProjectForm() {
 
@@ -21,27 +22,19 @@ export default function NewProjectForm() {
             reserves_types,
             project,
             errors,
+            handlerWorkSchedule,
             terrainType, 
             setTerrainType,
             clearErrors,
+            handlerStartDate,
+            handlerEndDate,
             onSubmit,
             setProject,
             isValid } = useNewProjectForm()
            console.log(Object.keys(errors), 'errors');
 
-          const handlerWorkSchedule = (startDate:any, endDate:any) => {
-            const dayLength = countDays(startDate, endDate) + 1;
-            setProject(prev => ({ ...prev, estimated_duration: dayLength.toString() }));
-
-          }
-          const handlerStartDate = (date:string)=>{
-            setProject(prev => ({ ...prev, start_date: date }));
-            clearErrors("start_date");
-          }
-          const handlerEndDate = (date:string)=>{       
-            setProject(prev => ({ ...prev, end_date: date }));
-            clearErrors("end_date");
-          }
+        
+         
 
           const dayValue = project.estimated_duration !== "NaN" ? `${project.estimated_duration}  ${project.estimated_duration === "1" ? "día" : "días" }` : "calculando..." ;
           const handlerGetTerrainType = (type:string) => {
@@ -109,8 +102,8 @@ export default function NewProjectForm() {
                   <DateInput 
                     action={(date:string)=>{handlerEndDate(date);handlerWorkSchedule(project.start_date, date)}} 
                     value={project.end_date}
-                    startDate={ typeof fixDate(project.start_date) === "object" ? fixDate(project.start_date) : currentDate() }
-                    
+                    startDate={project.start_date !== '' && typeof fixDate(project.start_date) === "object" ? fixDate(project.start_date) : currentDate() }
+
                     placeholder="Fecha de fin de la obra"  />
                     <input type="hidden" {...register("end_date")} name="end_date" value={project.end_date} />
                     {errors.end_date && <p className="text-red-500 text-sm">{errors.end_date.message}</p>}
@@ -150,12 +143,9 @@ export default function NewProjectForm() {
           </div>
           <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
               <div className="w-full  lg:w-1/2 ">
-                <div className="flex flex-col gap-2">
-                  <label className="" htmlFor="name">Ubicación de la obra </label>
-                  <FilterInput
-                    checkpersist={true}
-                    inputClass="w-full rounded-sm p-0 px-2 h-[50px] border-[#bbb] border-1 focus:outline-none"
-                  />
+                <div className="form-group flex flex-col gap-2">
+                  <label className="" htmlFor="location">Ubicación del proyecto </label>
+                  <input className="form-control mb-1 w-full rounded-sm px-4 h-[50px] py-2 border-[#bbb] border-1 focus:outline-none" placeholder="Ingresa el nombre del proyecto" type="text" {...register("location")} />
                 </div>
               </div>
               <div className="w-full  lg:w-1/2 ">
@@ -336,8 +326,8 @@ export default function NewProjectForm() {
           </div>
         </div>
         <div className="flex justify-between  lg:w-1/2">
-          <button type="button" className="border-1 border-secondary px-4 py-2 rounded-sm cursor-pointer text-secondary duration-300 hover:bg-secondary hover:text-white" onClick={() => setProject({ ...project, state: "draft" })}>Guardar borrador</button>
-          <button type="submit" className={`border-1 border-secondary px-4 py-2 rounded-sm  text-secondary duration-300 ${isValid ? 'cursor-pointer hover:bg-secondary hover:text-white' : 'opacity-50 cursor-not-allowed'}`} disabled={!isValid}>Guardar</button>
+          <button type="submit" className="border-1 border-secondary px-4 py-2 rounded-sm cursor-pointer text-secondary duration-300 hover:bg-secondary hover:text-white" onClick={() => setProject({ ...project, state: "draft" })}>Guardar borrador</button>
+          <button type="submit" className={`border-1 border-secondary px-4 py-2 rounded-sm  text-secondary duration-300 ${Object.keys(errors).length < 1 ? 'cursor-pointer hover:bg-secondary hover:text-white' : 'opacity-50 cursor-not-allowed'}`} disabled={Object.keys(errors).length > 0}>Guardar</button>
         </div>
 
       </form>

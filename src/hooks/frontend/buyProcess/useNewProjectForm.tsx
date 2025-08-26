@@ -1,5 +1,6 @@
 "use client";
 import { useUIAppSelector } from "@/libs/redux/hooks";
+import createProject from "@/services/createProject";
 import getProjects from "@/services/getProjects";
 import { countDays } from "@/utils/compareDate";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -10,16 +11,17 @@ import { set, useForm } from "react-hook-form";
 import * as Yup from "yup";
 
 
+const phoneRegExp = /^(\+?\d{0,4})?\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{4}\)?)?$/;
 const Schema = Yup.object({
   end_date: Yup.string(),
   name: Yup.string(),
   location: Yup.string(),
   estimated_duration: Yup.string(),
   start_date: Yup.string(),
-  responsible_name: Yup.string(),
+  responsible_name: Yup.string().required("Este campo es requerido"),
   work_schedule: Yup.string().required("Este campo es requerido"),
   site_manager: Yup.string(),
-  manager_phone: Yup.string().required("Este campo es requerido"),
+  manager_phone: Yup.string().required("Este campo es requerido").matches(phoneRegExp, 'Número de teléfono no válido'),
   work_type: Yup.string().required("Este campo es requerido"),
   terrain_type: Yup.string(),
   access_terrain_condition: Yup.string(),
@@ -37,6 +39,8 @@ const {
     handleSubmit,
     formState: { errors, isValid },
     setError,
+    setValue,
+    watch,
     clearErrors
   } = useForm({
     resolver: yupResolver(Schema),
@@ -85,41 +89,61 @@ const {
      setProject(prev => ({ ...prev, terrain_type: terrainType.join(", ") }));
   },[terrainType])
 
+    useEffect(() => {
+    Object.entries(project).forEach(([key, value]) => {
+      // Convert arrays to strings if needed
+      const safeValue = Array.isArray(value) ? value.join(", ") : value;
+      setValue(key as keyof typeof project, safeValue);
+    });
+  }, [project, setValue]);
+
+  // Observar cambios del formulario y actualizar el estado
+  const formValues = watch();
 
 
-      
+  const handlerWorkSchedule = (startDate:any, endDate:any) => {
+    const dayLength = countDays(startDate, endDate) + 1;
+    setProject(prev => ({ ...prev, estimated_duration: dayLength.toString() }));
+  }
+
+  const handlerStartDate = (date:string)=>{
+    setProject(prev => ({ ...prev, start_date: date }));
+    clearErrors("start_date");
+  }
+  const handlerEndDate = (date:string)=>{       
+    setProject(prev => ({ ...prev, end_date: date }));
+    clearErrors("end_date");
+  }
+  
+  useEffect(()=>{
+    if(project.end_date !==''){
+      clearErrors("end_date");
+    }
+  },[project.end_date])
+
+  useEffect(()=>{
+    if(project.start_date !==''){
+      clearErrors("start_date");
+    }
+  },[project.start_date])
 
 
-      const onSubmit = (data:any) => {
+  const onSubmit = (data:any) => {
         console.log(data);
         //revisarmos los errores
-        if(data.name ===''){
-          setError("name", {
-            type: "manual",
-            message: "Este campo es requerido"
-          });
-        }
-        if(data.responsible_name ===''){
-          setError("responsible_name", {
-            type: "manual",
-            message: "Este campo es requerido"
-          });
-  
-        }
-        if(data.start_date ===''){
-          setError("start_date", {
-            type: "manual",
-            message: "Este campo es requerido"
-          });
-  
-        }
-        if(data.end_date ===''){
-          setError("end_date", {
-            type: "manual",
-            message: "Este campo es requerido"
-          });
-  
-        }
+      
+        // project 
+        // aqui esta llegando un estado previo
+
+        const newProject = data;
+
+
+        // createProject(newProject,(session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "")
+        // .then(res=>res.json())
+        // .then(res=>{
+        //   console.log(res);
+        // })
+    
 
 
         
@@ -134,7 +158,10 @@ const {
       return {
           register,
           handleSubmit,
-        clearErrors,
+          handlerStartDate,
+          handlerEndDate,
+          clearErrors,
+          handlerWorkSchedule,
           reserves_types,
           project,
           errors,

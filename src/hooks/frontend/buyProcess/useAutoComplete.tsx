@@ -21,12 +21,15 @@ export default function useAutoComplete(checkpersist?: boolean) {
 
   const debouncedFilterColors = useCallback(
     debounce(async (inputValue: string) => {
+      setIsLoading(true);
       try {
         const res = await getLocationList(inputValue || "Ciudad de Mexico");
         setOptions(res);
+        setIsLoading(false);
         return res;
       } catch (error) {
         console.error("Error filtering colors:", error);
+        setIsLoading(false);
         return options;
       }
     }, 500), // 500ms de delay
@@ -94,6 +97,7 @@ export default function useAutoComplete(checkpersist?: boolean) {
               label: data.Title,
               lat,
               lon,
+              data
             })
           );
           const getStorage = storage.getItem("filters");
