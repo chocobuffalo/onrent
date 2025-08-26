@@ -1,4 +1,3 @@
-// src/hooks/backend/useCatalogData.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -30,7 +29,7 @@ export default function useCatalog(slug?: string) {
     // type puede ser SelectInterface[] | SelectInterface | null
     if (Array.isArray(t) && t.length > 0) {
       const first = t[0] as SelectInterface;
-      if (first?.value && typeof first.value === "string") return first.value; // ya es heavy/light/...
+      if (first?.value && typeof first.value === "string") return first.value;
       const mapped = fromInterestByName(first?.label)?.machine_category;
       return mapped;
     }

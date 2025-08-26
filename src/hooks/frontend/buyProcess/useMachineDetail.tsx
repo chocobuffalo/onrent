@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { CatalogueItem } from "@/components/organism/Catalogue/types";
 
 interface LocationData {
   lat: number;
@@ -20,6 +21,8 @@ export default function useMachineDetail(machineId: number) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [machineData, setMachineData] = useState<CatalogueItem | null>(null);
+
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number;
     lng: number;
@@ -30,22 +33,45 @@ export default function useMachineDetail(machineId: number) {
 
   useEffect(() => {
     const fetchData = async () => {
-        try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/catalog/${machineId}`);
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN;
+        const url = apiBase
+          ? `${apiBase}/api/catalog/${machineId}`
+          : `/api/catalog/${machineId}`;
+
+        console.log("🔍 URL de petición MachineDetail:", url);
+
+        const res = await fetch(url);
         if (!res.ok) throw new Error("Producto no encontrado");
 
         const data = await res.json();
         if (!data || Object.keys(data).length === 0) {
-            throw new Error("Producto no encontrado");
+          throw new Error("Producto no encontrado");
         }
 
+        const processedMachine: CatalogueItem = {
+          id: data.id,
+          name: data.name || "Máquina sin nombre",
+          location: data.location || "Ubicación no disponible",
+          price: String(data.list_price ?? "0"),
+          image: data.image || "/images/catalogue/machine5.jpg",
+          machinetype: data.machine_category || "maquinaria",
+          machine_category: data.machine_category || "other",
+          description: data.description || "",
+          specs: data.specs || null,
+          pricing: data.pricing || null,
+        };
+
+        setMachineData(processedMachine);
         setError(null);
-        } catch (err: any) {
+      } catch (err: any) {
         setError(err.message || "Hubo un problema al cargar la información");
-        } finally {
+        setMachineData(null);
+      } finally {
         setLoading(false);
-        }
+      }
     };
+
     fetchData();
   }, [machineId]);
 
@@ -152,6 +178,7 @@ export default function useMachineDetail(machineId: number) {
     handleLocationSelect,
     getLocationForBooking,
     validateLocation,
-    clearLocation
+    clearLocation,
+    machineData,
   };
 }
