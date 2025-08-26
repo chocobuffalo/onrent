@@ -9,7 +9,8 @@ import DateRentInput from "@/components/molecule/dateRentInput/dateRentInput";
 import { BookingForm } from "@/components/molecule/bookingForm/bookingForm";
 import SpecsDetail from "@/components/molecule/specsDetail/specsDetail";
 import PriceDetail from "@/components/atoms/priceDetail/priceDetail";
-import AmazonLocationMap from "@/components/molecule/AmazonLocationService/amazonLocationMap";
+import AmazonLocationMap from "@/components/organism/AmazonLocationService/amazonLocationMap";
+import { getImageUrl } from "@/utils/imageUrl";
 
 interface MachineDetailProps {
   machine: CatalogueItem;
@@ -34,10 +35,10 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
     handleLocationSelect,
     getLocationForBooking,
     validateLocation,
-    clearLocation
+    clearLocation,
+    machineData,
   } = useMachineDetail(machine.id);
 
-  // Estados locales para los campos del formulario
   const [locationName, setLocationName] = useState('');
   const [workImage, setWorkImage] = useState<File | null>(null);
   const [workImagePreview, setWorkImagePreview] = useState<string | null>(null);
@@ -66,12 +67,17 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
     );
   }
 
-  // Función para manejar la selección de ubicación desde el mapa
+  const currentMachine = machineData || machine;
+
+  const imageUrl = currentMachine.image
+    ? getImageUrl(currentMachine.image)
+    : "/images/catalogue/machine5.jpg";
+
+
   const onMapLocationSelect = (locationData: LocationData) => {
     handleLocationSelect(locationData);
   };
 
-  // Función para manejar la selección de imagen
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -84,7 +90,6 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
     }
   };
 
-  // Función para limpiar la imagen
   const clearImage = () => {
     setWorkImage(null);
     setWorkImagePreview(null);
@@ -98,33 +103,36 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
     <section className="machine-detail py-5 px-4">
       <div className="container mx-auto lg:flex gap-4">
         <div className="lg:w-2/3">
-          <div className="w-full h-80 relative rounded-xl overflow-hidden shadow-md">
+          <div className="w-full h-100 relative rounded-xl overflow-hidden shadow-md">
             <Image
-              src={machine.image}
-              alt={machine.name}
-              width={850}
-              height={330}
-              className="object-cover object-center aspect-[16/6] w-full h-full"
+                src={imageUrl}
+                alt={currentMachine.name}
+                width={850}
+                height={330}
+                className="object-cover object-center aspect-[16/6] w-full h-full"
+                priority
+                unoptimized
             />
-          </div>
+            </div>
+
 
           {/* Mobile info */}
           <div className="block lg:hidden mt-6">
-            <h2 className="text-2xl font-bold">{machine.name}</h2>
-            {machine.specs && <SpecsDetail specsMachinary={machine.specs} />}
+            <h2 className="text-2xl font-bold">{currentMachine.name}</h2>
+            {currentMachine.specs && <SpecsDetail specsMachinary={currentMachine.specs} />}
           </div>
 
           {/* Descripción */}
           <div className="mt-6 block">
             <p className="text-sm text-gray-700">
               <span className="font-bold">Descripción:</span>{" "}
-              {machine.description?.trim()
-                ? machine.description
-                : `La ${machine.name} combina potencia, versatilidad y eficiencia en un solo equipo. Ideal para excavación, carga y transporte en obras civiles, agrícolas y de construcción.`}
+              {currentMachine.description?.trim()
+                ? currentMachine.description
+                : `La ${currentMachine.name} combina potencia, versatilidad y eficiencia en un solo equipo. Ideal para excavación, carga y transporte en obras civiles, agrícolas y de construcción.`}
             </p>
             <p className="mt-2 text-sm text-gray-600">
               <span className="font-semibold">Ubicación de la máquina:</span>{" "}
-              {machine.location || "Ubicación no especificada"}
+              {currentMachine.location || "Ubicación no especificada"}
             </p>
           </div>
 
@@ -133,8 +141,8 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
             <div className="block lg:hidden mb-6">
               <PriceDetail
                 price={
-                  machine.pricing?.price_per_day ??
-                  parseFloat(machine.price || "0")
+                  currentMachine.pricing?.price_per_day ??
+                  parseFloat(currentMachine.price || "0")
                 }
               />
             </div>
@@ -164,9 +172,9 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                   <p className="text-xs text-gray-500 italic">
                     Incluye un operador certificado
                   </p>
-                  {machine.pricing?.no_operator_discount && (
+                  {currentMachine.pricing?.no_operator_discount && (
                     <p className="text-xs italic text-green-600">
-                      -{machine.pricing.no_operator_discount}% si no incluye operador
+                      -{currentMachine.pricing.no_operator_discount}% si no incluye operador
                     </p>
                   )}
                 </div>
@@ -210,9 +218,9 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                 />
                 <div>
                   <p className="text-sm font-semibold">Combustible incluido</p>
-                  {machine.pricing?.no_fuel_discount && (
+                  {currentMachine.pricing?.no_fuel_discount && (
                     <p className="text-xs italic text-green-600">
-                      -{machine.pricing.no_fuel_discount}% si no incluye combustible
+                      -{currentMachine.pricing.no_fuel_discount}% si no incluye combustible
                     </p>
                   )}
                 </div>
@@ -372,35 +380,60 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                   <input
                     type="file"
                     accept="image/*"
+                    onChange={handleImageChange}
                     className="hidden"
                     id="work-image"
                   />
-                  <label
-                    htmlFor="work-image"
-                    className="cursor-pointer flex flex-col items-center gap-2"
-                  >
-                    <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    <span className="text-sm text-gray-600">
-                      Haz clic para seleccionar una imagen
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      JPG, PNG o WebP • Máximo 5MB
-                    </span>
-                  </label>
+
+                  {workImagePreview ? (
+
+                    <div className="relative">
+                      <Image
+                        src={workImagePreview}
+                        alt="Preview de la obra"
+                        width={200}
+                        height={150}
+                        className="mx-auto rounded-lg object-cover"
+                      />
+                      <button
+                        onClick={clearImage}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                      <p className="text-sm text-gray-600 mt-2">
+                        Haz clic en la X para cambiar la imagen
+                      </p>
+                    </div>
+                  ) : (
+
+                    <label
+                      htmlFor="work-image"
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      <span className="text-sm text-gray-600">
+                        Haz clic para seleccionar una imagen
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        JPG, PNG o WebP • Máximo 5MB
+                      </span>
+                    </label>
+                  )}
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
                   Esto nos ayuda a validar el terreno, determinar la accesibilidad y asignar la maquinaria más compatible con las condiciones del sitio.
                 </p>
-              </div> {/* cierre que faltaba */}
+              </div>
             </div>
           </div>
 
           {/* Formulario de reserva */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <BookingForm
-              machine={machine}
+              machine={currentMachine}
               router={router}
               getLocationForBooking={getLocationForBooking}
               validateLocation={validateLocation}
@@ -412,12 +445,12 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
         {/* Columna derecha - Desktop */}
         <div className="lg:w-1/3 hidden lg:block">
           <div className="sticky top-6">
-            <h1 className="text-2xl font-bold">{machine.name}</h1>
-            {machine.specs && <SpecsDetail specsMachinary={machine.specs} />}
+            <h1 className="text-2xl font-bold">{currentMachine.name}</h1>
+            {currentMachine.specs && <SpecsDetail specsMachinary={currentMachine.specs} />}
             <PriceDetail
               price={
-                machine.pricing?.price_per_day ??
-                parseFloat(machine.price || "0")
+                currentMachine.pricing?.price_per_day ??
+                parseFloat(currentMachine.price || "0")
               }
             />
           </div>
