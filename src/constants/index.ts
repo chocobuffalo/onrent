@@ -16,3 +16,10 @@ export const currency = {
     code: "MXN",
     name: "Peso mexicano"
 } 
+
+export const terrainTypes:string[] = [
+    'Firme',
+    'Lodoso',
+    'Inclinado',
+    'Obstáculos'
+]

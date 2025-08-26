@@ -7,6 +7,8 @@ import { Session } from "@auth/core/types";
 interface ExtendedUser extends AdapterUser {
   access_token?: string;
   role?: string;
+  user_id?: string;
+  name?: string;
 }
 
 interface ExtendedToken extends JWT {
@@ -23,14 +25,19 @@ interface ExtendedSession extends Session {
 interface SocialLoginResponse {
   access_token: string;
   message?: string;
+  user: {
+    role: string;
+    user_id: string;
+    name: string;
+  };
 }
 
 export const callbacks: NextAuthConfig["callbacks"] = {
   async signIn({ user, account, profile }) {
-    console.log('🔑 signIn callback triggered');
-    console.log('User:', user);
-    console.log('Account:', account);
-    console.log('Profile:', profile);
+    // console.log('🔑 signIn callback triggered');
+    // console.log('User:', user);
+    // console.log('Account:', account);
+    // console.log('Profile:', profile);
 
     // Para login con credenciales (email/password) - ya manejado en provider
     if (account?.provider === "credentials") {
@@ -54,15 +61,18 @@ export const callbacks: NextAuthConfig["callbacks"] = {
             access_token: account?.access_token,
           }),
         });
-
+        
         if (!response.ok) {
+          console.log('response',response);
           console.error('Error en social login:', response.statusText);
           return false;
         }
-
         const data: SocialLoginResponse = await response.json();
         const extendedUser = user as ExtendedUser;
+        console.log(data,'sign callback');
         extendedUser.access_token = data.access_token;
+        extendedUser.role = data?.user.role || "cliente"; // Asignar rol por defecto si no se proporciona
+        extendedUser.user_id = data?.user.user_id || ""; // Asignar user_id por defecto si no se proporciona
         return true;
       } catch (e) {
         console.error("Error al conectar con el backend:", e);
@@ -74,9 +84,9 @@ export const callbacks: NextAuthConfig["callbacks"] = {
   },
 
   authorized({ auth, request: { nextUrl } }) {
-    console.log('🔑 Authorized callback');
-    console.log('Auth:', auth);
-    console.log('URL:', nextUrl.pathname);
+    // console.log('🔑 Authorized callback');
+    // console.log('Auth:', auth);
+    // console.log('URL:', nextUrl.pathname);
     
     const isLoggedIn = !!auth?.user;
     
@@ -99,10 +109,10 @@ export const callbacks: NextAuthConfig["callbacks"] = {
   },
 
   async jwt({ token, user, account, trigger, session }) {
-    console.log('🔄 jwt callback triggered');
-    console.log('Initial token:', token);
-    console.log('User:', user);
-    console.log('Account:', account);
+    // console.log('🔄 jwt callback triggered');
+    // console.log('Initial token:', token);
+    // console.log('User:', user);
+    // console.log('Account:', account);
 
     const extendedToken = token as ExtendedToken;
 
@@ -148,9 +158,9 @@ export const callbacks: NextAuthConfig["callbacks"] = {
   },
 
   async session({ session, token }) {
-    console.log('🔄 session callback triggered');
-    console.log('Session:', session);
-    console.log('Token:', token);
+    // console.log('🔄 session callback triggered');
+    // console.log('Session:', session);
+    // console.log('Token:', token);
     
     const extendedToken = token as ExtendedToken;
     const extendedSession = session as ExtendedSession;

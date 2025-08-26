@@ -1,83 +1,345 @@
 'use client'
 
+import MountainIcon from "@/components/atoms/customIcons/mointain";
 import DateInput from "@/components/atoms/dateinput/dateinput";
+import FileInput from "@/components/atoms/FileInput/FileInput";
 import FilterInput from "@/components/atoms/filterInput/filterInput";
 import Input from "@/components/atoms/Input/Input";
+import SelectInput from "@/components/atoms/selectInput/selectInput";
+import { terrainTypes } from "@/constants";
+import { typeOptions } from "@/constants/routes/home";
 import useNewProjectForm from "@/hooks/frontend/buyProcess/useNewProjectForm";
+import { countDays, fixDate } from "@/utils/compareDate";
+import currentDate from "@/utils/currentDate";
 
 export default function NewProjectForm() {
 
+  
+
     const { register,
-           handleSubmit,
-           errors,
-           isValid } = useNewProjectForm()
+            handleSubmit,
+            reserves_types,
+            project,
+            errors,
+            terrainType, 
+            setTerrainType,
+            clearErrors,
+            onSubmit,
+            setProject,
+            isValid } = useNewProjectForm()
+           console.log(Object.keys(errors), 'errors');
+
+          const handlerWorkSchedule = (startDate:any, endDate:any) => {
+            const dayLength = countDays(startDate, endDate) + 1;
+            setProject(prev => ({ ...prev, estimated_duration: dayLength.toString() }));
+
+          }
+          const handlerStartDate = (date:string)=>{
+            setProject(prev => ({ ...prev, start_date: date }));
+            clearErrors("start_date");
+          }
+          const handlerEndDate = (date:string)=>{       
+            setProject(prev => ({ ...prev, end_date: date }));
+            clearErrors("end_date");
+          }
+
+          const dayValue = project.estimated_duration !== "NaN" ? `${project.estimated_duration}  ${project.estimated_duration === "1" ? "día" : "días" }` : "calculando..." ;
+          const handlerGetTerrainType = (type:string) => {
+            if (terrainType.includes(type)) {
+              setTerrainType(terrainType.filter(t => t !== type));
+            } else {
+              setTerrainType([...terrainType, type]);
+            }
+           
+          }
 
     return  (
-      <form  className="">
-        <h2 className="text-xl  mb-4">
-         1. Datos Básicos
-        </h2>
-        <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
-          <div className="w-full lg:w-1/2">
+      <form onSubmit={handleSubmit(onSubmit)} className="">
+        <div className="mb-10">
+          <h2 className="text-xl  mb-4">1. Datos Básicos</h2>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+            <div className="w-full lg:w-1/2">
+              <Input
+                label="Nombre del responsable"
+                name="responsible_name"
+                type="text"
+                placeHolder="Ingresa el nombre del responsable"
+                register={register}
+                errors={errors}
+                labelClass=""
+                containerClass="flex flex-col gap-2"
+                inputClass="w-full h-[50px] rounded-sm px-4 py-2 border-[#bbb] border-1 focus:outline-none"
+
+              />
+
+            </div>
+            <div className="w-full lg:w-1/2">
             <Input
-              label="Nombre del responsable"
-              name="responsible_name"
+                label="Nombre del proyecto"
+                name="name"
+                type="text"
+                placeHolder="Ingresa el nombre del proyecto"
+                register={register}
+                errors={errors}
+                labelClass=""
+                containerClass="flex flex-col gap-2"
+                inputClass="w-full rounded-sm px-4 h-[50px] py-2 border-[#bbb] border-1 focus:outline-none"
+
+              />
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+            <div className="w-full lg:w-1/2 flex flex-col lg:flex-row gap-4">
+              <div className="w-full lg:w-1/2 flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
+                  <label className="" htmlFor="name">Fecha de inicio de la obra </label>
+                  <DateInput 
+                    action={(date:string)=>{handlerStartDate(date);handlerWorkSchedule(date, project.end_date)}} 
+                    value={project.start_date}
+                    endDate={ typeof fixDate(project.end_date) === "object" ? fixDate(project.end_date) : undefined } 
+                    placeholder="Fecha de inicio de la obra"  />
+                    <input type="hidden" {...register("start_date")} className="hidden" name="start_date" value={project.start_date} />
+                    {errors.start_date && <p className="text-red-500 text-sm">{errors.start_date.message}</p>}
+
+                </div>
+              </div>
+              <div className="w-full lg:w-1/2">
+                <div className="flex flex-col gap-2">
+                  <label className="" htmlFor="name">Fecha de fin de la obra</label>
+                  <DateInput 
+                    action={(date:string)=>{handlerEndDate(date);handlerWorkSchedule(project.start_date, date)}} 
+                    value={project.end_date}
+                    startDate={ typeof fixDate(project.start_date) === "object" ? fixDate(project.start_date) : currentDate() }
+                    
+                    placeholder="Fecha de fin de la obra"  />
+                    <input type="hidden" {...register("end_date")} name="end_date" value={project.end_date} />
+                    {errors.end_date && <p className="text-red-500 text-sm">{errors.end_date.message}</p>}
+                </div>
+              </div>
+            </div>
+            <div className="w-full lg:w-1/2">
+              <div className="form-group flex flex-col gap-2">
+                <label className="" htmlFor="estimated_duration">Duración estimada </label>
+              {
+                project.start_date &&   <input type="text" 
+                  className="form-control mb-1 w-full rounded-sm h-[50px] px-4 py-2 border-none border-1 focus:outline-none" 
+                  placeholder="20 semanas"
+                  {...register("estimated_duration")} 
+                  name="estimated_duration"
+                  disabled={true}
+                  value={dayValue}/>
+              }
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+             <div className="w-full lg:w-1/2 flex flex-col lg:flex-row gap-4">
+              <Input
+                label="Horario de trabajo"
+                name="work_schedule"
+                type="text"
+                placeHolder="Ingresa el horario de trabajo"
+                register={register}
+                errors={errors}
+                labelClass=""
+                containerClass="flex w-full flex-col gap-2"
+                inputClass="w-full rounded-sm px-4 h-[50px] py-2 border-[#bbb] border-1 focus:outline-none"
+
+              />
+             </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+              <div className="w-full  lg:w-1/2 ">
+                <div className="flex flex-col gap-2">
+                  <label className="" htmlFor="name">Ubicación de la obra </label>
+                  <FilterInput
+                    checkpersist={true}
+                    inputClass="w-full rounded-sm p-0 px-2 h-[50px] border-[#bbb] border-1 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div className="w-full  lg:w-1/2 ">
+                <Input
+                  label="Teléfono del encargado de obra"
+                  name="manager_phone"
+                  type="text"
+                  placeHolder=" +52 000 0000000 "
+                  register={register}
+                  errors={errors}
+                  labelClass=""
+                  containerClass="flex flex-col gap-2"
+                  inputClass="w-full rounded-sm px-4 h-[50px] py-2 border-[#bbb] border-1 focus:outline-none"
+
+                />
+              </div>
+          </div>
+        </div>
+        <div className="mb-10">
+           <h2 className="text-xl  mb-4">2. Condiciones del sitio</h2>
+           <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+              <div className="w-full lg:w-1/2">
+                <Input
+                  label="Tipo de trabajo"
+                  name="work_type"
+                  type="text"
+                  placeHolder="Ingresa el tipo de trabajo"
+                  register={register}
+                  errors={errors}
+                  labelClass=""
+                  containerClass="flex flex-col gap-2"
+                  inputClass="w-full h-[50px] rounded-sm px-4 py-2 border-[#bbb] border-1 focus:outline-none"
+
+                />
+
+              </div>
+              
+           </div>
+           <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+              <div className="w-full lg:w-1/2">
+                <div className="form-group flex flex-col gap-2">
+                  <label className="" htmlFor="terrain_type">Condiciones del terreno</label>
+                  <div className="flex flex-wrap gap-2">
+
+                   {
+                     terrainTypes.map(terrain=>{
+                       const isSelected = terrainType.includes(terrain);
+                       return(
+                          <button
+                            type="button"
+                            onClick={() => handlerGetTerrainType(terrain)} 
+                            className={`border-1 cursor-pointer duration-300 hover:bg-secondary hover:text-white  border-secondary rounded-[30px] px-2 py-0.5 color ${isSelected ? "bg-secondary text-white" : "text-secondary"}`} key={terrain}>
+                            {terrain}
+                          </button>
+                        )
+                      })
+                    }
+                    <input type="hidden"  value={project.terrain_type} />
+                     
+                    </div>
+                </div>
+              </div>
+           </div>
+           <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+             <div className="w-full lg:w-1/2">
+                <div className="form-group flex flex-col gap-2">
+                    <label className="" htmlFor="terrain_type">Seguridad en el sitio</label>
+                    <div className="flex flex-wrap gap-2">
+                      <fieldset className="flex items-center gap-2">
+
+                      {
+                        reserves_types.map(reserve_type=>{
+                          return(<label className="gap-1.5 flex items-center" key={reserve_type}>{reserve_type}<input className="appearance-none checked:bg-secondary border-3 rounded-full cursor-pointer border-white   ring-1   ring-secondary h-[18px] w-[18px] " name="has_reserve_space" onClick={() => setProject(prev => ({ ...prev, has_reserve_space: reserve_type }))} type="radio" value={reserve_type} /> </label>)
+                        })
+                      }
+                      </fieldset>
+                    </div>
+                </div>
+              </div>
+           </div>
+          
+            {
+              project.has_reserve_space === "Si" && (
+                 <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6 duration-300">
+              <div className="flex flex-col md:flex-row items-end gap-2">
+                 <FileInput
+                name="resguardo_files"
+                label="Lugar del resguardo"
+                classWrapper="flex flex-col gap-2"
+                placeHolder="Selecione una imagen"
+                classItem="d-flex gap-2 cursor-pointer flex items-center h-[50px]  w-fit max-w-[250px] rounded-sm px-4 py-2 border-[#bbb] border-1 "
+                icon={<MountainIcon/>}
+                register={register}
+                />
+                <p className="text-[#bbb] pb-3.5 italic">Esto nos ayuda a validar el terreno y asignar maquinaria compatible</p>
+              </div>
+              </div>
+              )
+            }
+             {
+              project.has_reserve_space === "Otros" && (
+                 <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6 duration-300">
+                <div className="w-full lg:w-1/2 flex flex-col gap-2">
+
+                <Input
+                  label="Descripción del espacio de reserva"
+                  name="has_reserve_space"
+                  type="text"
+                  placeHolder="Especifique el tipo de espacio de reserva"
+                  register={register}
+                  errors={errors}
+                  labelClass=""
+                  containerClass="flex flex-col gap-2"
+                  inputClass="w-full h-[50px] rounded-sm px-4 py-2 border-[#bbb] border-1 focus:outline-none"
+                  
+                  />
+                  <p className="text-[#bbb] italic">Esto nos ayuda a validar el terreno y asignar maquinaria compatible</p>
+                  </div>
+                  </div>
+              )
+            }
+           
+           <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+            <div className="w-full lg:w-1/2 flex flex-col gap-2">
+            <Input
+              label="Acceso a la obra"
+              name="access_terrain_condition"
               type="text"
-              placeHolder="Ingresa el nombre del responsable"
+              placeHolder="Describa el acceso al sitio"
               register={register}
               errors={errors}
               labelClass=""
-              containerClass="flex flex-col gap-2"
-              inputClass="w-full rounded-sm px-4 py-2 border-[#bbb] border-1 focus:outline-none"
-
+              containerClass="flex w-full flex-col gap-2"
+              inputClass="w-full h-[50px] rounded-sm px-4 py-2 border-[#bbb] border-1 focus:outline-none"
             />
+            </div>
+           </div>
+           <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6"></div>
 
+
+
+        </div>
+        <div className="mb-10">
+          <h2 className="text-xl  mb-4">3. Requerimientos de maquinaria</h2>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+              <div className="w-full  lg:w-1/2 ">
+                <SelectInput
+                  options={typeOptions}
+                  name="machinery_type"
+                  containerClass=" flex flex-col gap-2"
+                  register={register}
+                  label="Tipo de maquinaria"
+                  placeHolder="Seleccione un tipo de maquinaria"
+                  required={true}
+                  errors={errors}
+                  selectClass="w-full text-[#bbb] rounded-sm appearance-none border-1 border-[#bbb]"
+                />
+
+              </div>
           </div>
-          <div className="w-full lg:w-1/2">
-          <Input
-              label="Nombre del proyecto"
-              name="name"
+        </div>
+        <div className="mb-4">
+          <h2 className="text-xl  mb-4">3. Otros detalles</h2>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+              <div className="w-full  lg:w-1/2 ">
+              <Input
+               label="Requisitos especiales"
+              name="extra_requirements"
               type="text"
-              placeHolder="Ingresa el nombre del proyecto"
+              placeHolder="Agrega datos adicionales"
               register={register}
               errors={errors}
               labelClass=""
-              containerClass="flex flex-col gap-2"
-              inputClass="w-full rounded-sm px-4 py-2 border-[#bbb] border-1 focus:outline-none"
-
-            />
+              containerClass="flex w-full flex-col gap-2"
+              inputClass="w-full h-[50px] rounded-sm px-4 py-2 border-[#bbb] border-1 focus:outline-none"
+              />
+              </div>
           </div>
         </div>
-        <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
-          <div className="w-full lg:w-1/2"><DateInput action={(text)=>console.log(text)} value=""  startDate={{ month:10, day:10, year:2025 }}   placeholder="Fecha de inicio de la obra"  /></div>
-          <div className="w-full lg:w-1/2"></div>
+        <div className="flex justify-between  lg:w-1/2">
+          <button type="button" className="border-1 border-secondary px-4 py-2 rounded-sm cursor-pointer text-secondary duration-300 hover:bg-secondary hover:text-white" onClick={() => setProject({ ...project, state: "draft" })}>Guardar borrador</button>
+          <button type="submit" className={`border-1 border-secondary px-4 py-2 rounded-sm  text-secondary duration-300 ${isValid ? 'cursor-pointer hover:bg-secondary hover:text-white' : 'opacity-50 cursor-not-allowed'}`} disabled={!isValid}>Guardar</button>
         </div>
-        <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
-          <div className="w-full lg:w-1/2">
-          <div className="flex flex-col gap-2">
-            <label className="" htmlFor="name">Ubicación de la obra </label>
-            <FilterInput
-              checkpersist={true}
-              inputClass="w-full rounded-sm p-0 px-2 border-[#bbb] border-1 focus:outline-none"
-            />
-          </div>
-          </div>
-          <div className="w-full lg:w-1/2">
 
-          <Input
-              label="Duración estimada"
-              name="estimated_duration"
-              type="number"
-              placeHolder="20 semanas"
-              register={register}
-              errors={errors}
-              labelClass=""
-              containerClass="flex flex-col gap-2"
-              inputClass="w-full rounded-sm px-4 py-2 border-[#bbb] border-1 focus:outline-none"
-
-            />
-          </div>
-        </div>
       </form>
     ) ;
 }

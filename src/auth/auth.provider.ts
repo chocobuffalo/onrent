@@ -20,7 +20,7 @@ export const providers = [
 
         if (res?.access_token) {
           return {
-            id: res.user.user_id,
+            user_id: res.user.user_id,
             name: res.user.name,
             email: res.user.email,
             role: res.user.role,

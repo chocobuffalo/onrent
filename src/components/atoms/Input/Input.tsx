@@ -6,6 +6,7 @@ export default function Input({
   placeHolder,
   inputClass,
   labelClass,
+  value,
   containerClass,
   required,
   register,
@@ -20,6 +21,7 @@ export default function Input({
   labelClass?: string;
   placeHolder: string;
   register: any;
+  value?: string;
   errors: any;
 }) {
   
