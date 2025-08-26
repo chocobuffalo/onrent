@@ -32,7 +32,9 @@ export default function MachineCard({ data }: Props) {
             alt={data.name}
             fill
             className="object-cover"
+            sizes="(max-width: 768px) 100vw, 20vw"
             unoptimized
+            priority
           />
         </div>
 

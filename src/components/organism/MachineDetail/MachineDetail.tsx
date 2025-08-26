@@ -9,7 +9,7 @@ import DateRentInput from "@/components/molecule/dateRentInput/dateRentInput";
 import { BookingForm } from "@/components/molecule/bookingForm/bookingForm";
 import SpecsDetail from "@/components/molecule/specsDetail/specsDetail";
 import PriceDetail from "@/components/atoms/priceDetail/priceDetail";
-import AmazonLocationMap from "@/components/molecule/AmazonLocationService/amazonLocationMap";
+import AmazonLocationMap from "@/components/organism/AmazonLocationService/amazonLocationMap";
 
 interface MachineDetailProps {
   machine: CatalogueItem;
@@ -105,6 +105,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
               width={850}
               height={330}
               className="object-cover object-center aspect-[16/6] w-full h-full"
+              priority
             />
           </div>
 
