@@ -8,30 +8,42 @@ import Input from "@/components/atoms/Input/Input";
 import SelectInput from "@/components/atoms/selectInput/selectInput";
 import { terrainTypes } from "@/constants";
 import { typeOptions } from "@/constants/routes/home";
+import { useFileConvert } from "@/hooks/component/useFileConvert";
 import useNewProjectForm from "@/hooks/frontend/buyProcess/useNewProjectForm";
 import { countDays, fixDate } from "@/utils/compareDate";
 import currentDate from "@/utils/currentDate";
 import { get } from "axios";
+import { FaCheck } from "react-icons/fa6";
+import { ImSpinner8 } from "react-icons/im";
 
 export default function NewProjectForm() {
 
   
 
-    const { register,
-            handleSubmit,
-            reserves_types,
-            project,
-            errors,
-            handlerWorkSchedule,
-            terrainType, 
-            setTerrainType,
-            clearErrors,
-            handlerStartDate,
-            handlerEndDate,
-            onSubmit,
-            setProject,
-            isValid } = useNewProjectForm()
-           console.log(Object.keys(errors), 'errors');
+    const {  handlerFocus,
+          register,
+          isLoading,
+          open,
+          options,
+          handlerChange,
+          handlerInputChange,
+          handleSubmit,
+          setValue,
+          handlerStartDate,
+          handlerEndDate,
+          convertFileToBase64,
+          clearErrors,
+          handlerWorkSchedule,
+          reserves_types,
+          project,
+          errors,
+          terrainType, 
+          setTerrainType,
+          onSubmit,
+          setProject,
+          isValid } = useNewProjectForm()
+          
+
 
         
          
@@ -85,7 +97,7 @@ export default function NewProjectForm() {
             <div className="w-full lg:w-1/2 flex flex-col lg:flex-row gap-4">
               <div className="w-full lg:w-1/2 flex flex-col gap-2">
                 <div className="flex flex-col gap-2">
-                  <label className="" htmlFor="name">Fecha de inicio de la obra </label>
+                  <label className="" htmlFor="start_date">Fecha de inicio de la obra </label>
                   <DateInput 
                     action={(date:string)=>{handlerStartDate(date);handlerWorkSchedule(date, project.end_date)}} 
                     value={project.start_date}
@@ -98,7 +110,7 @@ export default function NewProjectForm() {
               </div>
               <div className="w-full lg:w-1/2">
                 <div className="flex flex-col gap-2">
-                  <label className="" htmlFor="name">Fecha de fin de la obra</label>
+                  <label className="" htmlFor="end_date">Fecha de fin de la obra</label>
                   <DateInput 
                     action={(date:string)=>{handlerEndDate(date);handlerWorkSchedule(project.start_date, date)}} 
                     value={project.end_date}
@@ -145,7 +157,53 @@ export default function NewProjectForm() {
               <div className="w-full  lg:w-1/2 ">
                 <div className="form-group flex flex-col gap-2">
                   <label className="" htmlFor="location">Ubicación del proyecto </label>
-                  <input className="form-control mb-1 w-full rounded-sm px-4 h-[50px] py-2 border-[#bbb] border-1 focus:outline-none" placeholder="Ingresa el nombre del proyecto" type="text" {...register("location")} />
+                 <div className="relative">
+                   <input 
+                    onFocus={() => handlerFocus(project.location)} 
+                    className="form-control mb-1 w-full rounded-sm px-4 h-[50px] py-2 border-[#bbb] border-1 focus:outline-none"
+                    name="location"
+                    value={project.location}
+                    onChange={(e)=>{
+                      handlerInputChange(e.target.value);
+                      clearErrors("location");
+                      register("location").onChange(e);
+                      setValue("location", e.target.value);
+                      setProject(prev => ({ ...prev, location: e.target.value }));
+                    }} 
+                    placeholder="Ingresa el nombre del proyecto" type="text" />
+                    <ul
+                          className={`listen-items border-gray-300 absolute z-10 bg-white border rounded-md w-full max-h-60 overflow-y-auto shadow-lg mt-2 ${
+                            open ? "block" : "hidden"
+                          }`}
+                        >
+                  
+                          {
+                          options.length  > 0 ? (
+                            options.map((option) => (
+                              <li key={option.value} className="list-item">
+                                <button
+                                  type="button"
+                                  className="w-full py-3.5 px-1.5 cursor-pointer duration-300 transition-colors hover:bg-gray-200 text-left"
+                                  onClick={() => {
+                                    handlerChange(option.label);
+                                  }}
+                                >
+                                  {option.label}
+                                </button>
+                              </li>
+                            ))
+                          ) : (
+                            <li className="list-item w-full py-3.5 px-1.5  cursor-pointer duration-300 transition-colors">
+                              {isLoading ? (
+                                <ImSpinner8 color="#ea6300" size={20} className="animate-spin mx-auto" />
+                              ) : (
+                                <span>No hay resultados</span>
+                              )}
+                            </li>
+                          )}
+                        </ul>
+                 </div>
+                  {errors.location && <p className="text-red-500 text-sm">{errors.location.message}</p>}
                 </div>
               </div>
               <div className="w-full  lg:w-1/2 ">
@@ -194,12 +252,12 @@ export default function NewProjectForm() {
                      terrainTypes.map(terrain=>{
                        const isSelected = terrainType.includes(terrain);
                        return(
-                          <button
-                            type="button"
+                          <div
+                            
                             onClick={() => handlerGetTerrainType(terrain)} 
                             className={`border-1 cursor-pointer duration-300 hover:bg-secondary hover:text-white  border-secondary rounded-[30px] px-2 py-0.5 color ${isSelected ? "bg-secondary text-white" : "text-secondary"}`} key={terrain}>
                             {terrain}
-                          </button>
+                          </div>
                         )
                       })
                     }
@@ -231,15 +289,35 @@ export default function NewProjectForm() {
               project.has_reserve_space === "Si" && (
                  <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6 duration-300">
               <div className="flex flex-col md:flex-row items-end gap-2">
-                 <FileInput
-                name="resguardo_files"
-                label="Lugar del resguardo"
-                classWrapper="flex flex-col gap-2"
-                placeHolder="Selecione una imagen"
-                classItem="d-flex gap-2 cursor-pointer flex items-center h-[50px]  w-fit max-w-[250px] rounded-sm px-4 py-2 border-[#bbb] border-1 "
-                icon={<MountainIcon/>}
-                register={register}
-                />
+                 <div className="flex flex-col gap-2">
+                      <label htmlFor={'resguardo_files'} className={'form-label'}>Lugar del resguardo</label>
+                      <input
+                        className="d-none"
+                        hidden
+                        type="file"
+                        id={'resguardo_files'}
+                        onChange={(e) => {
+                          console.log(e);
+                          convertFileToBase64(e.target.files?.[0] as File)
+                        }}
+                
+                      />
+                      {/*leer campo file, convierte el archivo en base64  */}
+                      <div className="flex  gap-3 items-center">
+                       
+                        <div
+                          className="d-flex gap-2 cursor-pointer flex items-center h-[50px]  w-fit max-w-[250px] rounded-sm px-4 py-2 border-[#bbb] border-1"
+                          onClick={() => {
+                            document.getElementById('resguardo_files')?.click();
+
+                          }}
+                        >
+                          <MountainIcon/>
+                          Selecione una imagen
+                        </div>
+                        {project.resguardo_files[0]!=='' && (<FaCheck color="green" size={30} />)}
+                      </div>
+                    </div>
                 <p className="text-[#bbb] pb-3.5 italic">Esto nos ayuda a validar el terreno y asignar maquinaria compatible</p>
               </div>
               </div>

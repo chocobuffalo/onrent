@@ -7,3 +7,11 @@ export function formatDate(date: string): string {
     });
     return formatter.format(currentDate).replace(/\//g, '-');
 }
+
+export  const chanceDateFormat = (date: string) => {
+                        const d = date.split('-');
+                        const year = d[2];
+                        const month = d[1];
+                        const day = d[0];
+                        return `${year}-${month}-${day}`;
+};
