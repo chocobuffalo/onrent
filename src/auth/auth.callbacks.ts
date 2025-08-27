@@ -63,8 +63,9 @@ export const callbacks: NextAuthConfig["callbacks"] = {
         });
         
         if (!response.ok) {
-          console.log('response',response);
-          console.error('Error en social login:', response.statusText);
+
+          // redireccionar
+
           return false;
         }
         const data: SocialLoginResponse = await response.json();

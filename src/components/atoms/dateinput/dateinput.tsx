@@ -22,7 +22,7 @@ export default function DateInput({
   action: (arg: string) => void;
 }) {
   const minDate = typeof startDate === "object"
-      ? new Date(startDate.year, startDate.month -1 , startDate.day)
+      ? new Date(`${startDate.year}/${startDate.month}/${startDate.day}`)
       : "today";
 
      // console.log( typeof startDate === "object", startDate);
@@ -30,8 +30,6 @@ export default function DateInput({
   const maxDate = typeof endDate === "object"
       ? new Date(endDate.year, endDate.month -1 , endDate.day)
       : undefined;
-
-
   return (
     <div className="dateInput relative">
       <Flatpickr

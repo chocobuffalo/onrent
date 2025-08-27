@@ -40,11 +40,12 @@ export const dashboardRoutes: SidebarMenuProps[] = [
    * SECCIÓN COMÚN - Accesible para cliente, proveedor y cliente_proveedor
    * Estas son funcionalidades básicas que todos los usuarios necesitan
    * -------------------------------------------------- */
-  {
+
+    {
     link: "/dashboard",
     title: "Dashboard",
     icon: DashboardIcon,
-    //Gestión de perfil universal
+roles: ["cliente", "cliente_proveedor"],
   },
   {
     link: "/dashboard/profile",
@@ -58,49 +59,37 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     icon: WrenckIcon,
      // Gestión de perfil universal
   },
-
+ 
   /* ----------------------------------------------------
    * SECCIÓN CLIENTE - Funcionalidades para usuarios que alquilan
    * También accesible para cliente_proveedor (usuarios híbridos)
    * -------------------------------------------------- */
   {
-    link: "/dashboard/crear-proyecto",
-    title: "Crear proyecto",
-    icon: PencilWrite,
-    roles: ["cliente", "cliente_proveedor"], // Creación de proyectos para alquiler
-  },
-  {
-    link: "/dashboard/proyectos",
+    link: "/dashboard/projects",
     title: "Mis proyectos",
     icon: PencilWrite,
     roles: ["cliente", "cliente_proveedor"], // Gestión de proyectos del cliente
   },
   {
-    link: "/dashboard/ordenes",
+    link: "/dashboard/orders",
     title: "Mis ordenes",
     icon: EnvelopeIcon,
     roles: ["cliente", "cliente_proveedor"], // Órdenes de alquiler realizadas
   },
   {
-    link: "/dashboard/referidos",
-    title: "Mis referidos",
-    icon: HearthIcon,
-    roles: ["cliente", "cliente_proveedor"], // Sistema de referidos para clientes
-  },
-  {
-    link: "/dashboard/seguimiento",
+    link: "/dashboard/tracking",
     title: "Seguimiento de orden y logística",
     icon: WrenckIcon,
-    roles: ["cliente", "cliente_proveedor"], // Tracking de órdenes activas
+    roles: ["cliente", "cliente_proveedor", "proveedor"], // Tracking de órdenes activas
   },
   {
-    link: "/dashboard/soporte",
+    link: "/dashboard/support",
     title: "Soporte",
     icon: HearthIcon,
     roles: ["cliente", "cliente_proveedor"], // Soporte técnico/comercial
   },
   {
-    link: "/dashboard/notificaciones",
+    link: "/dashboard/notifications",
     title: "Notificaciones",
     icon: HearthIcon,
     roles: ["cliente", "cliente_proveedor"], // Notificaciones específicas de cliente
@@ -117,25 +106,25 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     roles: ["proveedor", "cliente_proveedor"], // CRUD de maquinaria disponible
   },
   {
-    link: "/dashboard/operadores",
+    link: "/dashboard/operators",
     title: "Gestionar operadores",
     icon: WrenckIcon,
     roles: ["proveedor", "cliente_proveedor"], // Gestión de operadores asignados
   },
   {
-    link: "/dashboard/rentas",
+    link: "/dashboard/rentals",
     title: "Gestionar rentas",
     icon: PencilWrite,
     roles: ["proveedor", "cliente_proveedor"], // Gestión de contratos de renta
   },
   {
-    link: "/dashboard/referidos-proveedor",
+    link: "/dashboard/referrals",
     title: "Mis referidos",
     icon: HearthIcon,
     roles: ["proveedor", "cliente_proveedor"], // Sistema de referidos para proveedores
   },
   {
-    link: "/dashboard/notificaciones-proveedor",
+    link: "/dashboard/notifications-provider",
     title: "Notificaciones",
     icon: HearthIcon,
     roles: ["proveedor", "cliente_proveedor"], // Notificaciones específicas de proveedor
@@ -146,43 +135,43 @@ export const dashboardRoutes: SidebarMenuProps[] = [
    * Los operadores son creados por proveedores y tienen un conjunto específico de funcionalidades
    * -------------------------------------------------- */
   {
-    link: "/dashboard/operador/profile",
+    link: "/dashboard/operator/profile",
     title: "Perfil",
     icon: UserProfileIcon,
     roles: ["operador"], // Gestión del perfil del operador (completar datos que el proveedor no llenó)
   },
   {
-    link: "/dashboard/operador/tareas-asignadas",
+    link: "/dashboard/operator/assigned-tasks",
     title: "Tareas asignadas",
     icon: PencilWrite,
     roles: ["operador"], // Tareas asignadas por el proveedor
   },
   {
-    link: "/dashboard/operador/registro-operativo",
+    link: "/dashboard/operator/operational-log",
     title: "Registro operativo",
     icon: BulldozerIcon,
     roles: ["operador"], // Registro de operaciones realizadas
   },
   {
-    link: "/dashboard/operador/navegacion-guiada",
+    link: "/dashboard/operator/guided-navigation",
     title: "Navegación guiada",
     icon: WrenckIcon,
     roles: ["operador"], // Sistema de navegación/GPS para operaciones
   },
   {
-    link: "/dashboard/operador/reporte-incidencias",
+    link: "/dashboard/operator/incident-report",
     title: "Reporte de incidencias",
     icon: EnvelopeIcon,
     roles: ["operador"], // Reportar problemas, fallas, incidentes
   },
   {
-    link: "/dashboard/operador/notificaciones",
+    link: "/dashboard/operator/notifications",
     title: "Notificaciones",
     icon: HearthIcon,
     roles: ["operador"], // Notificaciones específicas para operadores
   },
   {
-    link: "/dashboard/operador/check-operativo",
+    link: "/dashboard/operator/operational-check",
     title: "Check operativo y seguridad",
     icon: WrenckIcon,
     roles: ["operador"], // Checklist de seguridad y operativo antes de iniciar trabajo

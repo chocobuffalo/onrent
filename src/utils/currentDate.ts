@@ -1,8 +1,9 @@
-export default function currentDate():{day:number,month:number,year:number}{
+export default function currentDate(){
     const today = new Date();
-    return{
-        day: today.getDate(),
+    const dateObject = {
+        year: today.getFullYear(),
         month: today.getMonth() + 1, // Los meses en JavaScript son 0-indexed
-        year: today.getFullYear()
+        day: today.getDate(),
     }
+    return dateObject
 }

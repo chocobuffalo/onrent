@@ -1,7 +1,7 @@
 export default function Orders() {
   return (
     <div>
-      <h1>Solicitudes de Renta</h1>
+      <h1>No tiene Ordenes</h1>
     </div>
   )
 }

@@ -16,6 +16,7 @@ export interface SelectInterface{
     readonly lat?: number;
     readonly lon?: number;
     readonly slug?: string;
+    readonly data?: any;
 }
 
 export interface ModalStateInterface{
