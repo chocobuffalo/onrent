@@ -24,7 +24,7 @@ export default function AuthSync() {
       dispatch(setLogin(true));
       dispatch(setName(session.user.name || ""));
       dispatch(setEmail(session.user.email || ""));
-      dispatch(setAvatar(session.user.image || "./user-circle.svg"));
+      dispatch(setAvatar(session.user.image || "/user-circle.svg"));
       dispatch(setRole(session.user.role || "cliente"));
     //dispatch(setUserID(session.user.user_id || ""));
 
