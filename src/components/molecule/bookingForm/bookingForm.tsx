@@ -46,7 +46,7 @@ export function BookingForm({
     const totalPrice = price * dayLength;
 
     function formatDateForBackend(dateString: string): string {
-        const { day, month, year } = fixDate(dateString);
+        const { day, month, year } = fixDate(dateString) || { day: 0, month: 0, year: 0 };
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     }
 
