@@ -17,9 +17,11 @@ export const currency = {
     name: "Peso mexicano"
 } 
 
-export const terrainTypes:string[] = [
-    'Firme',
-    'Lodoso',
-    'Inclinado',
-    'Obstáculos'
+
+
+export const terrainTypes:{label:string,value:string}[] = [
+    {label:'Firme',value:'firm'},
+    {label:'Lodoso',value:'mud'},
+    {label:'Inclinado',value:'inclined'},
+    {label:'Obstáculos',value:'obstacles'}
 ]

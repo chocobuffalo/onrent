@@ -149,7 +149,9 @@ h1,h2{
 @view-transition{
   navigation:auto;
 }
-
+.Toastify{
+  z-index: 9999;
+}
 .Toastify__toast--success {
   background-color: #ffffff !important; 
   color: #1C1B3A !important; 
@@ -250,6 +252,7 @@ h1,h2{
   width: auto !important;
   min-width: 320px !important;
   max-width: 500px !important;
+  z-index: 99999 !important;
 }
 select.flatpickr-monthDropdown-months {
     padding: 0 !important;

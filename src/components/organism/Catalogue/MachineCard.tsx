@@ -23,15 +23,17 @@ export default function MachineCard({ data }: Props) {
   );
 
   return (
-    <Link href={`/${data.id}`} passHref>
-      <div className="rounded-xl border border-gray-200 shadow-sm hover:shadow-md p-3 w-full max-w-xs flex flex-col justify-between cursor-pointer">
+    <Link href={`/${data.id}`} passHref className="w-full">
+      <div className="rounded-xl border border-gray-200 h-[100%] shadow-sm hover:shadow-md p-3 w-full flex flex-col justify-between cursor-pointer">
 
-        <div className="relative w-full h-40 rounded-lg overflow-hidden">
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden">
           <Image
             src={imageUrl}
             alt={data.name}
-            fill
-            className="object-cover"
+            width={500}
+            height={300}
+
+            className="object-cover w-full object-center"
             sizes="(max-width: 768px) 100vw, 20vw"
             unoptimized
             priority

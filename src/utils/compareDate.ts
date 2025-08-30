@@ -14,6 +14,10 @@ export function compareDate(startDate: string, endDate: string): boolean {
     const startDay = fixDate(startDate);
     const endDay = fixDate(endDate);
 
+    if (!startDay || !endDay) {
+        return false;
+    }
+
     // Creación de objetos Date (nota: los meses en Date son 0-indexed)
     const start = new Date(startDay.year, startDay.month - 1, startDay.day);
     const end = new Date(endDay.year, endDay.month - 1, endDay.day);
@@ -23,9 +27,14 @@ export function compareDate(startDate: string, endDate: string): boolean {
 }
 
 
-export function fixDate(dateString: string): {day:number,month:number,year:number} {
+export function fixDate(dateString: string) {
 
     const [day, month, year] = dateString.split('-').map(Number);
+
+    if (isNaN(day) || isNaN(month) || isNaN(year)) {
+        return false;
+    }
+
     return{
         month,
         day,
@@ -35,8 +44,9 @@ export function fixDate(dateString: string): {day:number,month:number,year:numbe
 
 
 export function shortDate(stringDate:string){
-    const {day, month, year} = fixDate(stringDate);
-    const date = new Date(year, month - 1, day);
+    const day = fixDate(stringDate);
+    if(!day) return "";
+    const date = new Date(day.year, day.month - 1, day.day);
     const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short'  };
     //reemplazamos el espacio por un  " de "
     return date.toLocaleDateString('es-ES', options).replace(' ', ' de ');
@@ -45,9 +55,11 @@ export function shortDate(stringDate:string){
 
 export function countDays(startDate: string, endDate: string): number {
     const firstDate = fixDate(startDate);
+    if (!firstDate) return 0;
     const start = new Date(firstDate.year, firstDate.month - 1, firstDate.day);
 
     const secondDate = fixDate(endDate);
+    if (!secondDate) return 0;
     const end = new Date(secondDate.year, secondDate.month - 1, secondDate.day);
     const diff = end.getTime() - start.getTime();
     return Math.ceil(diff / (1000 * 3600 * 24));
