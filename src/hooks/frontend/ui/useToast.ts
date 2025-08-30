@@ -5,7 +5,7 @@ export function useToast() {
   const toastSuccess = (message: string) => {
     toast.success(message, {
       position: "top-right",
-      autoClose: 3000,
+      autoClose: 5000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -17,7 +17,7 @@ export function useToast() {
   const toastError = (message: string) => {
     toast.error(message, {
       position: "top-right",
-      autoClose: 3000,
+      autoClose: 5000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -29,7 +29,7 @@ export function useToast() {
   const toastInfo = (message: string) => {
     toast.info(message, {
       position: "top-right",
-      autoClose: 3000,
+      autoClose: 5000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -41,7 +41,7 @@ export function useToast() {
   const toastWarning = (message: string) => {
     toast.warning(message, {
       position: "top-right",
-      autoClose: 3000,
+      autoClose: 5000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,

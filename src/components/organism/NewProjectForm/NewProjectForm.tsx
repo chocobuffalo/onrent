@@ -2,27 +2,29 @@
 
 import MountainIcon from "@/components/atoms/customIcons/mointain";
 import DateInput from "@/components/atoms/dateinput/dateinput";
-import FileInput from "@/components/atoms/FileInput/FileInput";
-import FilterInput from "@/components/atoms/filterInput/filterInput";
+
 import Input from "@/components/atoms/Input/Input";
 import SelectInput from "@/components/atoms/selectInput/selectInput";
+
 import { terrainTypes } from "@/constants";
 import { typeOptions } from "@/constants/routes/home";
-import { useFileConvert } from "@/hooks/component/useFileConvert";
+import { projectStates } from "@/constants/states";
+
 import useNewProjectForm from "@/hooks/frontend/buyProcess/useNewProjectForm";
 import { countDays, fixDate } from "@/utils/compareDate";
 import currentDate from "@/utils/currentDate";
-import { get } from "axios";
+
 import { FaCheck } from "react-icons/fa6";
 import { ImSpinner8 } from "react-icons/im";
 
-export default function NewProjectForm() {
+export default function NewProjectForm({projectID}:{projectID?:string}) {
 
   
 
     const {  handlerFocus,
           register,
           isLoading,
+          sending,
           open,
           options,
           handlerChange,
@@ -41,8 +43,8 @@ export default function NewProjectForm() {
           setTerrainType,
           onSubmit,
           setProject,
-          isValid } = useNewProjectForm()
-          
+          isValid } = useNewProjectForm({projectId: ""})
+
 
 
         
@@ -65,6 +67,21 @@ export default function NewProjectForm() {
           <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
             <div className="w-full lg:w-1/2">
               <Input
+                label="Nombre del proyecto"
+                name="name"
+                type="text"
+                placeHolder="Ingresa el nombre del proyecto"
+                register={register}
+                errors={errors}
+                labelClass=""
+                containerClass="flex flex-col gap-2"
+                inputClass="w-full rounded-sm px-4 h-[50px] py-2 border-[#bbb] border-1 focus:outline-none"
+
+              />
+            </div>
+            <div className="w-full lg:w-1/2">
+            
+              <Input
                 label="Nombre del responsable"
                 name="responsible_name"
                 type="text"
@@ -78,20 +95,6 @@ export default function NewProjectForm() {
               />
 
             </div>
-            <div className="w-full lg:w-1/2">
-            <Input
-                label="Nombre del proyecto"
-                name="name"
-                type="text"
-                placeHolder="Ingresa el nombre del proyecto"
-                register={register}
-                errors={errors}
-                labelClass=""
-                containerClass="flex flex-col gap-2"
-                inputClass="w-full rounded-sm px-4 h-[50px] py-2 border-[#bbb] border-1 focus:outline-none"
-
-              />
-            </div>
           </div>
           <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
             <div className="w-full lg:w-1/2 flex flex-col lg:flex-row gap-4">
@@ -101,6 +104,7 @@ export default function NewProjectForm() {
                   <DateInput 
                     action={(date:string)=>{handlerStartDate(date);handlerWorkSchedule(date, project.end_date)}} 
                     value={project.start_date}
+                    startDate={ typeof fixDate(project.start_date) === "object" ? fixDate(project.start_date) : undefined }
                     endDate={ typeof fixDate(project.end_date) === "object" ? fixDate(project.end_date) : undefined } 
                     placeholder="Fecha de inicio de la obra"  />
                     <input type="hidden" {...register("start_date")} className="hidden" name="start_date" value={project.start_date} />
@@ -250,13 +254,14 @@ export default function NewProjectForm() {
 
                    {
                      terrainTypes.map(terrain=>{
-                       const isSelected = terrainType.includes(terrain);
+                       const isSelected = terrainType.includes(terrain.value);
+
                        return(
                           <div
                             
-                            onClick={() => handlerGetTerrainType(terrain)} 
-                            className={`border-1 cursor-pointer duration-300 hover:bg-secondary hover:text-white  border-secondary rounded-[30px] px-2 py-0.5 color ${isSelected ? "bg-secondary text-white" : "text-secondary"}`} key={terrain}>
-                            {terrain}
+                            onClick={() => handlerGetTerrainType(terrain.value)} 
+                            className={`border-1 cursor-pointer duration-300 hover:bg-secondary hover:text-white  border-secondary rounded-[30px] px-2 py-0.5 color ${isSelected ? "bg-secondary text-white" : "text-secondary"}`} key={terrain.value}>
+                            {terrain.label}
                           </div>
                         )
                       })
@@ -276,7 +281,8 @@ export default function NewProjectForm() {
 
                       {
                         reserves_types.map(reserve_type=>{
-                          return(<label className="gap-1.5 flex items-center" key={reserve_type}>{reserve_type}<input className="appearance-none checked:bg-secondary border-3 rounded-full cursor-pointer border-white   ring-1   ring-secondary h-[18px] w-[18px] " name="has_reserve_space" onClick={() => setProject(prev => ({ ...prev, has_reserve_space: reserve_type }))} type="radio" value={reserve_type} /> </label>)
+                         // console.log(project.has_reserve_space);
+                          return(<label className="gap-1.5 flex items-center"  key={reserve_type}>{reserve_type}<input checked={project.has_reserve_space === reserve_type} className="appearance-none checked:bg-secondary border-3 rounded-full cursor-pointer border-white   ring-1   ring-secondary h-[18px] w-[18px] " name="has_reserve_space" onClick={() => setProject(prev => ({ ...prev, has_reserve_space: reserve_type }))} type="radio" value={reserve_type} /> </label>)
                         })
                       }
                       </fieldset>
@@ -297,7 +303,7 @@ export default function NewProjectForm() {
                         type="file"
                         id={'resguardo_files'}
                         onChange={(e) => {
-                          console.log(e);
+                         // console.log(e);
                           convertFileToBase64(e.target.files?.[0] as File)
                         }}
                 
@@ -315,10 +321,11 @@ export default function NewProjectForm() {
                           <MountainIcon/>
                           Selecione una imagen
                         </div>
-                        {project.resguardo_files[0]!=='' && (<FaCheck color="green" size={30} />)}
+                        {project.resguardo_files[0] && !errors.resguardo_files && (<FaCheck color="green" size={30} />)}
+                <p className="text-[#bbb]  italic">Esto nos ayuda a validar el terreno y asignar maquinaria compatible</p>
                       </div>
-                    </div>
-                <p className="text-[#bbb] pb-3.5 italic">Esto nos ayuda a validar el terreno y asignar maquinaria compatible</p>
+              {errors.resguardo_files && <p className="text-red-500 text-sm">{errors.resguardo_files.message}</p>}
+                </div>
               </div>
               </div>
               )
@@ -330,7 +337,7 @@ export default function NewProjectForm() {
 
                 <Input
                   label="Descripción del espacio de reserva"
-                  name="has_reserve_space"
+                  name="access_notes"
                   type="text"
                   placeHolder="Especifique el tipo de espacio de reserva"
                   register={register}
@@ -376,7 +383,6 @@ export default function NewProjectForm() {
                   containerClass=" flex flex-col gap-2"
                   register={register}
                   label="Tipo de maquinaria"
-                  placeHolder="Seleccione un tipo de maquinaria"
                   required={true}
                   errors={errors}
                   selectClass="w-full text-[#bbb] rounded-sm appearance-none border-1 border-[#bbb]"
@@ -402,10 +408,34 @@ export default function NewProjectForm() {
               />
               </div>
           </div>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
+              <div className="w-full  lg:w-1/2 ">
+               <SelectInput
+            label="Estado del proyecto"
+            name="state"
+            options={projectStates}
+            containerClass=" flex flex-col gap-2"
+            register={register}
+            
+            errors={errors}
+            selectClass="w-full  text-[#bbb] rounded-sm appearance-none border-1 "
+          />
+              </div>
+          </div>
         </div>
-        <div className="flex justify-between  lg:w-1/2">
-          <button type="submit" className="border-1 border-secondary px-4 py-2 rounded-sm cursor-pointer text-secondary duration-300 hover:bg-secondary hover:text-white" onClick={() => setProject({ ...project, state: "draft" })}>Guardar borrador</button>
-          <button type="submit" className={`border-1 border-secondary px-4 py-2 rounded-sm  text-secondary duration-300 ${Object.keys(errors).length < 1 ? 'cursor-pointer hover:bg-secondary hover:text-white' : 'opacity-50 cursor-not-allowed'}`} disabled={Object.keys(errors).length > 0}>Guardar</button>
+        <div className="flex flex-col md:flex-row  justify-end items-end pt-6 lg:w-1/2">
+        
+          <button type="submit" className={`border-1 border-secondary px-4 py-2 max-h-[50px] rounded-sm w-[200px] text-secondary duration-300 ${Object.keys(errors).length < 1 ? 'cursor-pointer hover:bg-secondary hover:text-white' : 'opacity-50 cursor-not-allowed'}`} disabled={Object.keys(errors).length > 0}>
+               {sending ? (
+            <ImSpinner8        
+              size={20}
+              className="animate-spin mx-auto "
+            />
+          ) : (
+            <span>Guardar</span>
+          )}
+            
+            </button>
         </div>
 
       </form>
