@@ -2,14 +2,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
 import { useForm } from "react-hook-form";
 import { closeModal } from "@/libs/redux/features/ui/modalSlicer";
+import { createMachinery } from "@/services/createMachinery.adapter";
+import { CreateMachineryRequest, MachineFormData } from "@/types/machinary";
+import { useToast } from "@/hooks/frontend/ui/useToast";
 
-const schema = Yup.object({
+const schema = Yup.object().shape({
   name: Yup.string().required("Nombre de la maquinaria es requerida"),
   brand: Yup.string(),
   model: Yup.string(),
@@ -37,39 +40,137 @@ const schema = Yup.object({
   seat_count: Yup.number()
     .typeError("Debe ser un número")
     .required("Número de asientos es requerido")
-    .positive("El número de asientos debe ser un número positivo"),
+    .positive("El número de asientos debe ser un número positivo")
+    .integer("El número de asientos debe ser un número entero"),
   fuel_type: Yup.string().required("Tipo de combustible es requerido"),
   machine_category: Yup.string().required(
     "Categoría de maquinaria es requerida"
   ),
-  image: Yup.mixed(),
+  // image: Yup.mixed<FileList>(), // TODO: Uncomment when image upload is implemented
+  gps_lat: Yup.number(),
+  gps_lng: Yup.number(),
 });
+
 export default function useMachineForm() {
   const {
     register,
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors, isValid },
-  } = useForm({
-    resolver: yupResolver(schema),
+  } = useForm<MachineFormData>({
+    resolver: yupResolver(schema) as any,
     mode: "onBlur",
+    defaultValues: {
+      name: "",
+      brand: "",
+      model: "",
+      serial_number: "",
+      machine_type: "",
+      daily_rate: 0,
+      status: "",
+      location_info: "",
+      weight_tn: 0,
+      motor_spec: "",
+      height_m: 0,
+      width_m: 0,
+      seat_count: 0,
+      fuel_type: "",
+      machine_category: "",
+      gps_lat: undefined,
+      gps_lng: undefined,
+      // image: undefined, // TODO: Uncomment when image upload is implemented
+    }
   });
   const isModalOpen = useUIAppSelector((state) => state.modal.isOpen);
+  const locationState = useUIAppSelector((state) => state.filters.location);
   const dispatch = useUIAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
-  const submit = (data: any) => {
+  const { toastSuccess, toastError } = useToast();
+
+  // Sincronizar Redux con el formulario cuando cambie la ubicación
+  useEffect(() => {
+    if (locationState) {
+      setValue("location_info", locationState.label);
+      setValue("gps_lat", locationState.lat);
+      setValue("gps_lng", locationState.lon);
+    }
+  }, [locationState, setValue]);
+
+  const submit = async (data: MachineFormData) => {
     setIsLoading(true);
-    dispatch(closeModal());
+    
+    try {
+      // Validar campos requeridos manualmente por si acaso
+      if (!data.name || !data.serial_number || !data.machine_type || !data.daily_rate) {
+        toastError("Por favor, completa todos los campos requeridos");
+        setIsLoading(false);
+        return;
+      }
+
+      // Preparar los datos para enviar - conversión de tipos más robusta
+      const machineryData: CreateMachineryRequest = {
+        // BasicMachineryData
+        name: data.name.trim(),
+        brand: data.brand?.trim() || "",
+        model: data.model?.trim() || "",
+        serial_number: data.serial_number.trim(),
+        machine_type: data.machine_type,
+        daily_rate: Number(data.daily_rate),
+        status: data.status,
+        location_info: data.location_info.trim(),
+        
+        // TechnicalSpecs
+        machine_category: data.machine_category,
+        fuel_type: data.fuel_type,
+        weight_tn: Number(data.weight_tn),
+        motor_spec: data.motor_spec?.trim() || "",
+        height_m: Number(data.height_m),
+        width_m: Number(data.width_m),
+        seat_count: Number(data.seat_count),
+        
+        // GeolocationData
+        gps_lat: data.gps_lat ? Number(data.gps_lat) : undefined,
+        gps_lng: data.gps_lng ? Number(data.gps_lng) : undefined,
+        geospatial_status: data.gps_lat && data.gps_lng ? "available" : undefined,
+        
+        // NOTE: image field removed - will be handled by separate endpoint when implemented
+      };
+
+      // Validar que los números sean válidos
+      const numericFields: (keyof CreateMachineryRequest)[] = ['daily_rate', 'weight_tn', 'height_m', 'width_m', 'seat_count'];
+      for (const field of numericFields) {
+        const value = machineryData[field];
+        if (typeof value === 'number' && (isNaN(value) || value <= 0)) {
+          toastError(`El campo ${field} debe ser un número válido mayor a 0`);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      const result = await createMachinery(machineryData);
+      
+      if (result.success) {
+        toastSuccess(`Maquinaria "${data.name}" registrada exitosamente en el sistema.`);
+        reset();
+        dispatch(closeModal()); 
+      }
+    } catch (error: any) {
+      console.error("Error en submit:", error);
+      toastError("Error al crear la maquinaria. Inténtalo de nuevo.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   return {
     register,
     handleSubmit,
-    errors,
     submit,
-    watch,
-    isModalOpen,
+    errors,
     isLoading,
     isValid,
+    watch,
   };
 }

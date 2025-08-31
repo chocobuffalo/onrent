@@ -2,6 +2,7 @@
 import FileInput from "@/components/atoms/FileInput/FileInput";
 import Input from "@/components/atoms/Input/Input";
 import SelectInput from "@/components/atoms/selectInput/selectInput";
+import FilterInput from "@/components/atoms/filterInput/filterInput";
 import { typeOptions } from "@/constants/routes/home";
 import {
   fuel_type_options,
@@ -71,7 +72,7 @@ export default function MachineForm() {
           <div className="col-md-6 pb-3">
             <SelectInput
               options={machineSelector}
-              label="Typo de maquinaria"
+              label="Tipo de maquinaria"
               name="machine_type"
               placeHolder="Selecciona el tipo de maquinaria"
               register={register}
@@ -89,14 +90,19 @@ export default function MachineForm() {
             />
           </div>
           <div className="col-md-12 pb-3">
-            <Input
-              label="Información de ubicación"
-              type="text"
-              name="location_info"
-              placeHolder="Información de ubicación"
-              register={register}
-              errors={errors}
-            />
+            <div className="form-group">
+              <label className="form-label">Información de ubicación</label>
+              <FilterInput checkpersist={false} name="location_info" />
+              {errors.location_info && (
+                <div className="invalid-feedback d-block">
+                  {errors.location_info?.message as string}
+                </div>
+              )}
+            </div>
+            
+            {/* Campos ocultos para GPS */}
+            <input type="hidden" {...register("gps_lat")} />
+            <input type="hidden" {...register("gps_lng")} />
           </div>
           <div className="col-md-6 col-lg-4">
             <SelectInput
@@ -190,7 +196,7 @@ export default function MachineForm() {
         <button
           className="pre-btn"
           type="submit"
-          disabled={!isValid && !isLoading}
+          disabled={!isValid || isLoading}
         >
           {isLoading ? (
             <ImSpinner8
