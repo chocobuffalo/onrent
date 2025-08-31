@@ -6,7 +6,6 @@ import createAxiosinstance from "@/utils/axiosInstance";
 export default async function loginUser(credentials: LoginPayload): Promise<LoginResponse> {
   try {
     const axiosInstance = await createAxiosinstance({
-      method: 'POST',
       baseURL: process.env.NEXT_PUBLIC_API_URL_ORIGIN,
       headers: {
         'Content-Type': 'application/json',

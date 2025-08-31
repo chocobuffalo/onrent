@@ -112,7 +112,7 @@ export const callbacks: NextAuthConfig["callbacks"] = {
   async jwt({ token, user, account, trigger, session }) {
     // console.log('🔄 jwt callback triggered');
     // console.log('Initial token:', token);
-    // console.log('User:', user);
+    console.log('User:', user);
     // console.log('Account:', account);
 
     const extendedToken = token as ExtendedToken;

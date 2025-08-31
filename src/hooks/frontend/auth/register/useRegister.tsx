@@ -5,6 +5,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useState } from "react";
 import createUser from "@/services/createUser";
+import { useToast } from "../../ui/useToast";
+
+import { useRouter } from 'next/navigation'
+import { signIn } from "next-auth/react";
 
 const schema = Yup.object({
   name: Yup.string().required("Este campo es obligatorio"),
@@ -24,7 +28,8 @@ export default function useRegister() {
   const [isLoading, setIsLoading] = useState(false);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
-
+  const { toastSuccessAction, toastError } = useToast();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -59,20 +64,27 @@ export default function useRegister() {
 
       // Verificar si la respuesta fue exitosa
       if (createUserResponse.responseStatus >= 200 && createUserResponse.responseStatus < 300) {
-        console.log("Usuario registrado exitosamente:", createUserResponse.response);
+       // console.log("Usuario registrado exitosamente:", createUserResponse.response);
         setRegistrationSuccess(true);
         
-        // Aquí puedes agregar lógica adicional como:
+        
         // - Redireccionar al usuario
+        toastSuccessAction("Usuario registrado exitosamente",()=>{signIn('credentials',{
+          email: data.email,
+          password: data.password
+        })});
+        
         // - Mostrar mensaje de éxito
         // - Limpiar el formulario
         
       } else {
         setRegistrationError("Error al registrar usuario. Por favor intenta nuevamente.");
+        toastError("Error al registrar usuario. Por favor intenta nuevamente.");
       }
 
     } catch (error) {
       console.error("Error inesperado al registrar el usuario:", error);
+      toastError("Error inesperado. Por favor intenta nuevamente: "+error);
       setRegistrationError("Error inesperado. Por favor intenta nuevamente.");
     } finally {
       setIsLoading(false);

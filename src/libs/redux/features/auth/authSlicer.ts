@@ -41,12 +41,31 @@ const authSlicer = createSlice({
     setEmail: (state, action) => {
       state.profile.email = action.payload;
     },
+  
+    forceLogout: (state) => {
+      state.isLogin = false;
+      state.profile = {
+        name: "",
+        email: "",
+        avatarUrl: "/profile-placeholder.svg",
+        role: "",
+        userID: "",
+        token: "",
+      };
+    },
   },
 });
 
-export const { setLogin, setProfile, setAvatar, setName, setEmail,
-  setRole  } =
-  authSlicer.actions;
+
+export const { 
+  setLogin, 
+  setProfile, 
+  setAvatar, 
+  setName, 
+  setEmail,
+  setRole,
+  forceLogout 
+} = authSlicer.actions;
 
 export const selectProfile = (state: RootState) =>
   (state.auth as AuthStateInterface).profile;
