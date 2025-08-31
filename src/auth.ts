@@ -27,7 +27,10 @@ export const authOptions: AuthConfig = {
   },
   pages: {
     signIn: "/iniciar-session",
-    newUser: "/complete-usuario",
+    newUser: "/registrate",
+    error: "/iniciar-session", // Error code passed in query string as ?error=ç
+    signOut: "/",
+    
   },
   events: {
     async session(event){

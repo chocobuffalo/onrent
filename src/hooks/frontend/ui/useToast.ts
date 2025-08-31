@@ -49,11 +49,24 @@ export function useToast() {
       toastId: "warning-toast",
     });
   };
+  const toastSuccessAction = (message:string,action:()=>void)=>{
+    toast.success(message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      toastId: "success-action-toast",
+      onClose: action
+    });
+  }
 
   return {
     toastSuccess,
     toastError,
     toastInfo,
     toastWarning,
+    toastSuccessAction
   };
 }
