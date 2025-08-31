@@ -7,7 +7,17 @@ export interface TechnicalSpecs {
     motor_spec: string;   
     fuel_type: string;   
     machine_category: string; 
-}  
+} 
+export interface SpecsInterface{
+    type?: string,
+    category?: string,
+    motor?: string,
+    fuel?: string,
+    weight_tn?: string,
+    height_m?: string,
+    width_m?: string,
+    seats?: string
+}
 
 // Interfaz para datos básicos de maquinaria 
 export interface BasicMachineryData {   
