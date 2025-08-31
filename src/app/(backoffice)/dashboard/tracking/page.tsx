@@ -1,7 +1,9 @@
-export default function Tracking() {
+import React from 'react'
+
+function page() {
   return (
-    <div>
-      <h1>seguimiento de orden y logística</h1>
-    </div>
+    <div>page</div>
   )
 }
+
+export default page
