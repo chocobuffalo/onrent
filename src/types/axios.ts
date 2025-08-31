@@ -5,3 +5,10 @@ export interface AxiosInfoInterface {
     params?: Record<string, string>;
     timeout?: number; 
 }
+
+// Opciones para crear instancia de Axios
+export interface CreateAxiosInstanceOptions {
+  baseURL?: string;
+  timeout?: number;
+  headers?: Record<string, string>;
+}

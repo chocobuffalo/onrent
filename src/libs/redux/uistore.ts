@@ -2,12 +2,11 @@
 "use client";
 import { configureStore } from "@reduxjs/toolkit";
 import filterSlicer from "./features/ui/filterSlicer";
+import authSlicer from "./features/auth/authSlicer";
+import modalSlicer from "./features/ui/modalSlicer";
 
 import { FilterInterface } from "@/types/filters";
-
-import authSlicer from "./features/auth/authSlicer";
 import { AuthStateInterface } from "@/types/auth";
-import modalSlicer from "./features/ui/modalSlicer";
 import { ModalStateInterface } from "@/types/iu";
 
 export interface RootInterface {
@@ -27,7 +26,7 @@ export const makeStore = () => {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         serializableCheck: {
-          ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+          ignoredActions: ["persist/PERSIST", "persist/REHYDRATE", "auth/triggerAutoLogout"],
         },
       }),
   });

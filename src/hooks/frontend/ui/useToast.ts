@@ -62,11 +62,31 @@ export function useToast() {
     });
   }
 
+  // Toast específico para notificaciones críticas como expiración de sesión
+  const toastCritical = (message: string) => {
+    toast.warning(message, {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: false, 
+      pauseOnHover: true,
+      draggable: false,
+      toastId: "critical-toast",
+      style: {
+        fontSize: "14px",
+        padding: "16px",
+        borderRadius: "8px",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+      }
+    });
+  };
+
   return {
     toastSuccess,
     toastError,
     toastInfo,
     toastWarning,
-    toastSuccessAction
+    toastSuccessAction,
+    toastCritical,
   };
 }
