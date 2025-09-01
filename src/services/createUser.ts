@@ -1,5 +1,5 @@
 import { userRoles } from "@/constants/user";
-import { log } from "console";
+
 
 export default async function createUser(arg0:{email:string, name:string, password:string, role:string}) {
   const errors: string[] = [];
@@ -45,7 +45,7 @@ export default async function createUser(arg0:{email:string, name:string, passwo
     throw new Error("Error creating user");
   }
   const data = await response.json();
-  console.log(data, "createUser response");
+  //console.log(data, "createUser response");
   return {
     response: {
       email: data.email,

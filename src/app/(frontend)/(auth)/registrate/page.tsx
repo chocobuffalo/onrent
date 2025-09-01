@@ -91,9 +91,9 @@ export default function Registro() {
           {/* Botón Crear cuenta */}
           <button
             type="submit"
-            className={`w-full py-4 rounded-md font-semibold text-white  text-[12px] tracking-wide transition-colors ${
+            className={`w-full py-4 rounded-md  font-semibold text-white  text-[12px] tracking-wide transition-colors ${
               isValid
-                ? "bg-[#1C1B3A] hover:bg-[#0f0f26]"
+                ? "bg-[#1C1B3A] hover:bg-[#0f0f26] cursor-pointer"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
             disabled={!isValid}

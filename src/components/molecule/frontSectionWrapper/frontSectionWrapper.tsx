@@ -11,7 +11,7 @@ export default function FrontSectionWrapper({
 }) {
   const classes = extraClass ? ` ${extraClass}` : "";
   return (
-    <section id={identicator} className={`px-7 w-full ${classes}`}>
+    <section id={identicator} className={`px-4 w-full ${classes}`}>
       <div className="container mx-auto">{children}</div>
     </section>
   );

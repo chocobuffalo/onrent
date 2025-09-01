@@ -16,3 +16,5 @@ export const filterInitialState: FilterInterface = {
     pageSize: 10,
     nationalOnly: false
 };
+
+export const projectStates = [{ label: "Planificación", value: "planning",color:'#007bff' }, { label: "Activo", value: "active",color:'#ffc107' }, { label: "Finalizado", value: "completed",color:'#28a745' },{ label: "Cancelado", value: "cancelled",color:'#f44336' }];

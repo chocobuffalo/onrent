@@ -25,7 +25,7 @@ export default function DateInput({
       ? new Date(`${startDate.year}/${startDate.month}/${startDate.day}`)
       : "today";
 
-     // console.log( typeof startDate === "object", startDate);
+     //console.log( typeof startDate === "object", startDate);
 
   const maxDate = typeof endDate === "object"
       ? new Date(endDate.year, endDate.month -1 , endDate.day)

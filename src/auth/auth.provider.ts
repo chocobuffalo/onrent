@@ -4,6 +4,8 @@ import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
 import { LoginResponse } from "@/types/auth";
 
+
+
 export const providers = [
   Credentials({
     name: "Credentials",
@@ -17,6 +19,7 @@ export const providers = [
           email: credentials?.email as string,
           password: credentials?.password as string,
         });
+
 
         if (res?.access_token) {
           return {

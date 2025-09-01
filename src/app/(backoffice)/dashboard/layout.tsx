@@ -6,6 +6,7 @@ import '@/assets/scss/app.scss'
 import '@/assets/css/backoffice.css'
 import { redirect } from 'next/navigation';
 import ModalForm from '@/components/organism/modalForm/modalForm';
+import AutoLogoutProvider from '@/components/providers/AutoLogoutProvider';
 
 export default  async function DashboardLayout({
     children,
@@ -20,6 +21,7 @@ export default  async function DashboardLayout({
      }
     return (
        <>
+       <AutoLogoutProvider />
        <Sidebar/>
        <div id="wrapper-dashboard">
             <div id="pagee" className="clearfix">
