@@ -69,10 +69,13 @@ export default function useRegister() {
         
         
         // - Redireccionar al usuario
-        toastSuccessAction("Usuario registrado exitosamente",()=>{signIn('credentials',{
+        toastSuccessAction("Usuario registrado exitosamente, redirigiendo a tu perfil... Espere",()=>{
+          signIn('credentials',{
           email: data.email,
-          password: data.password
-        })});
+          password: data.password,
+          redirect:true,
+          callbackUrl: `/dashboard/profile`
+        });});
         
         // - Mostrar mensaje de éxito
         // - Limpiar el formulario
@@ -101,4 +104,8 @@ export default function useRegister() {
     registrationError,
     registrationSuccess,
   };
+}
+
+function toastSuccess(arg0: string) {
+  throw new Error("Function not implemented.");
 }
