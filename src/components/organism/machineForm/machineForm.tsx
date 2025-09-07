@@ -9,22 +9,24 @@ import {
   machineSelector,
   statusOptions,
 } from "@/constants/routes/machineForm";
-import useMachineForm from "@/hooks/backend/useMachineForm";
+import useMachineFormUI from "@/hooks/frontend/ui/useMachineFormUI";
 import { ImSpinner8 } from "react-icons/im";
 
-export default function MachineForm() {
+interface MachineFormProps {
+  onCreated?: () => void;
+}
+
+const MachineForm = ({ onCreated }: MachineFormProps) => {
+  // Hook de frontend que coordina toda la lógica
   const {
     register,
     handleSubmit,
     submit,
     errors,
-    // isModalOpen,
     isLoading,
     isValid,
-    // watch,
-  } = useMachineForm();
+  } = useMachineFormUI({ onCreated });
 
-  //   const machineTypeValue = watch ? watch("machine_type") : "";
   return (
     <form className="container" onSubmit={handleSubmit(submit)}>
       <div className="modal-body">
@@ -118,7 +120,7 @@ export default function MachineForm() {
               label="Especificaciones del motor"
               type="text"
               name="motor_spec"
-              placeHolder=""
+              placeHolder="0"
               register={register}
               errors={errors}
             />
@@ -128,7 +130,7 @@ export default function MachineForm() {
               label="Peso de la maquinaria"
               type="text"
               name="weight_tn"
-              placeHolder=""
+              placeHolder="0"
               register={register}
               errors={errors}
             />
@@ -138,7 +140,7 @@ export default function MachineForm() {
               label="Altura de la maquinaria"
               type="text"
               name="height_m"
-              placeHolder=""
+              placeHolder="0"
               register={register}
               errors={errors}
             />
@@ -148,7 +150,7 @@ export default function MachineForm() {
               label="Longitud de la maquinaria"
               type="text"
               name="width_m"
-              placeHolder=""
+              placeHolder="0"
               register={register}
               errors={errors}
             />
@@ -159,7 +161,7 @@ export default function MachineForm() {
               label="Numero de asientos"
               type="text"
               name="seat_count"
-              placeHolder=""
+              placeHolder="0"
               register={register}
               errors={errors}
             />
@@ -192,7 +194,7 @@ export default function MachineForm() {
           </div>
         </div>
       </div>
-      <div className="group-button-submit modal-footer left mb-0">
+      <div className="group-button-submit modal-footer left">
         <button
           className="pre-btn"
           type="submit"
@@ -211,4 +213,6 @@ export default function MachineForm() {
       </div>
     </form>
   );
-}
+};
+
+export default MachineForm;

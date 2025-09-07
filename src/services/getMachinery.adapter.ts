@@ -1,12 +1,12 @@
 import createAxiosInstance from "@/utils/axiosInstance";
 import { MachineryResponse, GetMachineryResult } from "@/types/machinary";
 
-// Interfaz para la respuesta del API
+
 interface ApiMachineryListResponse {
   machines?: MachineryResponse[];
   data?: MachineryResponse[];
   machineries?: MachineryResponse[];
-  [key: string]: any; // Para permitir otras propiedades
+  [key: string]: any;
 }
 
 export const getMachineryList = async (): Promise<GetMachineryResult> => {
@@ -53,7 +53,7 @@ export const getMachineryList = async (): Promise<GetMachineryResult> => {
   } catch (error: any) {
     console.error("Error en getMachineryList:", error);
 
-    // Si es error 401, el interceptor ya manejó el logout automático
+   
     if (error.response?.status === 401) {
       return {
         success: false,
@@ -62,7 +62,7 @@ export const getMachineryList = async (): Promise<GetMachineryResult> => {
       };
     }
 
-    // Para cualquier otro error, usar mensaje genérico
+
     return {
       success: false,
       error: error.response ? `HTTP ${error.response.status}` : "Network Error",
