@@ -104,7 +104,7 @@ export default function NewProjectForm({projectID}:{projectID?:string}) {
                   <DateInput 
                     action={(date:string)=>{handlerStartDate(date);handlerWorkSchedule(date, project.end_date)}} 
                     value={project.start_date}
-                    startDate={ typeof fixDate(project.start_date) === "object" ? fixDate(project.start_date) : undefined }
+                    //startDate={ typeof fixDate(project.start_date) === "object" ? fixDate(project.start_date) : undefined }
                     endDate={ typeof fixDate(project.end_date) === "object" ? fixDate(project.end_date) : undefined } 
                     placeholder="Fecha de inicio de la obra"  />
                     <input type="hidden" {...register("start_date")} className="hidden" name="start_date" value={project.start_date} />

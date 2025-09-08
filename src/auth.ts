@@ -13,7 +13,7 @@ declare module "next-auth" {
 }
 
 export const authOptions: AuthConfig = {
-  debug: process.env.NODE_ENV === "development",
+  debug: false,
   secret: process.env.AUTH_SECRET,
   providers,
   callbacks,
@@ -26,8 +26,8 @@ export const authOptions: AuthConfig = {
     maxAge: 24 * 60 * 60 * 6,
   },
   pages: {
-    signIn: "/iniciar-session",
-    newUser: "/registrate",
+    signIn: "/dashboard",
+    newUser: "/dashboard/profile",
     error: "/iniciar-session", // Error code passed in query string as ?error=ç
     signOut: "/",
     

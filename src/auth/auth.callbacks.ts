@@ -46,6 +46,8 @@ export const callbacks: NextAuthConfig["callbacks"] = {
 
     // Para OAuth (Google, Apple, etc.)
     if (account?.provider === "google" || account?.provider === "apple") {
+      console.log(account,'account');
+      console.log(profile,'profile');
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/user/social_login`, {
           method: 'POST',
@@ -55,13 +57,13 @@ export const callbacks: NextAuthConfig["callbacks"] = {
           body: JSON.stringify({
             email: profile?.email,
             name: profile?.name,
-            picture: profile?.image,
+           // picture: profile?.image,
             oauth_provider: account?.provider,
             id_token: account?.id_token,
             access_token: account?.access_token,
           }),
         });
-        
+        console.log('response social login:', response);
         if (!response.ok) {
 
           // redireccionar

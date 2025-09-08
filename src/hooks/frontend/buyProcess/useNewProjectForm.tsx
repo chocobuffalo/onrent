@@ -353,7 +353,7 @@ useEffect(() => {
             reset();
           }else{
             console.log(res);
-            toastError('hubo un error en la creación del proyecto');
+            toastError('Hubo un error en la creación del proyecto');
           }
         }).finally(
           ()=>{
