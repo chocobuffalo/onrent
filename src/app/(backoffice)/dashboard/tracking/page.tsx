@@ -1,54 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import TrackingMap from "@/components/molecule/TrackingMap/TrackingMap";
-import { DeviceLocation } from "@/hooks/backend/useTrackingMap";
+import { useState } from "react";
+import TrackingMap, { DeviceLocation } from "@/components/molecule/TrackingMap/TrackingMap";
 
+/**
+ * Página que muestra el mapa de tracking para:
+ * - Cliente: ver ubicación de su renta
+ * - Proveedor: ver ubicación de su flota
+ * - Operador: navegar hacia destino
+ */
 export default function TrackingPage() {
-  const [devices, setDevices] = useState<DeviceLocation[]>([]);
+  // Posición inicial simulada del operador (centro CDMX)
+  const [operatorPosition] = useState<DeviceLocation>({
+    id: "operator-1",
+    lat: 19.4326,
+    lng: -99.1332,
+  });
 
-  // fetch inicial (polling REST)
-  useEffect(() => {
-    async function fetchInitial() {
-      try {
-        const res = await fetch("/api/devices/active");
-        if (!res.ok) return;
-        const data = await res.json();
-        setDevices(data);
-      } catch (err) {
-        console.error("Error cargando devices:", err);
-      }
-    }
-    fetchInitial();
-  }, []);
+  // Destino fijo (obra) – se puede cambiar dinámicamente en producción
+  const [destination] = useState<{ lat: number; lng: number }>({
+    lat: 19.427,
+    lng: -99.167,
+  });
 
-  // conectar WebSocket (simulación)
-  useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8000/ws/tracking");
-
-    ws.onmessage = (event) => {
-      const update: DeviceLocation = JSON.parse(event.data);
-
-      setDevices((prev) => {
-        const exists = prev.find((d) => d.id === update.id);
-        if (exists) {
-          return prev.map((d) => (d.id === update.id ? update : d));
-        }
-        return [...prev, update];
-      });
-    };
-
-    ws.onclose = () => {
-      console.warn("WebSocket cerrado. Podrías reintentar aquí.");
-    };
-
-    return () => ws.close();
-  }, []);
+  // Flota de maquinaria ejemplo (otros operadores/vehículos)
+  const [fleet] = useState<DeviceLocation[]>([
+    { id: "machine-1", lat: 19.436, lng: -99.14 },
+    { id: "machine-2", lat: 19.43, lng: -99.12 },
+  ]);
 
   return (
-    <div>
-      <h1 className="text-xl font-bold mb-2">Mapa de Maquinarias Activas</h1>
-      <TrackingMap devices={devices} autoFitBounds />
+    <div className="w-full h-[600px]">
+      <TrackingMap
+        operatorPosition={operatorPosition}
+        initialDestination={destination}
+        fleet={fleet}
+      />
     </div>
   );
 }

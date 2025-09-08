@@ -1,21 +1,36 @@
 "use client";
 
-import { useTrackingMap, DeviceLocation } from "../../../hooks/backend/useTrackingMap";
+import { useTrackingMap } from "@/hooks/backend/useTrackingMap";
 
-type Props = {
-  center?: [number, number];
-  zoom?: number;
-  devices: DeviceLocation[];
-  autoFitBounds?: boolean;
-};
+// Tipado de la posición de un dispositivo / maquinaria
+export interface DeviceLocation {
+  id: string;       // Identificador único del dispositivo/operador
+  lat: number;      // Latitud
+  lng: number;      // Longitud
+}
 
-export default function TrackingMap({ center, zoom, devices, autoFitBounds }: Props) {
-  const { mapContainer } = useTrackingMap({ center, zoom, devices, autoFitBounds });
+// Props del componente
+interface TrackingMapProps {
+  operatorPosition?: DeviceLocation | null;      // Posición inicial del operador (azul)
+  initialDestination?: { lat: number; lng: number } | null; // Destino de la ruta (rojo)
+  fleet?: DeviceLocation[];                     // Otros vehículos / maquinaria (verde)
+}
 
-  return (
-    <div
-      ref={mapContainer}
-      style={{ width: "100%", height: "500px", borderRadius: "8px" }}
-    />
-  );
+/**
+ * Componente principal que renderiza un mapa con:
+ * - Operador
+ * - Destino
+ * - Flota de maquinaria
+ * - Ruta simulada del operador
+ */
+export default function TrackingMap({ operatorPosition, initialDestination, fleet }: TrackingMapProps) {
+  // Lógica del mapa, marcadores y simulación
+  const mapContainerRef = useTrackingMap({
+    operatorPosition,
+    initialDestination,
+    fleet,
+  });
+
+  // Retorna el contenedor donde MapLibre renderiza el mapa
+  return <div ref={mapContainerRef} className="w-full h-full rounded-lg shadow-md" />;
 }

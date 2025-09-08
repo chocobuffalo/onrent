@@ -1,144 +1,202 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { DeviceLocation } from "@/components/molecule/TrackingMap/TrackingMap";
 
-export type DeviceLocation = {
-  id: string;
-  lat: number;
-  lng: number;
-  label?: string;
-  status?: "en_ruta" | "disponible" | "apagado";
-};
-
-type UseTrackingMapProps = {
-  center?: [number, number];
-  zoom?: number;
-  devices: DeviceLocation[];
-  autoFitBounds?: boolean; // opcional para proveedor
-};
+/**
+ * Props del hook
+ */
+interface UseTrackingMapProps {
+  operatorPosition?: DeviceLocation | null; // Posición inicial del operador
+  initialDestination?: { lat: number; lng: number } | null; // Destino de la ruta
+  fleet?: DeviceLocation[]; // Otros vehículos / maquinaria
+  simulationSpeed?: number; // Tiempo en milisegundos entre pasos de simulación
+}
 
 export function useTrackingMap({
-  center = [-99.1332, 19.4326],
-  zoom = 12,
-  devices,
-  autoFitBounds = false,
+  operatorPosition,
+  initialDestination,
+  fleet,
+  simulationSpeed = 1000, // default 1 segundo entre pasos
 }: UseTrackingMapProps) {
-  const mapContainer = useRef<HTMLDivElement | null>(null);
-  const map = useRef<any>(null);
-  const markers = useRef<{ [id: string]: any }>({});
+  const mapContainerRef = useRef<HTMLDivElement>(null); // Contenedor del mapa
+  const mapRef = useRef<any>(null); // Instancia del mapa MapLibre
+  const markersRef = useRef<any[]>([]); // Marcadores de flota y destino
+  const operatorMarkerRef = useRef<any>(null); // Marcador del operador que se mueve
+  const routeLineRef = useRef<any>(null); // Línea de la ruta
+  const [mapLoaded, setMapLoaded] = useState(false); // Indica si el mapa cargó
 
-  // cargar MapLibre dinámicamente
-  async function loadMapLibre() {
-    if (typeof window === "undefined") return;
-    if ((window as any).maplibregl) return (window as any).maplibregl;
-
+  /**
+   * Carga MapLibre GL dinámicamente
+   */
+  const loadMapLibre = useCallback(() => {
     return new Promise<void>((resolve, reject) => {
-      const cssId = "maplibre-gl-css";
-      if (!document.getElementById(cssId)) {
-        const link = document.createElement("link");
-        link.id = cssId;
-        link.rel = "stylesheet";
-        link.href =
-          "https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css";
-        document.head.appendChild(link);
-      }
+      if (window.maplibregl) { resolve(); return; }
 
+      // CSS MapLibre
+      const cssLink = document.createElement("link");
+      cssLink.href = "https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.css";
+      cssLink.rel = "stylesheet";
+      document.head.appendChild(cssLink);
+
+      // Script MapLibre
       const script = document.createElement("script");
-      script.src = "https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js";
+      script.src = "https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.js";
       script.async = true;
       script.onload = () => resolve();
-      script.onerror = reject;
+      script.onerror = () => reject(new Error("Failed to load MapLibre GL JS"));
       document.head.appendChild(script);
     });
-  }
+  }, []);
 
-  // inicializar mapa
-  useEffect(() => {
-    const initMap = async () => {
-      if (!mapContainer.current || map.current) return;
-      await loadMapLibre();
+  /**
+   * Crea un marcador en el mapa
+   * @param lat Latitud
+   * @param lng Longitud
+   * @param color Color del marcador
+   * @returns El objeto Marker
+   */
+  const addMarker = useCallback((lat: number, lng: number, color: string = "blue") => {
+    if (!mapRef.current || !window.maplibregl) return;
+    const marker = new window.maplibregl.Marker({ color })
+      .setLngLat([lng, lat])
+      .addTo(mapRef.current);
+    markersRef.current.push(marker);
+    return marker;
+  }, []);
 
-      const res = await fetch("/api/get-map/config/route");
-      const config = await res.json();
+  /**
+   * Dibuja la ruta entre origen y destino usando la API de route
+   * @returns Array de coordenadas de la ruta
+   */
+  const drawRoute = useCallback(async (origin: { lat: number, lng: number }, destination: { lat: number, lng: number }) => {
+    if (!mapRef.current) return [];
 
-      const maplibregl = (window as any).maplibregl;
-      map.current = new maplibregl.Map({
-        container: mapContainer.current,
-        style: config.style,
-        center,
-        zoom,
+    try {
+      const res = await fetch("/api/get-map/route/route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ origin, destination }),
       });
 
-      map.current.addControl(new maplibregl.NavigationControl(), "top-right");
-    };
+      if (!res.ok) throw new Error("Failed to fetch route");
 
-    initMap();
-    return () => {
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-      markers.current = {};
-    };
-  }, [center, zoom]);
+      const data = await res.json();
+      const routeCoordinates = data?.Legs?.[0]?.Geometry?.LineString || [];
 
-  // actualizar markers
-  useEffect(() => {
-    if (!map.current) return;
-
-    const maplibregl = (window as any).maplibregl;
-
-    devices.forEach((device) => {
-      const { id, lat, lng, label, status } = device;
-
-      // color dinámico según status
-      let bg = "orange";
-      if (status === "disponible") bg = "green";
-      if (status === "apagado") bg = "gray";
-
-      if (markers.current[id]) {
-        markers.current[id].setLngLat([lng, lat]);
-        // actualizar popup dinámicamente
-        if (label) {
-          markers.current[id]
-            .setPopup(new maplibregl.Popup().setText(label));
+      // Elimina ruta previa si existe
+      if (routeLineRef.current) {
+        if (mapRef.current.getSource("route")) {
+          mapRef.current.removeLayer("route");
+          mapRef.current.removeSource("route");
         }
-        // actualizar color dinámico
-        markers.current[id].getElement().style.backgroundColor = bg;
-      } else {
-        const el = document.createElement("div");
-        el.style.width = "14px";
-        el.style.height = "14px";
-        el.style.borderRadius = "50%";
-        el.style.backgroundColor = bg;
-
-        const marker = new maplibregl.Marker({ element: el })
-          .setLngLat([lng, lat]);
-
-        if (label) {
-          marker.setPopup(new maplibregl.Popup().setText(label));
-        }
-
-        marker.addTo(map.current);
-        markers.current[id] = marker;
+        routeLineRef.current = null;
       }
-    });
 
-    // limpiar markers que ya no existen
-    Object.keys(markers.current).forEach((id) => {
-      if (!devices.find((d) => d.id === id)) {
-        markers.current[id].remove();
-        delete markers.current[id];
+      // Dibuja nueva ruta
+      if (routeCoordinates.length > 0) {
+        mapRef.current.addSource("route", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            geometry: { type: "LineString", coordinates: routeCoordinates },
+          },
+        });
+
+        mapRef.current.addLayer({
+          id: "route",
+          type: "line",
+          source: "route",
+          layout: { "line-join": "round", "line-cap": "round" },
+          paint: { "line-color": "#FF6B35", "line-width": 4 },
+        });
+
+        routeLineRef.current = "route";
       }
-    });
 
-    // auto-ajustar bounds
-    if (autoFitBounds && devices.length > 0) {
-      const bounds = new maplibregl.LngLatBounds();
-      devices.forEach((d) => bounds.extend([d.lng, d.lat]));
-      map.current.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+      return routeCoordinates;
+    } catch (err) {
+      console.error("Error drawing route:", err);
+      return [];
     }
-  }, [devices, autoFitBounds]);
+  }, []);
 
-  return { mapContainer, map };
+  /**
+   * Inicializa el mapa y los marcadores
+   */
+  useEffect(() => {
+    const initializeMap = async () => {
+      await loadMapLibre();
+      if (!mapContainerRef.current || mapRef.current) return;
+
+      const initialCenter: [number, number] = operatorPosition
+        ? [operatorPosition.lng, operatorPosition.lat]
+        : [-99.1332, 19.4326]; // Centro default (CDMX)
+
+      // Configuración de estilo del mapa
+      const response = await fetch("/api/get-map/config/route");
+      const config = await response.json();
+
+      mapRef.current = new window.maplibregl.Map({
+        container: mapContainerRef.current,
+        style: config.style,
+        center: initialCenter,
+        zoom: 13,
+      });
+
+      mapRef.current.addControl(new window.maplibregl.NavigationControl(), "top-left");
+
+      mapRef.current.on("load", async () => {
+        setMapLoaded(true);
+
+        // Marcador del operador (azul)
+        if (operatorPosition) {
+          operatorMarkerRef.current = addMarker(operatorPosition.lat, operatorPosition.lng, "blue");
+        }
+
+        // Marcador del destino (rojo)
+        if (initialDestination) addMarker(initialDestination.lat, initialDestination.lng, "red");
+
+        // Marcadores de la flota (verde)
+        if (fleet && fleet.length > 0) {
+          fleet.forEach(machine => addMarker(machine.lat, machine.lng, "green"));
+        }
+
+        // Dibuja la ruta y simula movimiento del operador
+        if (operatorPosition && initialDestination) {
+          const routeCoords = await drawRoute(operatorPosition, initialDestination);
+
+          if (routeCoords.length > 0 && operatorMarkerRef.current) {
+            let index = 0;
+            const moveOperator = () => {
+              if (index >= routeCoords.length) return;
+              const [lng, lat] = routeCoords[index];
+              // Mueve el marcador del operador
+              operatorMarkerRef.current.setLngLat([lng, lat]);
+              mapRef.current.flyTo({ center: [lng, lat], zoom: 15, duration: simulationSpeed });
+              index++;
+              setTimeout(moveOperator, simulationSpeed);
+            };
+            moveOperator();
+          }
+        }
+      });
+    };
+
+    initializeMap();
+
+    return () => {
+      // Cleanup del mapa y marcadores
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      markersRef.current.forEach(m => m.remove());
+      markersRef.current = [];
+      operatorMarkerRef.current = null;
+      routeLineRef.current = null;
+    };
+  }, [operatorPosition, initialDestination, fleet, loadMapLibre, addMarker, drawRoute, simulationSpeed]);
+
+  return mapContainerRef;
 }
