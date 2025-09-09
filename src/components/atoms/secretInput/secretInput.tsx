@@ -21,7 +21,7 @@ export default function SecretInput(props: any) {
           onBlur={props.register(props.id).onBlur}
           name={props.id}
           type={inputType}
-          className={`form-control ${props.inputClass}`}
+          className={`form-control appearance-none ${props.inputClass}`}
           id={props.id}
           placeholder={props.placeHolder}
         />

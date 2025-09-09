@@ -7,6 +7,7 @@ export interface AuthStateInterface {
         role: string;
         userID:string;
         token: string;
+        phone: string;
     };
 }
 

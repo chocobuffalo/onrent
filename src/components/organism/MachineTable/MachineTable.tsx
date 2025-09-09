@@ -1,47 +1,103 @@
 "use client";
-
 import DynamicTable from "@/components/atoms/DynamicTable/DynamicTable";
 import AddEnginery from "@/components/atoms/AddEnginery/AddEnginery";
-import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
-import { toggleModal } from "@/libs/redux/features/ui/modalSlicer";
-import useMachineryList from "@/hooks/backend/useMachineryList";
+import MachineForm from "@/components/organism/machineForm/machineForm";
+import EditMachineForm from "@/components/organism/EditMachineForm/EditMachineForm";
+import ConfirmationModal from '@/components/organism/ConfirmationModal/ConfirmationModal';
+import useMachineTable from "@/hooks/frontend/ui/useMachineTable";
 
 export default function MachineTable() {
-  const active = useUIAppSelector((state) => state.modal.isOpen);
-  const dispatch = useUIAppDispatch();
-
-  const handleAddEnginery = () => {
-    dispatch(toggleModal());
-  };
-
-  // Hook con toda la lógica de maquinarias
-  const machineryData = useMachineryList();
-
+  const {
+    // Estados de modales
+    createModalOpen,
+    editModalOpen,
+    editData,
+    
+    // Handlers de modales
+    handleAddEnginery,
+    handleCloseCreateModal,
+    handleCloseEditModal,
+    handleEditFormSuccess,
+    
+    // Props del modal de confirmación
+    modalProps,
+    
+    // Datos y configuración de la tabla
+    items,
+    isLoading,
+    error,
+    searchValue,
+    columns,
+    statusField,
+    statusOptions,
+    statusColors,
+    actionButtons,
+    onSearch,
+    onStatusChange,
+  } = useMachineTable();
+  
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Gestión de maquinaria</h1>
-      
-      <div className="flex justify-between items-start gap-6">
-        <div className="flex-1">
-          <DynamicTable
-            title="Lista de Maquinarias"
-            items={machineryData.items}
-            isLoading={machineryData.isLoading}
-            error={machineryData.error}
-            searchValue={machineryData.searchValue}
-            columns={machineryData.columns}
-            statusField={machineryData.statusField}
-            statusOptions={machineryData.statusOptions}
-            statusColors={machineryData.statusColors}
-            actionButtons={machineryData.actionButtons}
-            onSearch={machineryData.onSearch}
-            onStatusChange={machineryData.onStatusChange}
-          />
-        </div>
-        <div className="flex-shrink-0">
-          <AddEnginery active={active} func={handleAddEnginery} />
+    <div className="machine-table-container p-6">
+      <div className="machine-table-header">
+        <h1 className="machine-table-title">Gestión de maquinaria</h1>
+        <div className="machine-table-add-button">
+          <AddEnginery active={createModalOpen} func={handleAddEnginery} />
         </div>
       </div>
+      <div className="machine-table-content">
+        <DynamicTable
+          title="Lista de Maquinarias"
+          items={items}
+          isLoading={isLoading}
+          error={error}
+          searchValue={searchValue}
+          columns={columns}
+          statusField={statusField}
+          statusOptions={statusOptions}
+          statusColors={statusColors}
+          actionButtons={actionButtons}
+          onSearch={onSearch}
+          onStatusChange={onStatusChange}
+        />
+      </div>
+      {createModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>NUEVA MAQUINARIA</h2>
+              <button 
+                className="modal-close-btn"
+                onClick={handleCloseCreateModal}
+              >
+                ×
+              </button>
+            </div>
+            <MachineForm />
+          </div>
+        </div>
+      )}
+      {editModalOpen && editData && (
+        <div className="edit-modal-overlay">
+          <div className="edit-modal-content">
+            <div className="edit-modal-header">
+              <h2>EDITAR MAQUINARIA</h2>
+              <button 
+                className="edit-modal-close-btn"
+                onClick={handleCloseEditModal}
+              >
+                ×
+              </button>
+            </div>
+            <EditMachineForm 
+              editData={editData}
+              onSuccess={handleEditFormSuccess}
+            />
+          </div>
+        </div>
+      )}
+      
+      {/* Modal de confirmación */}
+      <ConfirmationModal {...modalProps} />
     </div>
   );
 }
