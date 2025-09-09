@@ -192,7 +192,7 @@ export function useAmazonLocationMap({
         if (map.current || !mapContainer.current) return;
 
         // Obtener configuración del mapa desde API route
-        const response = await fetch('/api/get-map/config');
+        const response = await fetch('/api/get-map/config/route');
         if (!response.ok) {
           throw new Error(`Failed to fetch map config: ${response.status}`);
         }
