@@ -11,6 +11,7 @@ import {
   StatusColors, 
   ActionButton 
 } from "@/types/machinary";
+import { useSession } from "next-auth/react";
 
 interface UseMachineryListProps {
   onEdit?: (item: MachineryResponse) => void;
@@ -23,6 +24,7 @@ export default function useMachineryList(props?: UseMachineryListProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState("");
+  const {data:user} = useSession()
 
   // Ref para controlar si hay una petición en curso
   const isRequestInProgress = useRef(false);
@@ -38,8 +40,8 @@ export default function useMachineryList(props?: UseMachineryListProps) {
       isRequestInProgress.current = true;
       setIsLoading(true);
       setError(null);
-
-      const result = await getMachineryList();
+      const token = user?.user?.access_token || '';
+      const result = await getMachineryList(token);
 
       if (result.success && result.data) {
         // Filtrar maquinarias eliminadas permanentemente del localStorage
