@@ -9,7 +9,7 @@ interface ApiMachineryListResponse {
   [key: string]: any;
 }
 
-export const getMachineryList = async (): Promise<GetMachineryResult> => {
+export const getMachineryList = async (token:string): Promise<GetMachineryResult> => {
   try {
     console.log("Iniciando petición para obtener lista de maquinarias...");
 
@@ -17,6 +17,7 @@ export const getMachineryList = async (): Promise<GetMachineryResult> => {
       baseURL: process.env.NEXT_PUBLIC_API_URL_ORIGIN,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
     });
 
