@@ -6,6 +6,7 @@ import { SessionProvider } from "next-auth/react";
 import { makeStore, UIAppStore } from "./redux/uistore";
 import AuthSync from "@/components/organism/syncs/authSync";
 import FilterSync from "@/components/organism/syncs/FilterSync";
+import ProfileSync from "@/components/organism/syncs/profileSync";
 
 // Extender Window de forma segura
 declare global {
@@ -40,6 +41,7 @@ const Providers = ({
       <Provider store={storeRef.current}>
         <AuthSync />
         <FilterSync />
+        <ProfileSync />
         {children}
       </Provider>
     </SessionProvider>

@@ -24,14 +24,6 @@ export default function ChangePassForm() {
                 <form onSubmit={handleSubmit(onSubmit)} className="tfcl-add-listing profile-inner">
                   <div className="profile-password">
                     <SecretInput 
-                        register={register} 
-                        errors={errors} 
-                        label="Contraseña anterior" 
-                        placeHolder="Contraseña anterior" 
-                        id={'oldPassword'}
-                        classWrapper="form-group relative" 
-                        inputClass="" />
-                    <SecretInput 
                         register={register}
                         errors={errors}
                         label="Nueva contraseña"

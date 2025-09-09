@@ -13,6 +13,7 @@ export const initialAuth: AuthStateInterface = {
     role: "",
     userID: "",
     token: "",
+    phone: "",
   },
 };
 
@@ -41,6 +42,9 @@ const authSlicer = createSlice({
     setEmail: (state, action) => {
       state.profile.email = action.payload;
     },
+    setPhone: (state, action) => {
+      state.profile.phone = action.payload;
+    },
   
     forceLogout: (state) => {
       state.isLogin = false;
@@ -51,6 +55,7 @@ const authSlicer = createSlice({
         role: "",
         userID: "",
         token: "",
+        phone: "",
       };
     },
   },
@@ -64,6 +69,8 @@ export const {
   setName, 
   setEmail,
   setRole,
+  setPhone,
+  setUserID,
   forceLogout 
 } = authSlicer.actions;
 

@@ -34,7 +34,7 @@ export const authOptions: AuthConfig = {
   },
   events: {
     async session(event){
-       console.log('Console log from session event: ', event);
+      // console.log('Console log from session event: ', event);
 
     },
     async signOut(event) {

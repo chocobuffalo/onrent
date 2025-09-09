@@ -1,7 +1,7 @@
 import usePersonalForm from "@/hooks/backend/usePersonalForm";
 import { ImSpinner8 } from "react-icons/im";
 
-export default function PersonalForm(){
+export default function PersonalForm() {
     const {
         onSubmit,
         errors,
@@ -11,7 +11,7 @@ export default function PersonalForm(){
         isLoading,
         authEmail
     } = usePersonalForm();
-
+    
     return (
         <div className="">
              <h2 className="form-title mb-2">Información Personal</h2>

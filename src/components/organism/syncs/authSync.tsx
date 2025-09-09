@@ -11,6 +11,7 @@ import {
 } from "@/libs/redux/features/auth/authSlicer";
 import { setUserID } from "@/libs/redux/features/ui/filterSlicer";
 import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
+import { getUserMe } from "@/services/getUserMe";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 
@@ -34,39 +35,40 @@ export default function AuthSync() {
   const dispatch = useUIAppDispatch();
   const isLogin = useUIAppSelector((state) => state.auth.isLogin);
   const { data: session, status } = useSession();
-
+  const getMe = async (token:string)=>{
+    const user = await getUserMe(token)
+   // console.log(user," user en getMe AuthSync");
+    dispatch(setLogin(true));
+    dispatch(setName(user?.name || ""));
+    dispatch(setEmail(user?.email || ""));
+    dispatch(setAvatar(user?.image || "/user-circle.svg"));
+    dispatch(setRole(user?.role || "cliente"));
+    dispatch(setUserID(user?.user_id || ""));
+  }
   useEffect(() => {
-   //// console.log(session, "AuthSync session");
+    //// console.log(session, "AuthSync session");
     if (session?.user && !isLogin) {
+     // console.log(session, "AuthSync session");
       const extendedSession = session as ExtendedSession;
       const user = extendedSession.user;
-      
-      dispatch(setLogin(true));
-      dispatch(setName(user?.name || ""));
-      dispatch(setEmail(user?.email || ""));
-      dispatch(setAvatar(user?.image || "/user-circle.svg"));
-      dispatch(setRole(user?.role || "cliente"));
-      //dispatch(setUserID(user?.user_id || ""));
+
+
       
       // CRÍTICO: Agregar sincronización del token
       const token = user?.token || extendedSession.accessToken || extendedSession.access_token || "";
+      //console.log(token," AuthSync token");
       
       if (token) {
-        dispatch(setProfile({
-          name: user?.name || "",
-          email: user?.email || "",
-          avatarUrl: user?.image || "/user-circle.svg",
-          role: user?.role || "cliente",
-          userID: user?.user_id || "",
-          token: token,
-        }));
+        getMe(token);
+       //console.log(user,' user en AuthSync');
+       
       }
       
-      console.log("AuthSync: Token sincronizado correctamente", {
-        hasToken: !!token,
-        userId: user?.user_id,
-        tokenSource: user?.token ? 'user.token' : extendedSession.accessToken ? 'accessToken' : 'access_token'
-      });
+      // console.log("AuthSync: Token sincronizado correctamente", {
+      //   hasToken: !!token,
+      //   userId: user?.user_id,
+      //   tokenSource: user?.token ? 'user.token' : extendedSession.accessToken ? 'accessToken' : 'access_token'
+      // });
     }
   }, [isLogin, status, session]);
 
