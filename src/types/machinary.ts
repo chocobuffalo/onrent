@@ -1,4 +1,3 @@
-// Interfaz base para especificaciones técnicas con tipos numéricos 
 export interface TechnicalSpecs {   
     weight_tn: number;   
     height_m: number;   
@@ -18,8 +17,6 @@ export interface SpecsInterface{
     width_m?: string,
     seats?: string
 }
-
-// Interfaz para datos básicos de maquinaria 
 export interface BasicMachineryData {   
     name: string;   
     brand: string;   
@@ -30,18 +27,24 @@ export interface BasicMachineryData {
     status: string;   
     location_info: string; 
 }  
-
-// Interfaz para datos de geolocalización 
 export interface GeolocationData {   
     gps_lat?: number;   
     gps_lng?: number;   
     geospatial_status?: string; 
 }  
-
-// Interfaz completa que combina todas las partes 
 export interface CreateMachineryRequest extends BasicMachineryData, TechnicalSpecs, GeolocationData {   
     external_id?: string;   
     image?: File; 
+}
+
+export interface UpdateMachineryRequest extends Partial<BasicMachineryData>, Partial<TechnicalSpecs>, GeolocationData {   
+    external_id?: string;   
+    image?: File; 
+}
+
+export interface DeleteMachineryRequest {
+  id: number;
+  confirmMessage?: string;
 }
 
 export interface ApiMachineryResponse {
@@ -56,8 +59,24 @@ export interface CreateMachineryResponse {
     message?: string;   
     error?: string; 
 }
+export interface UpdateMachineryResponse {   
+    success: boolean;   
+    data?: ApiMachineryResponse;
+    message?: string;   
+    error?: string; 
+}
 
-// Respuesta de la API para listado de maquinarias
+export interface DeleteMachineryResponse {   
+    success: boolean;   
+    data?: {
+      id: number;
+      name: string;
+      message: string;
+    };
+    message?: string;   
+    error?: string; 
+}
+
 export interface MachineryResponse {
   id: number;
   name: string;
@@ -83,8 +102,6 @@ export interface MachineryResponse {
   created_at?: string;
   updated_at?: string;
 }
-
-// Resultado de operaciones de maquinaria
 export interface GetMachineryResult {
   success: boolean;
   data?: MachineryResponse[];
@@ -92,32 +109,23 @@ export interface GetMachineryResult {
   error?: string;
 }
 
-// Configuración de columnas para tablas dinámicas
 export interface TableColumn {
   key: string;
   label: string;
   render?: (value: any, item: MachineryResponse) => React.ReactNode;
 }
-
-// Opciones de estado para tablas
 export interface StatusOption {
   value: string;
   label: string;
 }
-
-// Colores de estado para tablas
 export interface StatusColors {
   [key: string]: string;
 }
-
-// Botones de acción para tablas
 export interface ActionButton {
   label: string;
   className: string;
   onClick: (item?: MachineryResponse) => void;
 }
-
-// Esquema de validación para formularios de maquinaria
 export interface MachineFormData {
   name: string;
   brand: string;
@@ -138,8 +146,6 @@ export interface MachineFormData {
   gps_lat?: number;
   gps_lng?: number;
 }
-
-// Props para DynamicTable
 export interface DynamicTableProps {
   title?: string;
   items?: any[];

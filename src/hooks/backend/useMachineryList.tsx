@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { getMachineryList } from "@/services/getMachinery.adapter";
 import { 
   MachineryResponse, 
@@ -12,7 +12,13 @@ import {
   ActionButton 
 } from "@/types/machinary";
 
-export default function useMachineryList() {
+interface UseMachineryListProps {
+  onEdit?: (item: MachineryResponse) => void;
+  onDelete?: (item: MachineryResponse) => void;
+  onCreate?: (item: MachineryResponse) => void;
+}
+
+export default function useMachineryList(props?: UseMachineryListProps) {
   const [machineries, setMachineries] = useState<MachineryResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,13 +42,16 @@ export default function useMachineryList() {
       const result = await getMachineryList();
 
       if (result.success && result.data) {
-        setMachineries(result.data);
+        // Filtrar maquinarias eliminadas permanentemente del localStorage
+        const deletedIds = JSON.parse(localStorage.getItem('deletedMachineries') || '[]');
+        const filteredData = result.data.filter(machinery => !deletedIds.includes(machinery.id));
+        
+        setMachineries(filteredData);
       } else {
         setError(result.message || "Error al cargar las maquinarias");
         setMachineries([]);
       }
     } catch (error: any) {
-      console.error("Error inesperado en fetchMachineries:", error);
       const errorMessage = "Error de conexión. Verifica tu internet e intenta nuevamente.";
       setError(errorMessage);
       setMachineries([]);
@@ -68,7 +77,7 @@ export default function useMachineryList() {
     return () => {
       mounted = false;
     };
-  }, []); // Dependencias vacías para ejecutar solo al montar
+  }, [fetchMachineries]);
 
   // Función para refrescar la lista manualmente
   const refreshList = useCallback(async () => {
@@ -90,8 +99,27 @@ export default function useMachineryList() {
       )
     );
     
-    // Aquí podrías agregar una llamada al API para persistir el cambio
+    // TODO: Agregar llamada al API para persistir el cambio
     // updateMachineryStatus(machineryId, newStatus);
+  }, []);
+
+  // Función para agregar nueva maquinaria al estado local
+  const handleCreate = useCallback(async (newItem: MachineryResponse) => {
+    // Actualizar estado local - agregar el item nuevo al inicio
+    setMachineries(prevMachineries => [newItem, ...prevMachineries]);
+    
+    // Ejecutar callback externo si existe
+    if (props?.onCreate) {
+      props.onCreate(newItem);
+    }
+  }, [props?.onCreate]);
+
+  // Función para eliminar del estado local (sin modal aquí)
+  const removeFromLocalState = useCallback((item: MachineryResponse) => {
+    // Actualizar estado local - remover el item eliminado
+    setMachineries(prevMachineries => 
+      prevMachineries.filter(machinery => machinery.id !== item.id)
+    );
   }, []);
 
   // Función para filtrar maquinarias basado en la búsqueda
@@ -115,7 +143,7 @@ export default function useMachineryList() {
       key: 'name',
       label: 'Nombre',
       render: (value: any, item: MachineryResponse) => (
-        <div className="text-sm font-medium text-gray-900">
+        <div className="text-sm font-medium text-gray-700">
           {value || 'N/A'}
         </div>
       ),
@@ -123,6 +151,11 @@ export default function useMachineryList() {
     {
       key: 'machine_category',
       label: 'Categoría',
+      render: (value: any, item: MachineryResponse) => (
+        <div className="text-sm font-medium capitalize text-gray-700 ">
+          {value || 'N/A'}
+        </div>
+      ),
     },
   ];
 
@@ -145,27 +178,31 @@ export default function useMachineryList() {
     'completado': 'bg-[#13123D] text-white border-[#13123D]',
   };
 
-  // Botones de acción (deshabilitados)
-  const actionButtons: ActionButton[] = [
+  // Botones de acción para cada fila de la tabla
+  const actionButtons: ActionButton[] = useMemo(() => [
     {
       label: "Editar",
-      className: "px-3 py-1 bg-yellow-500 text-white text-xs font-medium rounded hover:bg-yellow-600 transition-colors cursor-not-allowed opacity-50 bg-red-400",
-      onClick: () => {
-        // Sin funcionalidad por ahora
+      className: "px-3 py-1 bg-yellow-500 text-white text-xs font-medium rounded hover:bg-yellow-600 transition-colors",
+      onClick: (item?: MachineryResponse) => {
+        if (props?.onEdit && item) {
+          props.onEdit(item);
+        }
       },
     },
     {
       label: "Eliminar",
-      className: "px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition-colors cursor-not-allowed opacity-50",
-      onClick: () => {
-        // Sin funcionalidad por ahora
+      className: "px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition-colors",
+      onClick: (item?: MachineryResponse) => {
+        if (item && props?.onDelete) {
+          props.onDelete(item);
+        }
       },
     },
-  ];
+  ], [props?.onEdit, props?.onDelete]);
 
   return {
     // Estados para DynamicTable
-    items: filteredMachineries(), // Usar datos filtrados
+    items: filteredMachineries(),
     isLoading,
     error,
     searchValue,
@@ -184,6 +221,8 @@ export default function useMachineryList() {
     
     // Funciones adicionales
     refreshList,
+    removeFromLocalState,
+    handleCreate,
     
     // Computed values
     totalMachineries: machineries.length,
