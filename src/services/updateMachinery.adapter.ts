@@ -3,43 +3,18 @@ import { UpdateMachineryRequest, UpdateMachineryResponse, ApiMachineryResponse }
 
 export const updateMachinery = async (id: number, machineryData: UpdateMachineryRequest): Promise<UpdateMachineryResponse> => {
   try {
-    // Validar campos requeridos
-    const requiredFields = ['name', 'machine_type', 'daily_rate', 'status', 'location_info', 'weight_tn', 'height_m', 'width_m', 'seat_count', 'fuel_type', 'machine_category'];
-    
-    for (const field of requiredFields) {
-      if (!machineryData[field as keyof UpdateMachineryRequest]) {
-        return {
-          success: false,
-          error: "Validation Error",
-          message: `Campo requerido faltante: ${field}`
-        };
-      }
-    }
+    console.log("UPDATE - ID:", id);
+    console.log("UPDATE - Datos recibidos:", machineryData);
 
     const formData = new FormData();
-    
-    // Agregar campos en el orden exacto que espera la API
-    const fieldsOrder = [
-      'name', 'brand', 'model', 'serial_number', 'machine_type', 'machine_category', 
-      'fuel_type', 'daily_rate', 'status', 'location_info', 'weight_tn', 'motor_spec',
-      'height_m', 'width_m', 'seat_count', 'gps_lat', 'gps_lng'
-    ];
 
-    fieldsOrder.forEach(key => {
-      const value = machineryData[key as keyof UpdateMachineryRequest];
-      if (value !== undefined && value !== null) {
-        if (typeof value === 'number') {
-          if (isNaN(value)) {
-            return;
-          }
-          formData.append(key, value.toString());
-        } else {
-          formData.append(key, String(value));
-        }
+    Object.entries(machineryData).forEach(([key, value]) => {
+      if (key !== 'image' && value !== undefined && value !== null) {
+        formData.append(key, value.toString());
       }
     });
 
-    // Agregar la imagen si existe
+    // Agregar imagen si existe
     if (machineryData.image) {
       formData.append('image', machineryData.image);
     }
@@ -48,11 +23,9 @@ export const updateMachinery = async (id: number, machineryData: UpdateMachinery
       baseURL: process.env.NEXT_PUBLIC_API_URL_ORIGIN,
     });
 
-    const response = await axiosInstance.put(`/api/machinery/update/${id}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await axiosInstance.put(`/api/machinery/update/${id}`, formData);
+
+    console.log("UPDATE - Respuesta exitosa:", response.data);
 
     const apiResponse = response.data as ApiMachineryResponse;
 
@@ -63,6 +36,9 @@ export const updateMachinery = async (id: number, machineryData: UpdateMachinery
     };
 
   } catch (error: any) {
+    console.log("UPDATE - Error:", error.response?.data);
+    console.log("UPDATE - Error status:", error.response?.status);
+
     // Si es error 401, el interceptor ya manejó el logout automático
     if (error.response?.status === 401) {
       return {
@@ -77,6 +53,8 @@ export const updateMachinery = async (id: number, machineryData: UpdateMachinery
       let backendMessage = "Error de validación. Verifica los datos enviados.";
       
       if (error.response?.data) {
+        console.log("UPDATE - Detalles del error 422:", error.response.data);
+        
         // Intentar extraer el mensaje más específico del backend
         if (error.response.data.message) {
           backendMessage = error.response.data.message;
