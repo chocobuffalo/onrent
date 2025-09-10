@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { updateMachinery } from "@/services/updateMachinery.adapter";
 import { MachineryResponse, MachineFormData } from "@/types/machinary";
 import { toast } from "react-toastify";
+import { useSession } from "next-auth/react";
 
 const schema = Yup.object().shape({
   name: Yup.string().required("Nombre de la maquinaria es requerida"),
@@ -45,6 +46,7 @@ const schema = Yup.object().shape({
 const useEditMachineForm = (editData: MachineryResponse) => {
   const [isLoading, setIsLoading] = useState(false);
   const [image, setImage] = useState<File | null>(null);
+  const session = useSession();
 
   const {
     register,
@@ -108,7 +110,6 @@ const useEditMachineForm = (editData: MachineryResponse) => {
     }
   };
 
-  // Hook backend limpio: Solo API, validaciones y estados de carga
   const submit = async (data: MachineFormData) => {
     setIsLoading(true);
 
@@ -131,14 +132,13 @@ const useEditMachineForm = (editData: MachineryResponse) => {
         image: image || undefined,
       };
 
-      const result = await updateMachinery(editData.id, machineryData);
+      // Usar el mismo patrón de token que en los otros servicios
+      const token = (session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "";
+      const result = await updateMachinery(editData.id, machineryData, token);
 
       if (result.success) {
         toast.success("Maquinaria actualizada exitosamente");
         console.log("🎯 useEditMachineForm - Submit exitoso, hook UI manejará coordinación");
-        
-        // Solo retorna éxito, sin efectos secundarios de UI
-        
       } else {
         toast.error(result.message || "Error al actualizar la maquinaria");
         throw new Error(result.message || "Error al actualizar la maquinaria");
