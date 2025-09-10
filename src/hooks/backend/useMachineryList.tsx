@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
@@ -24,127 +22,82 @@ export default function useMachineryList(props?: UseMachineryListProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState("");
-  const {data:user} = useSession()
+  const { data: session } = useSession();
 
-  // Ref para controlar si hay una petición en curso
   const isRequestInProgress = useRef(false);
+  const token = (session as any)?.accessToken || "";
 
-  // Función para cargar las maquinarias con control de concurrencia
   const fetchMachineries = useCallback(async () => {
-    // Evitar múltiples peticiones simultáneas
-    if (isRequestInProgress.current) {
-      return;
-    }
+    if (isRequestInProgress.current || !token) return;
 
     try {
       isRequestInProgress.current = true;
       setIsLoading(true);
       setError(null);
-      const token = user?.user?.access_token || '';
+      
       const result = await getMachineryList(token);
 
       if (result.success && result.data) {
-        // Filtrar maquinarias eliminadas permanentemente del localStorage
-        const deletedIds = JSON.parse(localStorage.getItem('deletedMachineries') || '[]');
-        const filteredData = result.data.filter(machinery => !deletedIds.includes(machinery.id));
-        
-        setMachineries(filteredData);
+        setMachineries(result.data);
       } else {
         setError(result.message || "Error al cargar las maquinarias");
         setMachineries([]);
       }
     } catch (error: any) {
-      const errorMessage = "Error de conexión. Verifica tu internet e intenta nuevamente.";
-      setError(errorMessage);
+      setError("Error de conexión. Verifica tu internet e intenta nuevamente.");
       setMachineries([]);
     } finally {
       setIsLoading(false);
       isRequestInProgress.current = false;
     }
-  }, []);
+  }, [token]);
 
-  // Cargar datos al montar el componente - SOLO UNA VEZ
   useEffect(() => {
-    let mounted = true;
+    if (token) {
+      fetchMachineries();
+    }
+  }, [token, fetchMachineries]);
 
-    const loadData = async () => {
-      if (mounted && !isRequestInProgress.current) {
-        await fetchMachineries();
-      }
-    };
-
-    loadData();
-
-    // Cleanup function
-    return () => {
-      mounted = false;
-    };
-  }, [fetchMachineries]);
-
-  // Función para refrescar la lista manualmente
-  const refreshList = useCallback(async () => {
-    await fetchMachineries();
-  }, [fetchMachineries]);
-
-  // Función para manejar la búsqueda
   const handleSearch = useCallback((value: string) => {
     setSearchValue(value);
   }, []);
 
-  // Función para manejar el cambio de estado
   const handleStatusChange = useCallback((machineryId: string | number, newStatus: string) => {
-    setMachineries(prevMachineries => 
-      prevMachineries.map(machinery => 
-        machinery.id === machineryId 
-          ? { ...machinery, status: newStatus }
-          : machinery
+    setMachineries(prev => 
+      prev.map(machinery => 
+        machinery.id === machineryId ? { ...machinery, status: newStatus } : machinery
       )
     );
-    
-    // TODO: Agregar llamada al API para persistir el cambio
-    // updateMachineryStatus(machineryId, newStatus);
   }, []);
 
-  // Función para agregar nueva maquinaria al estado local
-  const handleCreate = useCallback(async (newItem: MachineryResponse) => {
-    // Actualizar estado local - agregar el item nuevo al inicio
-    setMachineries(prevMachineries => [newItem, ...prevMachineries]);
-    
-    // Ejecutar callback externo si existe
-    if (props?.onCreate) {
-      props.onCreate(newItem);
-    }
+  const handleCreate = useCallback((newItem: MachineryResponse) => {
+    setMachineries(prev => [newItem, ...prev]);
+    props?.onCreate?.(newItem);
   }, [props?.onCreate]);
 
-  // Función para eliminar del estado local (sin modal aquí)
   const removeFromLocalState = useCallback((item: MachineryResponse) => {
-    // Actualizar estado local - remover el item eliminado
-    setMachineries(prevMachineries => 
-      prevMachineries.filter(machinery => machinery.id !== item.id)
-    );
+    setMachineries(prev => prev.filter(machinery => machinery.id !== item.id));
   }, []);
 
-  // Función para filtrar maquinarias basado en la búsqueda
-  const filteredMachineries = useCallback(() => {
-    if (!searchValue.trim()) {
-      return machineries;
-    }
+  const refreshList = useCallback(() => fetchMachineries(), [fetchMachineries]);
 
-    return machineries.filter((machinery) =>
-      machinery.name?.toLowerCase().includes(searchValue.toLowerCase()) ||
-      machinery.brand?.toLowerCase().includes(searchValue.toLowerCase()) ||
-      machinery.model?.toLowerCase().includes(searchValue.toLowerCase()) ||
-      machinery.machine_category?.toLowerCase().includes(searchValue.toLowerCase()) ||
-      machinery.external_id?.toLowerCase().includes(searchValue.toLowerCase())
+  // Filtrado simple
+  const filteredMachineries = useMemo(() => {
+    if (!searchValue.trim()) return machineries;
+    
+    const search = searchValue.toLowerCase();
+    return machineries.filter(machinery =>
+      machinery.name?.toLowerCase().includes(search) ||
+      machinery.machine_category?.toLowerCase().includes(search)
     );
   }, [machineries, searchValue]);
 
-  // Configuración de columnas para DynamicTable
+  // Configuraciones estáticas (sin useMemo innecesario)
   const columns: TableColumn[] = [
     {
       key: 'name',
       label: 'Nombre',
-      render: (value: any, item: MachineryResponse) => (
+      render: (value: any) => (
         <div className="text-sm font-medium text-gray-700">
           {value || 'N/A'}
         </div>
@@ -153,15 +106,14 @@ export default function useMachineryList(props?: UseMachineryListProps) {
     {
       key: 'machine_category',
       label: 'Categoría',
-      render: (value: any, item: MachineryResponse) => (
-        <div className="text-sm font-medium capitalize text-gray-700 ">
+      render: (value: any) => (
+        <div className="text-sm font-medium capitalize text-gray-700">
           {value || 'N/A'}
         </div>
       ),
     },
   ];
 
-  // Configuración de estados para DynamicTable
   const statusOptions: StatusOption[] = [
     { value: 'disponible', label: 'Disponible' },
     { value: 'ha_llegado', label: 'Ha llegado' },
@@ -180,31 +132,25 @@ export default function useMachineryList(props?: UseMachineryListProps) {
     'completado': 'bg-[#13123D] text-white border-[#13123D]',
   };
 
-  // Botones de acción para cada fila de la tabla
-  const actionButtons: ActionButton[] = useMemo(() => [
+  const actionButtons: ActionButton[] = [
     {
       label: "Editar",
       className: "px-3 py-1 bg-yellow-500 text-white text-xs font-medium rounded hover:bg-yellow-600 transition-colors",
       onClick: (item?: MachineryResponse) => {
-        if (props?.onEdit && item) {
-          props.onEdit(item);
-        }
+        if (props?.onEdit && item) props.onEdit(item);
       },
     },
     {
       label: "Eliminar",
       className: "px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition-colors",
       onClick: (item?: MachineryResponse) => {
-        if (item && props?.onDelete) {
-          props.onDelete(item);
-        }
+        if (item && props?.onDelete) props.onDelete(item);
       },
     },
-  ], [props?.onEdit, props?.onDelete]);
+  ];
 
   return {
-    // Estados para DynamicTable
-    items: filteredMachineries(),
+    items: filteredMachineries,
     isLoading,
     error,
     searchValue,
@@ -213,20 +159,12 @@ export default function useMachineryList(props?: UseMachineryListProps) {
     statusOptions,
     statusColors,
     actionButtons,
-    
-    // Funciones para DynamicTable
     onSearch: handleSearch,
     onStatusChange: handleStatusChange,
-    onAction: () => {
-      // Sin funcionalidad por ahora
-    },
-    
-    // Funciones adicionales
+    onAction: () => {},
     refreshList,
     removeFromLocalState,
     handleCreate,
-    
-    // Computed values
     totalMachineries: machineries.length,
     hasData: machineries.length > 0,
     isRequestInProgress: isRequestInProgress.current,

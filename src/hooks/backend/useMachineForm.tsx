@@ -6,9 +6,10 @@ import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useForm } from "react-hook-form";
-import { createMachinery } from "@/services/createMachinery.adapter";
+import createMachinery from "@/services/createMachinery.adapter";
 import { CreateMachineryRequest, MachineFormData } from "@/types/machinary";
 import { toast } from "react-toastify";
+import { useSession } from "next-auth/react";
 
 const schema = Yup.object().shape({
   name: Yup.string().required("Nombre de la maquinaria es requerida"),
@@ -83,12 +84,12 @@ export default function useMachineForm() {
   });
   
   const [isLoading, setIsLoading] = useState(false);
+  const session = useSession();
 
   const submit = async (data: MachineFormData) => {
     setIsLoading(true);
     
     try {
-      // Preparar datos
       const machineryData: CreateMachineryRequest = {
         name: data.name.trim(),
         brand: data.brand?.trim() || "",
@@ -110,7 +111,7 @@ export default function useMachineForm() {
         geospatial_status: data.gps_lat && data.gps_lng ? "available" : undefined,
       };
 
-      const result = await createMachinery(machineryData);
+      const result = await createMachinery(machineryData, (session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "");
       
       if (result.success) {
         toast.success(`Maquinaria "${data.name}" registrada exitosamente`);
