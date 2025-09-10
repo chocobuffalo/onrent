@@ -80,6 +80,24 @@ export function useToast() {
       }
     });
   };
+  const toastCriticalAction = (message: string,action:()=>void) => {
+    toast.warning(message, {
+      position: "top-right",
+      autoClose: false,
+      hideProgressBar: false,
+      closeOnClick: true, 
+      pauseOnHover: true,
+      draggable: false,
+      toastId: "critical-toast",
+      style: {
+        fontSize: "14px",
+        padding: "16px",
+        borderRadius: "8px",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+      },
+      onClose: action
+    });
+  };
 
   return {
     toastSuccess,
@@ -88,5 +106,6 @@ export function useToast() {
     toastWarning,
     toastSuccessAction,
     toastCritical,
+    toastCriticalAction
   };
 }

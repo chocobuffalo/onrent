@@ -1,3 +1,4 @@
+import { getCompanyInfo } from '@/services/getCompanyInfo';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../uistore";
@@ -14,6 +15,21 @@ export const initialAuth: AuthStateInterface = {
     userID: "",
     token: "",
     phone: "",
+    profileInfo:{
+          constancia_pdf:"",
+          direccion_fiscal:"",
+          razon_social:"",
+          rfc:""
+        },
+    companyInfo:{
+      empresa: "",
+      rfc_empresa: "",
+      direccion_empresa: "",
+      contacto_fiscal: "",
+      telefono_contacto: "",
+      representante_legal: "",
+      empleados: 0
+    }
   },
 };
 
@@ -45,18 +61,58 @@ const authSlicer = createSlice({
     setPhone: (state, action) => {
       state.profile.phone = action.payload;
     },
+
+    setProfileInfo: (state, action) => {
+      state.profile.profileInfo = action.payload;
+    },
+    setConstanciaPDF: (state, action) => {
+      state.profile.profileInfo.constancia_pdf = action.payload;
+    },
+    setDireccionFiscal: (state, action) => {
+      state.profile.profileInfo.direccion_fiscal = action.payload;
+    },
+    setRazonSocial: (state, action) => {
+      state.profile.profileInfo.razon_social = action.payload;
+    },
+    setRFC: (state, action) => {
+      state.profile.profileInfo.rfc = action.payload;
+    },
+
+   /**
+             * {
+             * "empresa": false,
+             * "rfc_empresa": false,
+             * "direccion_empresa": false,
+             * "contacto_fiscal": false,
+             * "telefono_contacto": false,
+             * "representante_legal": false,
+             * "empleados": 0
+             */
+    setEmpresa: (state, action) => {
+      state.profile.companyInfo.empresa = action.payload;
+    },
+    setRfcEmpresa: (state, action) => {
+      state.profile.companyInfo.rfc_empresa = action.payload;
+    },
+    setDireccionEmpresa: (state, action) => {
+      state.profile.companyInfo.direccion_empresa = action.payload;
+    },
+    setContactoFiscal: (state, action) => {
+      state.profile.companyInfo.contacto_fiscal = action.payload;
+    },
+    setTelefonoContacto: (state, action) => {
+      state.profile.companyInfo.telefono_contacto = action.payload;
+    },
+    setRepresentanteLegal: (state, action) => {
+      state.profile.companyInfo.representante_legal = action.payload;
+    },
+    setEmpleados: (state, action) => {
+      state.profile.companyInfo.empleados = action.payload;
+    },
   
     forceLogout: (state) => {
       state.isLogin = false;
-      state.profile = {
-        name: "",
-        email: "",
-        avatarUrl: "/profile-placeholder.svg",
-        role: "",
-        userID: "",
-        token: "",
-        phone: "",
-      };
+      state.profile = initialAuth.profile;
     },
   },
 });
@@ -71,6 +127,18 @@ export const {
   setRole,
   setPhone,
   setUserID,
+  setProfileInfo,
+  setConstanciaPDF,
+  setDireccionFiscal,
+  setRazonSocial,
+  setRFC,
+  setEmpresa,
+  setRfcEmpresa,
+  setDireccionEmpresa,
+  setContactoFiscal,
+  setTelefonoContacto,
+  setRepresentanteLegal,
+  setEmpleados,
   forceLogout 
 } = authSlicer.actions;
 
