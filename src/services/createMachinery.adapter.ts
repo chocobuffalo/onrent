@@ -21,7 +21,7 @@ export const createMachinery = async (machineryData: CreateMachineryRequest): Pr
     }
 
     const axiosInstance = await createAxiosInstance({
-      baseURL: process.env.NEXT_PUBLIC_API_URL_ORIGIN,
+      baseURL: process.env.NEXT_PUBLIC_API_URL_ORIGIN
     });
 
     const response = await axiosInstance.post('/api/machinery/create', formData);
