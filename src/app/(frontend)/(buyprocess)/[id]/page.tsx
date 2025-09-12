@@ -2,16 +2,16 @@ import MachineDetail from "@/components/organism/MachineDetail/MachineDetail";
 import BackButton from '../../../../components/atoms/BackButton/BackButton';
 
 interface MachineDetailPageProps {
-  params: { machinetype: string; id: string };
-  searchParams: { projectId?: string };
+  params: Promise<{ machinetype: string; id: string }>;
+  searchParams: Promise<{ projectId?: string }>;
 }
 
 export default async function MachineDetailPage({ 
   params, 
   searchParams 
 }: MachineDetailPageProps) {
-  const { machinetype, id } = params;
-  const { projectId } = searchParams;
+  const { machinetype, id } = await params;
+  const { projectId } = await searchParams;
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN;
   const res = await fetch(`${apiBase}/api/catalog/${id}`, {

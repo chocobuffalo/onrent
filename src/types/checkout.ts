@@ -43,9 +43,7 @@ export interface PaymentFormProps {
   errors: FieldErrors<CheckoutFormData>;
 }
 
-export interface ProjectInfoTableProps {
 
-}
 
 export interface CheckoutProps {
   machine: Machine;

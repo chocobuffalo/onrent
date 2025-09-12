@@ -1,7 +1,6 @@
 import { useProjectInfo } from '@/hooks/frontend/buyProcess/useProjectInfo';
-import { ProjectInfoTableProps } from '@/types/checkout';
 
-export default function ProjectInfoTable({}: ProjectInfoTableProps) {
+const ProjectInfoTable = () => {
   const { projectInfo, isLoading, error } = useProjectInfo();
 
   if (isLoading) {
@@ -43,18 +42,20 @@ export default function ProjectInfoTable({}: ProjectInfoTableProps) {
         
         <div className="flex flex-col py-2 border-b border-gray-100">
           <p className="text-lg font-light lato-font mb-1">Nombre del proyecto:</p>
-          <p className="text-gray-600 text-[16px]  lato-font">
+          <p className="text-gray-600 text-[16px] lato-font">
             {projectInfo.projectName}
           </p>
         </div>
         
         <div className="flex flex-col py-2">
           <p className="text-lg font-light lato-font mb-1">Ubicación de la obra:</p>
-          <p className="text-gray-600 text-[16px]  lato-font">
+          <p className="text-gray-600 text-[16px] lato-font">
             {projectInfo.workLocation}
           </p>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default ProjectInfoTable;
