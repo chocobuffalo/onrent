@@ -20,6 +20,8 @@ interface PreorderPayload {
     lat: number;
     lng: number;
   };
+  work_image?: string | null;
+  reference_address?: string;  
   // Add any other potentially required fields here
   // state?: string;
   // user_id?: number;

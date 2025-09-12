@@ -64,7 +64,11 @@ const initialValues = {
     machinery_type: ""
   }
 
-export default function useNewProjectForm({projectId}:{projectId?:string}) {
+export default function useNewProjectForm({ projectId,
+  machineId,
+  machinetype}:{ projectId?: string;
+  machineId?: string | null;
+  machinetype?: string | null; }) {
 const {
     register,
     handleSubmit,
@@ -133,11 +137,8 @@ const {
         }
         };
         reader.readAsDataURL(file);
-        // guardar el archivo en base64 en el estado
     };
   
-
-  // Observar cambios del formulario y actualizar el estado
   const formValues = watch();
 
 
@@ -158,8 +159,6 @@ const {
     clearErrors("end_date");
   }
 
-  
-  //Location don work other location
   const [isLoading, setIsLoading] = useState(false);
       
   const [options, setOptions] = useState<SelectInterface[]>([]);
@@ -178,13 +177,10 @@ const {
               setIsLoading(false);
               return options;
             }
-          }, 500), // 500ms de delay
-          [] // Dependencias vacías ya que no usamos variables externas
+          }, 500), 
+          []
         );
     
-  
-
-     
       const handlerFocus = (text: string) => {
           debouncedFilterColors(text);
           setOpen(true);
@@ -195,15 +191,12 @@ const {
           setValue("location", text);
           setProject(prev => ({ ...prev, location: text }));
       };
-      //setLocation,setType
+ 
     const handlerChange = (optionSelected: string) => {
       setValue("location", optionSelected);
       setProject(prev => ({ ...prev, location: optionSelected }));
       setOpen(false);
     };
-
-
-  //clear Error with useEffect because useState is asinc
 
   useEffect(()=>{
     if(projectId){
@@ -313,9 +306,6 @@ useEffect(() => {
     setValue("terrain_type", terrainType.join(", "));
     setProject(prev => ({ ...prev, terrain_type: terrainType.join(", ") }));
   },[terrainType])
-
-  
-  //submit event
   const onSubmit = (data:any) => {
         console.log(data);
         setSending(true);
@@ -346,7 +336,21 @@ useEffect(() => {
           if(res.message =="Proyecto creado correctamente"){
             console.log(res);
             toastSuccess(res.message);
-            //limpiamos el formulario
+
+      setTimeout(() => {
+    if (typeof window !== 'undefined') {
+     // Caso 1: Si tenemos machineId y machinetype (viene de una máquina específica)
+    if (machineId && machinetype) {
+      router.push(`/${machineId}?projectId=${res.project_id}`);
+    }
+    // Caso 2: Fallback al comportamiento original (para otras partes del código)
+    else {
+      const currentPath = window.location.pathname;
+      const machineBasePath = currentPath.replace('/nuevo-proyecto', '');
+      router.push(`${machineBasePath}?projectId=${res.project_id}`);
+    }
+    }
+  }, 1500);
             setProject(initialValues);
             setTerrainType([]);
             setValue("resguardo_files", []);
