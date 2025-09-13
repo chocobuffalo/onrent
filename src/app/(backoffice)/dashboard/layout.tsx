@@ -7,6 +7,7 @@ import '@/assets/css/backoffice.css'
 import { redirect } from 'next/navigation';
 import ModalForm from '@/components/organism/modalForm/modalForm';
 import AutoLogoutProvider from '@/components/providers/AutoLogoutProvider';
+import '../../globals.css'
 
 export default  async function DashboardLayout({
     children,

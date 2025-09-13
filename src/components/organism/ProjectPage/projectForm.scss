@@ -1,0 +1,72 @@
+.modal-form .modal-bodies h2{
+    font-size: 1.5rem !important;
+    font-weight: 500;
+    margin-bottom: 15px !important;
+    margin-top: 25px !important;
+}
+
+.modal-form .modal-bodies .absolute{
+    z-index: 9999;
+}
+
+.modal-form .modal-bodies textarea, 
+.modal-form .modal-bodies input[type=text], 
+.modal-form .modal-bodies input[type=password], 
+.modal-form .modal-bodies input[type=datetime], 
+.modal-form .modal-bodies input[type=datetime-local], 
+.modal-form .modal-bodies input[type=date], 
+.modal-form .modal-bodies input[type=month], 
+.modal-form .modal-bodies input[type=time], 
+.modal-form .modal-bodies input[type=week], 
+.modal-form .modal-bodies input[type=number], 
+.modal-form .modal-bodies input[type=email], 
+.modal-form .modal-bodies input[type=url], 
+.modal-form .modal-bodies input[type=search], 
+.modal-form .modal-bodies input[type=tel], 
+.modal-form .modal-bodies input[type=color]{
+    border-radius: 8px !important;
+    min-height: 50px !important;
+    background-color: transparent;
+}
+.modal-form .modal-bodies label{
+    margin-top: 25px !important;
+}
+.dateInput label {
+    opacity: 0 !important;
+}
+.modal-form .modal-bodies .active{
+    background-color: transparent !important;
+}
+
+.modal-form  .modal-close-btn{
+    font-size: 35px !important;
+}
+
+.modal-form  .border-secondary {
+    padding: 2px 15px;
+    border-radius: 30px;
+    border: 1px solid #FF7101 !important;
+    color: #FF7101 !important;
+}
+.modal-form  .bg-secondary,
+.modal-form  .border-secondary:hover {
+    background-color: #FF7101 !important;
+    color: white !important;
+}
+.button-resguardo {
+    border: 1px solid #bbb;
+}
+.modal-form .modal-bodies .ring-secondary {
+    border: 2px solid white !important;
+    position: relative;
+    left: auto !important;
+    border-radius: 30px !important;
+    width: 16px !important;
+    height: 16px !important;
+    padding: 5px !important;
+    outline: 1px solid #FF7101 !important;
+
+}
+.modal-form .modal-bodies .ring-secondary:checked {
+    background-color: #FF7101 !important;
+}
