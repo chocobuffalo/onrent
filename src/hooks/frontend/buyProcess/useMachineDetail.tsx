@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CatalogueItem } from "@/components/organism/Catalogue/types";
+import { useSession } from "next-auth/react";
 
 interface LocationData {
   lat: number;
@@ -10,7 +11,7 @@ interface LocationData {
   address?: string;
 }
 
-export default function useMachineDetail(machineId: number) {
+export default function useMachineDetail(machineId: number,  projectId?: string) {
   const [extras, setExtras] = useState({
     operador: true,
     certificado: true,
@@ -29,6 +30,13 @@ export default function useMachineDetail(machineId: number) {
     address?: string;
   } | null>(null);
 
+  const [workImage, setWorkImage] = useState<File | null>(null);
+  const [workImageBase64, setWorkImageBase64] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState('');
+  const [responsibleName, setResponsibleName] = useState('');
+  const [projectData, setProjectData] = useState<any>(null);
+  const session = useSession();
+
   const router = useRouter();
 
   useEffect(() => {
@@ -38,8 +46,6 @@ export default function useMachineDetail(machineId: number) {
         const url = apiBase
           ? `${apiBase}/api/catalog/${machineId}`
           : `/api/catalog/${machineId}`;
-
-        console.log("🔍 URL de petición MachineDetail:", url);
 
         const res = await fetch(url);
         if (!res.ok) throw new Error("Producto no encontrado");
@@ -75,6 +81,84 @@ export default function useMachineDetail(machineId: number) {
     fetchData();
   }, [machineId]);
 
+useEffect(() => {
+  if (projectId && session && session.status === "authenticated") {
+    const fetchProjectData = async () => {
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN;
+        
+        const accessToken = (session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "";
+        
+        const res = await fetch(`${apiBase}/api/project/${projectId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          cache: 'no-cache'
+        });
+        
+        if (!res.ok) {
+          return;
+        }
+        
+        const projectInfo = await res.json();
+        
+        setProjectData(projectInfo);
+        
+        if (projectInfo.name) {
+          setProjectName(projectInfo.name);
+        }
+        if (projectInfo.responsible_name) {
+          setResponsibleName(projectInfo.responsible_name);
+        }
+
+        if (projectInfo.location) {
+          let lat = 0;
+          let lng = 0;
+          
+          if (projectInfo.location_lat) {
+            lat = typeof projectInfo.location_lat === 'string' 
+              ? parseFloat(projectInfo.location_lat) 
+              : projectInfo.location_lat;
+          }
+          
+          if (projectInfo.location_lng) {
+            lng = typeof projectInfo.location_lng === 'string' 
+              ? parseFloat(projectInfo.location_lng) 
+              : projectInfo.location_lng;
+          }
+          
+          const locationData = {
+            lat: lat,
+            lng: lng,
+            address: projectInfo.location
+          };
+          
+          if (lat !== 0 || lng !== 0) {
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('selectedLocation');
+            }
+            
+            setSelectedLocation(locationData);
+          } else {
+            setSelectedLocation({
+              lat: 0,
+              lng: 0,
+              address: projectInfo.location
+            });
+          }
+        }
+        
+      } catch (error) {
+        // Silently handle error
+      }
+    };
+
+    fetchProjectData();
+  }
+}, [projectId, session?.status]);
+
   const toggleExtra = (key: keyof typeof extras) => {
     setExtras((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -96,7 +180,6 @@ export default function useMachineDetail(machineId: number) {
       };
     }
 
-    console.log('Ubicación seleccionada:', coordinates);
     setSelectedLocation({
       lat: coordinates.lat,
       lng: coordinates.lng,
@@ -118,11 +201,20 @@ export default function useMachineDetail(machineId: number) {
 
   const getLocationForBooking = () => {
     if (selectedLocation) {
-      return {
-        lat: selectedLocation.lat,
-        lng: selectedLocation.lng
-      };
+      if (selectedLocation.lat !== 0 || selectedLocation.lng !== 0) {
+        return {
+          lat: selectedLocation.lat,
+          lng: selectedLocation.lng
+        };
+      } 
+      else if (projectId && selectedLocation.address) {
+        return {
+          lat: 0,
+          lng: 0
+        };
+      }
     }
+    
     return null;
   };
 
@@ -133,8 +225,13 @@ export default function useMachineDetail(machineId: number) {
     }
 
     if (selectedLocation.lat === 0 && selectedLocation.lng === 0) {
-      setError('Por favor selecciona una ubicación válida en el mapa');
-      return false;
+      if (projectId && selectedLocation.address) {
+        setError(null);
+        return true;
+      } else {
+        setError('Por favor selecciona una ubicación válida en el mapa');
+        return false;
+      }
     }
 
     setError(null);
@@ -152,19 +249,44 @@ export default function useMachineDetail(machineId: number) {
     }
   };
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedLocation = localStorage.getItem('selectedLocation');
-      if (savedLocation) {
-        try {
-          const parsedLocation = JSON.parse(savedLocation);
-          setSelectedLocation(parsedLocation);
-        } catch (error) {
-          console.error('Error parsing saved location:', error);
-        }
+  const handleImageChange = (file: File) => {
+    setWorkImage(file);
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setWorkImageBase64(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearWorkImage = () => {
+    setWorkImage(null);
+    setWorkImageBase64(null);
+  };
+
+  const getWorkData = () => {
+    return {
+      workImage: workImageBase64,
+      projectName: projectData?.name || projectName,
+      referenceAddress: projectData?.location || selectedLocation?.address || projectName || '',
+      projectId: projectData?.id || 0,
+    };
+  };
+
+ useEffect(() => {
+  if (typeof window !== 'undefined' && !projectId) {
+    const savedLocation = localStorage.getItem('selectedLocation');
+    if (savedLocation) {
+      try {
+        const parsedLocation = JSON.parse(savedLocation);
+        setSelectedLocation(parsedLocation);
+      } catch (error) {
+        // Silently handle parsing error
       }
     }
-  }, []);
+  }
+}, [projectId]);
 
   return {
     extras,
@@ -180,5 +302,15 @@ export default function useMachineDetail(machineId: number) {
     validateLocation,
     clearLocation,
     machineData,
+    workImage,
+    workImageBase64,
+    projectName,
+    setProjectName,
+    responsibleName,
+    setResponsibleName, 
+    handleImageChange,
+    clearWorkImage,
+    getWorkData,
+    projectData,
   };
 }

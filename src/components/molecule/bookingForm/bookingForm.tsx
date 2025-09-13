@@ -6,6 +6,7 @@ import { useState } from "react";
 import DateRentInput from "../dateRentInput/dateRentInput";
 import useAddFormItems from "@/hooks/frontend/buyProcess/useAddFormItems";
 import useBookingPreorder from "@/hooks/frontend/buyProcess/useBookingPreorder";
+import { useToast } from "@/hooks/frontend/ui/useToast";
 
 import PricingSection from "../PricingSection/PricingSection";
 import DurationSection from "../DurationSection/DurationSection";
@@ -17,6 +18,7 @@ import SubmitSection from "@/components/atoms/SubmitSection/SubmitSection";
 interface BookingFormProps {
   machine: any;
   router: any;
+  projectId?: string;
   getLocationForBooking?: () => {lat: number, lng: number} | null;
   validateLocation?: () => boolean;
   extras?: {
@@ -24,65 +26,113 @@ interface BookingFormProps {
     certificado: boolean;
     combustible: boolean;
   };
+  getWorkData?: () => {
+    workImage: string | null;
+    projectName: string;
+    referenceAddress: string;
+    projectId: number;
+  };
+  projectData?: any;
+  selectedLocation?: {
+    lat: number;
+    lng: number;
+    address?: string;
+  } | null;
+  projectName?: string;
 }
 
-export function BookingForm({
+export const BookingForm = ({
   machine,
   router,
+  projectId,
   getLocationForBooking,
   validateLocation,
-  extras
-}: BookingFormProps) {
+  extras,
+  getWorkData,
+  projectData,
+  selectedLocation,
+  projectName
+}: BookingFormProps) => {
     const { startDate, endDate } = useDateRange();
     const [open, setOpen] = useState(false);
     const [clientNotes, setClientNotes] = useState("");
 
     const { count, increment, decrement, disableTop, disableBottom } = useAddFormItems();
     const { createPreorder, loading, error } = useBookingPreorder();
+    const { toastSuccessAction, toastError } = useToast();
 
     const unitPrice = machine?.pricing?.price_per_day || 0;
     const price = unitPrice * count;
     const dayLength = startDate && endDate ? countDays(startDate, endDate) + 1 : 0;
     const totalPrice = price * dayLength;
 
-    function formatDateForBackend(dateString: string): string {
+    // Determinar si estamos en modo proyecto o modo manual
+    const hasProject = Boolean(projectId && projectData);
+    const isManualMode = !hasProject;
+
+    const formatDateForBackend = (dateString: string): string => {
         const { day, month, year } = fixDate(dateString) || { day: 0, month: 0, year: 0 };
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!startDate || !endDate) {
-            console.error("Faltan fechas");
-            alert("Por favor selecciona las fechas de inicio y fin");
+            toastError("Por favor selecciona las fechas de inicio y fin");
             return;
         }
 
         if (!machine?.id) {
-            console.error("Falta ID de la máquina");
-            alert("Error: No se pudo identificar la máquina");
+            toastError("Error: No se pudo identificar la máquina");
             return;
         }
 
         if (count <= 0) {
-            console.error("Cantidad inválida");
-            alert("Por favor selecciona al menos una máquina");
+            toastError("Por favor selecciona al menos una máquina");
             return;
         }
 
-        if (validateLocation && !validateLocation()) {
-            console.error("No se ha seleccionado una ubicación");
+        // Validar ubicación solo si no tenemos proyecto (modo manual)
+        if (isManualMode && validateLocation && !validateLocation()) {
             return;
         }
 
         try {
-            const selectedLocation = getLocationForBooking ? getLocationForBooking() : null;
+            let locationData = null;
+            let workData = null;
+
+            if (hasProject) {
+                // MODO PROYECTO: Usar datos del proyecto
+                locationData = selectedLocation ? {
+                    lat: selectedLocation.lat,
+                    lng: selectedLocation.lng
+                } : { lat: 0, lng: 0 };
+                
+                workData = {
+                    workImage: null,
+                    projectName: projectData?.name || projectName || '',
+                    referenceAddress: projectData?.location || selectedLocation?.address || '',
+                    projectId: projectData?.id || 0,
+                };
+                
+            } else {
+                // MODO MANUAL: Usar datos ingresados manualmente
+                locationData = getLocationForBooking ? getLocationForBooking() : null;
+                workData = getWorkData ? getWorkData() : {
+                    workImage: null,
+                    locationName: '',
+                    referenceAddress: '',
+                    projectId: 0,
+                };
+            }
 
             const preorderPayload = {
-                project_id: 0,
-                location: selectedLocation || { lat: 0, lng: 0 },
+                project_id: hasProject ? (projectData?.id || 0) : 0,
+                location: locationData || { lat: 0, lng: 0 },
                 client_notes: clientNotes,
+                work_image: workData?.workImage || null,
+                reference_address: workData?.referenceAddress || "",
                 items: [
                     {
                         product_id: machine.id,
@@ -96,16 +146,19 @@ export function BookingForm({
                 ],
             };
 
-            console.log("Payload enviado:", preorderPayload);
-
             const preorder = await createPreorder(preorderPayload);
 
-            if (preorder?.id) {
-                console.log("Pre-order created successfully:", preorder);
-                router.push(`/catalogo/${machine.machinetype}/${machine.id}/reserva?preorderId=${preorder.id}`);
+            if (preorder?.order_id) {
+                // Toast profesional con redirección automática
+                toastSuccessAction(
+                    "¡Preorden creada exitosamente! Redirigiendo...",
+                    () => {
+                        router.push('/checkout');
+                    }
+                );
             }
         } catch (err: any) {
-            console.error("Error al crear la pre-orden:", err);
+            toastError("Error al crear la reserva. Por favor, inténtalo nuevamente.");
         }
     };
 
@@ -141,7 +194,26 @@ export function BookingForm({
                 DateRentInput={<DateRentInput grid={true} />}
             />
 
-            {getLocationForBooking && (
+            {/* Mostrar información del proyecto si existe */}
+            {hasProject && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                        <span className="font-semibold text-green-800">Proyecto vinculado</span>
+                    </div>
+                    <p className="text-sm text-green-700">
+                        <strong>Nombre:</strong> {projectData?.name || projectName}
+                    </p>
+                    {selectedLocation?.address && (
+                        <p className="text-sm text-green-700">
+                            <strong>Ubicación:</strong> {selectedLocation.address}
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {/* Solo mostrar LocationSection en modo manual */}
+            {isManualMode && getLocationForBooking && (
                 <LocationSection getLocationForBooking={getLocationForBooking} />
             )}
 
@@ -158,4 +230,4 @@ export function BookingForm({
             />
         </form>
     );
-}
+};

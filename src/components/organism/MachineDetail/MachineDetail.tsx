@@ -14,6 +14,7 @@ import { getImageUrl } from "@/utils/imageUrl";
 
 interface MachineDetailProps {
   machine: CatalogueItem;
+  projectId?: string; 
 }
 
 interface LocationData {
@@ -22,7 +23,7 @@ interface LocationData {
   address?: string;
 }
 
-export default function MachineDetail({ machine }: MachineDetailProps) {
+export default function MachineDetail({ machine, projectId  }: MachineDetailProps) {
   const {
     extras,
     saveAddress,
@@ -37,10 +38,19 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
     validateLocation,
     clearLocation,
     machineData,
-  } = useMachineDetail(machine.id);
+    workImage,
+    workImageBase64,
+    projectName,
+    setProjectName,
+    responsibleName,
+    setResponsibleName,
+    handleImageChange,
+    clearWorkImage,
+    getWorkData,
+    projectData,
 
-  const [locationName, setLocationName] = useState('');
-  const [workImage, setWorkImage] = useState<File | null>(null);
+  } = useMachineDetail(machine.id, projectId);
+
   const [workImagePreview, setWorkImagePreview] = useState<string | null>(null);
 
   if (loading) {
@@ -73,15 +83,14 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
     ? getImageUrl(currentMachine.image)
     : "/images/catalogue/machine5.jpg";
 
-
   const onMapLocationSelect = (locationData: LocationData) => {
     handleLocationSelect(locationData);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChangeLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setWorkImage(file);
+      handleImageChange(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setWorkImagePreview(e.target?.result as string);
@@ -91,7 +100,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
   };
 
   const clearImage = () => {
-    setWorkImage(null);
+    clearWorkImage();
     setWorkImagePreview(null);
     const input = document.getElementById('work-image') as HTMLInputElement;
     if (input) {
@@ -114,7 +123,6 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                 unoptimized
             />
             </div>
-
 
           {/* Mobile info */}
           <div className="block lg:hidden mt-6">
@@ -150,7 +158,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
               Disponible del 5 de agosto al 23 diciembre
             </p>
             <div className="flex flex-col gap-3.5 w-full">
-              <DateRentInput grid={true} />
+              <DateRentInput grid={true}/>
             </div>
           </div>
 
@@ -265,19 +273,7 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                   searchPlaceholder="Buscar dirección de entrega, ciudad o punto de referencia..."
                   className="shadow-sm border-gray-200"
                 />
-
-                {/* Toggle para guardar dirección */}
-                <div className="mt-3 flex items-center gap-3">
-                  <ToggleButton
-                    isChecked={saveAddress}
-                    onChange={toggleSaveAddress}
-                  />
-                  <p className="text-xs text-gray-500">
-                    Guardar esta dirección para futuras reservas
-                  </p>
-                </div>
-              </div>
-
+              </div> 
               {/* Estado de la ubicación */}
               {selectedLocation ? (
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -354,92 +350,113 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
                 </div>
               )}
 
-              {/* Nombre para la dirección */}
+       {/* Nombre para la dirección */}
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700">
-                  Nombre para esta ubicación
+                  Nombre del proyecto
                 </label>
                 <input
                   type="text"
-                  value={locationName}
-                  onChange={(e) => setLocationName(e.target.value)}
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   placeholder="Ej: Obra Residencial Sur, Proyecto Plaza Central, etc."
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Te ayudará a identificar esta ubicación en futuras reservas.
+                 Nombre del proyecto de la obra
                 </p>
               </div>
+              {/* Nombre del responsable - NUEVO CAMPO */}
+<div>
+  <label className="block text-sm font-medium mb-2 text-gray-700">
+    Nombre del responsable
+  </label>
+  <input
+    type="text"
+    value={responsibleName}
+    onChange={(e) => setResponsibleName(e.target.value)}
+    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+    placeholder="Ej: Juan Pérez, María González, etc."
+  />
+  <p className="text-xs text-gray-500 mt-1">
+    Persona responsable de la obra o proyecto.
+  </p>
+</div>
 
               {/* Imagen de la obra */}
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">
-                  Imagen de la obra
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-300 transition-colors">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    id="work-image"
-                  />
+              {!projectId && (
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Imagen de la obra
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-300 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChangeLocal}
+                      className="hidden"
+                      id="work-image"
+                    />
 
-                  {workImagePreview ? (
-
-                    <div className="relative">
-                      <Image
-                        src={workImagePreview}
-                        alt="Preview de la obra"
-                        width={200}
-                        height={150}
-                        className="mx-auto rounded-lg object-cover"
-                      />
-                      <button
-                        onClick={clearImage}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                    {workImagePreview ? (
+                      <div className="relative">
+                        <Image
+                          src={workImagePreview}
+                          alt="Preview de la obra"
+                          width={200}
+                          height={150}
+                          className="mx-auto rounded-lg object-cover"
+                        />
+                        <button
+                          onClick={clearImage}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                        <p className="text-sm text-gray-600 mt-2">
+                          Haz clic en la X para cambiar la imagen
+                        </p>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="work-image"
+                        className="cursor-pointer flex flex-col items-center gap-2"
                       >
-                        ×
-                      </button>
-                      <p className="text-sm text-gray-600 mt-2">
-                        Haz clic en la X para cambiar la imagen
-                      </p>
-                    </div>
-                  ) : (
-
-                    <label
-                      htmlFor="work-image"
-                      className="cursor-pointer flex flex-col items-center gap-2"
-                    >
-                      <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                      </svg>
-                      <span className="text-sm text-gray-600">
-                        Haz clic para seleccionar una imagen
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        JPG, PNG o WebP • Máximo 5MB
-                      </span>
-                    </label>
-                  )}
+                        <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span className="text-sm text-gray-600">
+                          Haz clic para seleccionar una imagen
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          JPG, PNG o WebP • Máximo 5MB
+                        </span>
+                      </label>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Esto nos ayuda a validar el terreno, determinar la accesibilidad y asignar la maquinaria más compatible con las condiciones del sitio.
+                  </p>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Esto nos ayuda a validar el terreno, determinar la accesibilidad y asignar la maquinaria más compatible con las condiciones del sitio.
-                </p>
-              </div>
+              )}
             </div>
           </div>
-
-          {/* Formulario de reserva */}
+        {/* Formulario de reserva */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <BookingForm
               machine={currentMachine}
               router={router}
+              projectId={projectId}
               getLocationForBooking={getLocationForBooking}
               validateLocation={validateLocation}
               extras={extras}
+              getWorkData={getWorkData}
+              projectData={projectData}
+              selectedLocation={selectedLocation}
+              projectName={projectName}
             />
           </div>
+
         </div>
 
         {/* Columna derecha - Desktop */}
@@ -455,7 +472,8 @@ export default function MachineDetail({ machine }: MachineDetailProps) {
             />
           </div>
         </div>
-      </div>
+
+      </div>  {/* Cerrar container mx-auto lg:flex gap-4 */}
     </section>
   );
 }
