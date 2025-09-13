@@ -17,7 +17,7 @@ import currentDate from "@/utils/currentDate";
 import { FaCheck } from "react-icons/fa6";
 import { ImSpinner8 } from "react-icons/im";
 
-export default function NewProjectForm({projectID}:{projectID?:string}) {
+export default function NewProjectForm({projectID,projectAct}:{projectID?:string,projectAct?:()=>void}){
 
   
 
@@ -43,7 +43,7 @@ export default function NewProjectForm({projectID}:{projectID?:string}) {
           setTerrainType,
           onSubmit,
           setProject,
-          isValid } = useNewProjectForm({projectId: ""})
+          isValid } = useNewProjectForm({projectId:projectID || "", projectAct:projectAct || undefined});
 
 
 
@@ -312,7 +312,7 @@ export default function NewProjectForm({projectID}:{projectID?:string}) {
                       <div className="flex  gap-3 items-center">
                        
                         <div
-                          className="d-flex gap-2 cursor-pointer flex items-center h-[50px]  w-fit max-w-[250px] rounded-sm px-4 py-2 border-[#bbb] border-1"
+                          className="d-flex gap-2 button-resguardo cursor-pointer flex items-center h-[50px]  w-fit max-w-[250px] rounded-sm px-4 py-2 border-[#bbb] border-1"
                           onClick={() => {
                             document.getElementById('resguardo_files')?.click();
 

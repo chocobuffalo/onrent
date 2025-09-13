@@ -17,6 +17,7 @@ import { useToast } from "../ui/useToast";
 import { FileInterface } from "@/types";
 import getProjectDetail from "@/services/getProjectDetail";
 import { machine } from "os";
+import { updateProject } from "@/services/updateProject";
 
 
 const phoneRegExp = /^(\+?\d{0,4})?\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{4}\)?)?$/;
@@ -64,7 +65,7 @@ const initialValues = {
     machinery_type: ""
   }
 
-export default function useNewProjectForm({projectId}:{projectId?:string}) {
+export default function useNewProjectForm({projectId,projectAct}:{projectId?:string,projectAct?:()=>void}) {
 const {
     register,
     handleSubmit,
@@ -340,26 +341,53 @@ useEffect(() => {
 
 
         console.log(newProject);
-
-        createProject(newProject,(session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "")
-        .then(res=>{
-          if(res.message =="Proyecto creado correctamente"){
+        if(projectId){
+          //edit project
+          updateProject({...newProject,id:projectId},(session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "")
+          .then(res=>{
             console.log(res);
-            toastSuccess(res.message);
-            //limpiamos el formulario
-            setProject(initialValues);
-            setTerrainType([]);
-            setValue("resguardo_files", []);
-            reset();
-          }else{
-            console.log(res);
-            toastError('Hubo un error en la creación del proyecto');
-          }
-        }).finally(
-          ()=>{
-            setSending(false);
-          }
-        )
+            if(res.message =="Proyecto actualizado correctamente"){
+              toastSuccess(res.message);
+              if (projectAct) {
+                projectAct();
+              }
+            }else{
+              toastError('Hubo un error en la actualización del proyecto');
+            }
+          }).finally(
+            ()=>{
+              setSending(false);
+               if (projectAct) {
+                  projectAct();
+                }
+            }
+          )
+        }else{
+          
+            createProject(newProject,(session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "")
+            .then(res=>{
+              if(res.message =="Proyecto creado correctamente"){
+                console.log(res);
+                toastSuccess(res.message);
+                //limpiamos el formulario
+                setProject(initialValues);
+                setTerrainType([]);
+                setValue("resguardo_files", []);
+               
+                reset();
+              }else{
+                console.log(res);
+                toastError('Hubo un error en la creación del proyecto');
+              }
+            }).finally(
+              ()=>{
+                setSending(false);
+                 if (projectAct) {
+                  projectAct();
+                }
+              }
+            )
+        }
     
 
 

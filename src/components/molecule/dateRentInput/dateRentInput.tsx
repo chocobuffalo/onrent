@@ -1,6 +1,7 @@
 import DateInput from "@/components/atoms/dateinput/dateinput";
 import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
 import { fixDate } from "@/utils/compareDate";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default function DateRentInput({grid}:{grid?:boolean}) {
@@ -30,10 +31,10 @@ export default function DateRentInput({grid}:{grid?:boolean}) {
                 <p className="date-info text-secondary  block w-full m-0">
                     * La fecha de arrendamiento es mayor a un dia, por este motivo debe crear un proyecto
                 </p>
-                <button onClick={()=>redirect('/nuevo-proyecto')} className={`bg-secondary border-secondary border-1 duration-300 text-white cursor-pointer hover:bg-transparent hover:text-secondary  ${grid ? "lg:max-w-[160px] w-full" : "lg:w-full"} block float-end hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm`}>
+                <Link href={'/nuevo-proyecto'} className={`bg-secondary border-secondary border-1 duration-300 text-white cursor-pointer hover:bg-transparent hover:text-secondary  ${grid ? "lg:max-w-[160px] w-full" : "lg:w-full"} block float-end hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm`}>
 
-                   <div className="">Crear Proyecto</div>
-                </button>
+                   <div className="text-center">Crear Proyecto</div>
+                </Link>
             </div>)}
         </div>
     );
