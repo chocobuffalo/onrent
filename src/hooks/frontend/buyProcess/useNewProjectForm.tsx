@@ -134,11 +134,8 @@ const {
         }
         };
         reader.readAsDataURL(file);
-        // guardar el archivo en base64 en el estado
     };
   
-
-  // Observar cambios del formulario y actualizar el estado
   const formValues = watch();
 
 
@@ -159,8 +156,6 @@ const {
     clearErrors("end_date");
   }
 
-  
-  //Location don work other location
   const [isLoading, setIsLoading] = useState(false);
       
   const [options, setOptions] = useState<SelectInterface[]>([]);
@@ -179,13 +174,10 @@ const {
               setIsLoading(false);
               return options;
             }
-          }, 500), // 500ms de delay
-          [] // Dependencias vacías ya que no usamos variables externas
+          }, 500), 
+          []
         );
     
-  
-
-     
       const handlerFocus = (text: string) => {
           debouncedFilterColors(text);
           setOpen(true);
@@ -196,15 +188,12 @@ const {
           setValue("location", text);
           setProject(prev => ({ ...prev, location: text }));
       };
-      //setLocation,setType
+ 
     const handlerChange = (optionSelected: string) => {
       setValue("location", optionSelected);
       setProject(prev => ({ ...prev, location: optionSelected }));
       setOpen(false);
     };
-
-
-  //clear Error with useEffect because useState is asinc
 
   useEffect(()=>{
     if(projectId){
@@ -314,9 +303,6 @@ useEffect(() => {
     setValue("terrain_type", terrainType.join(", "));
     setProject(prev => ({ ...prev, terrain_type: terrainType.join(", ") }));
   },[terrainType])
-
-  
-  //submit event
   const onSubmit = (data:any) => {
         console.log(data);
         setSending(true);

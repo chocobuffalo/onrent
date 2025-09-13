@@ -1,10 +1,19 @@
 import DateInput from "@/components/atoms/dateinput/dateinput";
 import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
+import { useRouter, useParams } from "next/navigation";
 import { fixDate } from "@/utils/compareDate";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 export default function DateRentInput({grid}:{grid?:boolean}) {
+    const router = useRouter();
+const params = useParams();
+
+const handleCreateProject = () => {
+    const machineId = params.id;
+    const machinetype = 'maquinaria';
+    
+    router.push(`/nuevo-proyecto?machineId=${machineId}&machinetype=${machinetype}`);
+};
     const {startDate,endDate,handleStartDateChange,handleEndDateChange,needProject} = useDateRange();
 
     return (
