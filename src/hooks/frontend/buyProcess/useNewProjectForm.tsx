@@ -317,19 +317,19 @@ useEffect(() => {
           newProject.access_notes = ""
         }
         newProject.observations = newProject.observations || "";
-        newProject.start_date = chanceDateFormat(newProject.start_date);
-        newProject.end_date = chanceDateFormat(newProject.end_date);
         if(project.has_reserve_space=='Si'){
           newProject.has_reserve_space = true;
         }else{
           newProject.has_reserve_space = false;
         }
-
-
+        
+        newProject.start_date = chanceDateFormat(newProject.start_date);
+        newProject.end_date = chanceDateFormat(newProject.end_date);
+        console.log(chanceDateFormat(newProject.end_date),newProject.end_date);
         console.log(newProject);
         if(projectId){
           //edit project
-          updateProject({...newProject,id:projectId},(session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "")
+          updateProject({...newProject,start_date:chanceDateFormat(newProject.start_date),end_date:chanceDateFormat(newProject.end_date),id:projectId},(session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "")
           .then(res=>{
             console.log(res);
             if(res.message =="Proyecto actualizado correctamente"){
