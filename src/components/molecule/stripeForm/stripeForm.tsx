@@ -5,8 +5,9 @@ import React, { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useSession } from 'next-auth/react';
 
-const StripeForm = ({getCheckSummary}:{getCheckSummary:{amount:number,currency:string,user_id:number | null,method:string}}) => {
+const StripeForm = ({getCheckSummary,stripeSecret}:{getCheckSummary:{amount:number,currency:string,user_id:number | null,method:string},stripeSecret:string}) => {
     console.log('getCheckSummary in StripeForm:', getCheckSummary);
+    console.log('stripeSecret in StripeForm:', stripeSecret);
 
 
    const stripe = useStripe();
@@ -35,13 +36,8 @@ const StripeForm = ({getCheckSummary}:{getCheckSummary:{amount:number,currency:s
     setMessage("Creando intento de pago...");
 
     // 1️⃣ Llamar a tu backend para crear el PaymentIntent
-    const resp = await fetchClientSecret()
+    
 
-    if (!resp.ok) {
-      setMessage("Error creando PaymentIntent");
-      setLoading(false);
-      return;
-    }
 
    
   
@@ -61,8 +57,8 @@ const StripeForm = ({getCheckSummary}:{getCheckSummary:{amount:number,currency:s
 
  
 
-    console.log(resp,'resp client secret')
-    const { paymentIntent, error } = await stripe.confirmCardPayment(resp, {
+    //console.log(resp,'resp client secret')
+    const { paymentIntent, error } = await stripe.confirmCardPayment(stripeSecret, {
       payment_method: { card: cardElement }
     });
 

@@ -62,6 +62,7 @@ export default function Checkout({
     
   });
   const [stripePromise, setStripePromise] = useState(() => loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!));
+  const [stripSecret, setStripSecret] = useState('');
  
 
 const fetchClientSecret = async () => {
@@ -78,10 +79,16 @@ const fetchClientSecret = async () => {
   });
   //console.log(await response.json());
   const json = await response.json();
+  setStripSecret(json.client_secret);
   return json.client_secret;
 };
 
 
+useEffect(() => {
+  fetchClientSecret()
+},[
+  getCheckSummary, session
+]) 
 
   
   return typeof window !== 'undefined' && (
@@ -110,7 +117,7 @@ const fetchClientSecret = async () => {
           )
          } */}
           <Elements stripe={stripePromise}>
-            <StripeForm getCheckSummary={getCheckSummary} />
+            <StripeForm getCheckSummary={getCheckSummary} stripeSecret={stripSecret} />
           </Elements>
 
           </div>
