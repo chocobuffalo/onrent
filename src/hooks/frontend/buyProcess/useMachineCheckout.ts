@@ -7,7 +7,9 @@ export function useMachineCheckout(machineId: string): UseMachineDataReturn {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (machineId) {
+    if (typeof parseInt(machineId) === 'number' || !isNaN(parseInt(machineId))) {
+      
+      console.log(machineId);
       const mockData: Machine = {
         id: machineId,
         name: "Retroexcavadora CAT 320D",

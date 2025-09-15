@@ -1,13 +1,28 @@
 'use client';
 
 import { CheckoutWithLogicProps } from '@/types/checkout';
+import {CheckoutProvider} from '@stripe/react-stripe-js/checkout';
 import BackButton from '@/components/atoms/BackButton/BackButton';
 import ProjectInfoTable from '@/components/molecule/ProjectInfoTable/ProjectInfoTable';
 import PaymentForm from '@/components/molecule/PaymentForm/PaymentForm';
 import CheckoutSummary from '@/components/molecule/CheckoutSummary/CheckoutSummary';
+import { Suspense, use, useEffect, useState } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import StripeForm from '@/components/molecule/stripeForm/stripeForm';
+import { useSession } from 'next-auth/react';
+
+export interface CheckoutSummaryProps {
+   amount: number;
+        currency: string;
+        session_id: string;
+        preorder_id: string;
+        user_id: number | null;
+        method: 'card',
+        url:string
+}
 
 export default function Checkout({
-  machine,
+  order,
   router,
   register,
   errors,
@@ -16,18 +31,71 @@ export default function Checkout({
   handleBack,
   onSubmit,
 }: CheckoutWithLogicProps) {
+  const [loading, setLoading] = useState(false);
+  console.log(order)
+  const {project_name, project_responsible, project_location, client_notes,items,preorder_id,session_id} = order || {};
+    const {data:session} = useSession(); 
+    console.log(session?.user)
+  const [getCheckSummary, setGetCheckSummary] = useState<CheckoutSummaryProps>({
+    amount: 0,
+    currency: 'mxn',
+    user_id: (session?.user && 'user_id' in session.user) ? parseInt((session.user as any).user_id) : null,
+    preorder_id: preorder_id || '',
+    session_id: session_id || '',
+    method: 'card',
+    url:process.env.NEXT_PUBLIC_SITE_URL || ''
+  });
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
+
+
+const fetchClientSecret = async () => {
+  // get
+  console.log(getCheckSummary, 'fetchClientSecret called');
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/stripe/create-intent`, {
+    method: 'POST',
+    body: JSON.stringify(getCheckSummary),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.user?.access_token}`
+    }
+  });
+  //console.log(await response.json());
+  const json = await response.json();
+  return json.client_secret;
+};
+
+ useEffect(()=>{
+  if(getCheckSummary.amount >  0){
+    setLoading(true);
+  }
+ },[getCheckSummary])
+
+
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <BackButton onClick={handleBack} />
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <div >
           <div className="space-y-6">
-            <ProjectInfoTable />
-            <CheckoutSummary machine={machine} />
-            <PaymentForm register={register} errors={errors} />
+            <ProjectInfoTable project_name={project_name} responsible_name={project_responsible} project_location={project_location} />
+           
+            <CheckoutSummary items={items} setGetCheckSummary={setGetCheckSummary} preorder_id={preorder_id} url={getCheckSummary.url} session_id={session_id} />
+            {/*stripe here*/ }
+           {/**
+            * crear un suspense para el stripe
+            */}
+           {loading === true && <Suspense fallback={<div>Cargando...</div>} >
+              <CheckoutProvider stripe={stripePromise} options={{fetchClientSecret}}>
+              <StripeForm getCheckSummary={getCheckSummary} />
+             </CheckoutProvider>
+            </Suspense>}
+
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -31,6 +31,7 @@ interface BookingFormProps {
     projectName: string;
     referenceAddress: string;
     projectId: number;
+    responsibleName: string;
   };
   projectData?: any;
   selectedLocation?: {
@@ -133,6 +134,8 @@ export const BookingForm = ({
                 client_notes: clientNotes,
                 work_image: workData?.workImage || null,
                 reference_address: workData?.referenceAddress || "",
+                project_name: workData?.projectName || "",
+                responsible_name: workData?.responsibleName || "",
                 items: [
                     {
                         product_id: machine.id,

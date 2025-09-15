@@ -362,6 +362,7 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   placeholder="Ej: Obra Residencial Sur, Proyecto Plaza Central, etc."
                 />
+                
                 <p className="text-xs text-gray-500 mt-1">
                  Nombre del proyecto de la obra
                 </p>

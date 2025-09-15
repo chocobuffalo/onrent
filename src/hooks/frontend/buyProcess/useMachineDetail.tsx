@@ -39,6 +39,7 @@ export default function useMachineDetail(machineId: number,  projectId?: string)
 
   const router = useRouter();
 
+  /**Carga los datos de la maquinaria */
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -271,6 +272,7 @@ useEffect(() => {
       projectName: projectData?.name || projectName,
       referenceAddress: projectData?.location || selectedLocation?.address || projectName || '',
       projectId: projectData?.id || 0,
+      responsibleName: projectData?.responsible_name || responsibleName || '',
     };
   };
 

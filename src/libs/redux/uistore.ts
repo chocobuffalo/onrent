@@ -8,11 +8,14 @@ import modalSlicer from "./features/ui/modalSlicer";
 import { FilterInterface } from "@/types/filters";
 import { AuthStateInterface } from "@/types/auth";
 import { ModalStateInterface } from "@/types/iu";
+import orderSlicer from "./features/ui/orderSlicer";
+import { OrderBookingInterface } from "@/types/orderBooking";
 
 export interface RootInterface {
   filters: FilterInterface;
   auth: AuthStateInterface;
   modal: ModalStateInterface;
+  order: OrderBookingInterface
 }
 
 // nextjs config
@@ -22,6 +25,7 @@ export const makeStore = () => {
       filters: filterSlicer,
       auth: authSlicer,
       modal: modalSlicer,
+      order: orderSlicer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
