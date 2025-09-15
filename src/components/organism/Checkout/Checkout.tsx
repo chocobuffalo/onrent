@@ -10,6 +10,7 @@ import { Suspense, use, useEffect, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import StripeForm from '@/components/molecule/stripeForm/stripeForm';
 import { useSession } from 'next-auth/react';
+import { Elements } from '@stripe/react-stripe-js';
 
 export interface CheckoutSummaryProps {
    amount: number;
@@ -100,7 +101,7 @@ const fetchClientSecret = async () => {
            {/**
             * crear un suspense para el stripe
             */}
-         {
+         {/* {
           getCheckSummary.amount > 0 && (
             <Suspense fallback={<div>Cargando...</div>} >
               <CheckoutProvider stripe={stripePromise} options={{fetchClientSecret, elementsOptions: {appearance: {
@@ -110,7 +111,10 @@ const fetchClientSecret = async () => {
              </CheckoutProvider>
             </Suspense>
           )
-         }
+         } */}
+          <Elements stripe={stripePromise}>
+            <StripeForm getCheckSummary={getCheckSummary} />
+          </Elements>
 
           </div>
         </div>
