@@ -36,14 +36,29 @@ export default function Checkout({
   const {project_name, project_responsible, project_location, client_notes,items,preorder_id,session_id} = order || {};
     const {data:session} = useSession(); 
     console.log(session?.user)
+ const fleetSum = items?.reduce((sum, item) => sum + (item.estimated_fleet || 0), 0);
+      const rentsSum = items?.reduce((sum, item) => sum + (item.estimated_rent || 0), 0);
+      const totalSum = items?.reduce((sum, item) => sum + (item.total_estimated || 0), 0);
+    
+      const machinesItems = items ? items?.map((item) => ({
+        id: item.product_id || Math.random().toString(36).substr(2, 9), // Generar un ID único si no existe
+        name: item.product_name,
+        price: item.estimated_rent,
+        quantity: item.requested_quantity,
+      })): [];
+      
+    
+   
+    
   const [getCheckSummary, setGetCheckSummary] = useState<CheckoutSummaryProps>({
-    amount: 0,
+    amount: totalSum || 0,
     currency: 'mxn',
     user_id: (session?.user && 'user_id' in session.user) ? parseInt((session.user as any).user_id) : null,
     preorder_id: preorder_id || '',
     session_id: session_id || '',
     method: 'card',
     url:process.env.NEXT_PUBLIC_SITE_URL || ''
+    
   });
   //process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 const stripePromise = typeof window !== 'undefined' 
@@ -68,11 +83,6 @@ const fetchClientSecret = async () => {
   return json.client_secret;
 };
 
- useEffect(()=>{
-  if(getCheckSummary.amount >  0){
-    setLoading(true);
-  }
- },[getCheckSummary])
 
 
   
@@ -90,11 +100,13 @@ const fetchClientSecret = async () => {
            {/**
             * crear un suspense para el stripe
             */}
-           {loading === true && <Suspense fallback={<div>Cargando...</div>} >
-              <CheckoutProvider stripe={stripePromise} options={{fetchClientSecret}}>
+          <Suspense fallback={<div>Cargando...</div>} >
+              <CheckoutProvider stripe={stripePromise} options={{fetchClientSecret, elementsOptions: {appearance: {
+                theme: 'stripe',
+              },},}}>
               <StripeForm getCheckSummary={getCheckSummary} />
              </CheckoutProvider>
-            </Suspense>}
+            </Suspense>
 
           </div>
         </div>

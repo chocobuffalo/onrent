@@ -17,6 +17,7 @@ export default function CheckoutPage() {
 
   if (!order_id && typeof window !== 'undefined') {
     const storedOrderId = localStorage.getItem('order_id');
+    console.log(storedOrderId,'storedOrderId')
     if (storedOrderId) {
       //dispatch to redux
       //añdir dispatch
