@@ -100,13 +100,17 @@ const fetchClientSecret = async () => {
            {/**
             * crear un suspense para el stripe
             */}
-          <Suspense fallback={<div>Cargando...</div>} >
+         {
+          getCheckSummary.amount > 0 && (
+            <Suspense fallback={<div>Cargando...</div>} >
               <CheckoutProvider stripe={stripePromise} options={{fetchClientSecret, elementsOptions: {appearance: {
                 theme: 'stripe',
               },},}}>
               <StripeForm getCheckSummary={getCheckSummary} />
              </CheckoutProvider>
             </Suspense>
+          )
+         }
 
           </div>
         </div>
