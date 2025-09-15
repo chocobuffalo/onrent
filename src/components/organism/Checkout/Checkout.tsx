@@ -61,11 +61,8 @@ export default function Checkout({
     url:process.env.NEXT_PUBLIC_SITE_URL || ''
     
   });
-  //process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-const stripePromise = typeof window !== 'undefined' 
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!) 
-  : Promise.resolve(null);
-
+  const [stripePromise, setStripePromise] = useState(() => loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!));
+ 
 
 const fetchClientSecret = async () => {
   // get
