@@ -44,9 +44,39 @@ export interface PaymentFormProps {
 }
 
 
+export  interface ItemProps{
+  total_estimated: number;
+  duration_days:number;
+  end_date:number
+  estimated_extras:number;
+  estimated_fleet:number
+  estimated_rent:number;
+  location: {lat: number, lng: number};
+  //{lat: 22.1393405, lng: -101.013567}
+  product_id:number|string|null;
+  product_name:string;
+  requested_quantity:number;
+  session_id:string;
+  start_date:string
+
+}
+
+
+export interface OrderProp {
+  id: number | string | null;
+  preorder_id: string ;
+  session_id: string;
+  project_id: number;
+  project_name: string;
+  project_responsible: string;
+  project_location: string;
+  client_notes: string;
+  status: string;
+  items:  ItemProps[];
+}
 
 export interface CheckoutProps {
-  machine: Machine;
+  order: OrderProp | null;
   router: AppRouterInstance;
 }
 

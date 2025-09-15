@@ -1,4 +1,7 @@
 "use client";
+import { setOrderId, setSessionId } from "@/libs/redux/features/ui/orderSlicer";
+import { useUIAppDispatch } from "@/libs/redux/hooks";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 interface PreorderItem {
@@ -30,8 +33,10 @@ interface PreorderPayload {
 export default function useBookingPreorder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dispatch = useUIAppDispatch();
   const [data, setData] = useState<any>(null);
-
+  const {data: sessionData} = useSession();
+  const token = sessionData?.user?.access_token;
   const createPreorder = async (payload: PreorderPayload) => {
     try {
       setLoading(true);
@@ -44,7 +49,10 @@ export default function useBookingPreorder() {
 
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+
+        },
         body: JSON.stringify(payload),
       });
 
@@ -55,6 +63,7 @@ export default function useBookingPreorder() {
         let errorDetails;
         try {
           errorDetails = await res.json();
+
         } catch (jsonError) {
           try {
             errorDetails = await res.text();
@@ -81,6 +90,16 @@ export default function useBookingPreorder() {
       const result = await res.json();
       console.log("Successful response:", result);
       setData(result);
+      //añdir carrito
+      //añdir session_id a carrito
+      if (result.session_id) {
+        dispatch(setSessionId(result.session_id));
+      }
+      //añdir order_id a carrito
+      if (result.order_id) {
+        dispatch(setOrderId(result.order_id));
+
+      }
 
       return result;
     } catch (err: any) {
