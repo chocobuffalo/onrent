@@ -45,8 +45,10 @@ export default function Checkout({
     method: 'card',
     url:process.env.NEXT_PUBLIC_SITE_URL || ''
   });
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-
+  //process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+const stripePromise = typeof window !== 'undefined' 
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!) 
+  : Promise.resolve(null);
 
 
 const fetchClientSecret = async () => {
