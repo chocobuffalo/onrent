@@ -76,6 +76,7 @@ export const BookingForm = ({
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     };
 
+    console.log(projectData,'projectData in booking form');
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -129,7 +130,7 @@ export const BookingForm = ({
             }
 
             const preorderPayload = {
-                project_id: hasProject ? (projectData?.id || 0) : 0,
+                project_id: projectData.id ? (projectData?.id || 0) : 0,
                 location: locationData || { lat: 0, lng: 0 },
                 client_notes: clientNotes,
                 work_image: workData?.workImage || null,

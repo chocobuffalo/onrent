@@ -22,6 +22,7 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
   const [fleet, setFleet] = useState(0);
   const [extras, setExtras] = useState(0);
   const [rents, setRents] = useState(0);
+  const [tax, setTax] = useState(0);
   const [userId,setUserId] = useState<number | null>(null);
   const [totalPrice,setTotalPrice] = useState(0);
   
@@ -58,6 +59,9 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
       ///tomar el estimated_rent y sumarlo
       const rentsSum = items.reduce((sum, item) => sum + (item.estimated_rent || 0), 0);
       setRents(rentsSum);
+      /// tomar el estimated_tax y sumarlo
+      const taxSum = items.reduce((sum, item) => sum + (item.estimated_taxes || 0), 0);
+      setTax(taxSum);
       ///tomar el total_estimated y sumarlo
       const totalSum = items.reduce((sum, item) => sum + (item.total_estimated || 0), 0);
       setTotalPrice(totalSum);
@@ -147,7 +151,7 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
         <div className="flex justify-between items-center">
           <span className="text-gray-600 text-base  lato-font">Impuestos:</span>
           <span className="text-gray-900 text-base  font-medium lato-font">
-            {initial.impuestos.toLocaleString('es-ES')}$/MXN
+            {tax.toLocaleString('es-ES')}$/MXN
           </span>
         </div>
       </div>

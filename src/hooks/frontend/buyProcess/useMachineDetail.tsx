@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { CatalogueItem } from "@/components/organism/Catalogue/types";
 import { useSession } from "next-auth/react";
@@ -11,7 +11,7 @@ interface LocationData {
   address?: string;
 }
 
-export default function useMachineDetail(machineId: number,  projectId?: string) {
+export default function useMachineDetail(machineId: number,  project_Id?: string) {
   const [extras, setExtras] = useState({
     operador: true,
     certificado: true,
@@ -21,6 +21,7 @@ export default function useMachineDetail(machineId: number,  projectId?: string)
   const [saveAddress, setAddress] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
 
   const [machineData, setMachineData] = useState<CatalogueItem | null>(null);
 
@@ -35,6 +36,7 @@ export default function useMachineDetail(machineId: number,  projectId?: string)
   const [projectName, setProjectName] = useState('');
   const [responsibleName, setResponsibleName] = useState('');
   const [projectData, setProjectData] = useState<any>(null);
+  const [projectId, setProjectId] = useState(project_Id || null);
   const session = useSession();
 
   const router = useRouter();
@@ -81,9 +83,10 @@ export default function useMachineDetail(machineId: number,  projectId?: string)
 
     fetchData();
   }, [machineId]);
-
+console.log(projectId)
 useEffect(() => {
   if (projectId && session && session.status === "authenticated") {
+    console.log(projectId)
     const fetchProjectData = async () => {
       try {
         const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN;
@@ -276,6 +279,7 @@ useEffect(() => {
     };
   };
 
+  
  useEffect(() => {
   if (typeof window !== 'undefined' && !projectId) {
     const savedLocation = localStorage.getItem('selectedLocation');
@@ -313,6 +317,7 @@ useEffect(() => {
     handleImageChange,
     clearWorkImage,
     getWorkData,
+    setProjectId, 
     projectData,
   };
 }

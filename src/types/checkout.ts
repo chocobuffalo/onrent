@@ -48,6 +48,7 @@ export  interface ItemProps{
   total_estimated: number;
   duration_days:number;
   end_date:number
+  estimated_taxes:number;
   estimated_extras:number;
   estimated_fleet:number
   estimated_rent:number;
