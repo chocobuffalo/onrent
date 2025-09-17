@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { CatalogueItem } from "../Catalogue/types";
 import ToggleButton from "@/components/atoms/toggleButton/toggleButton";
@@ -11,6 +11,8 @@ import SpecsDetail from "@/components/molecule/specsDetail/specsDetail";
 import PriceDetail from "@/components/atoms/priceDetail/priceDetail";
 import AmazonLocationMap from "@/components/organism/AmazonLocationService/amazonLocationMap";
 import { getImageUrl } from "@/utils/imageUrl";
+import { useGetProject } from "@/hooks/component/useGetProject";
+import DropdownList from "@/components/atoms/dropdownList/dropdownList";
 
 interface MachineDetailProps {
   machine: CatalogueItem;
@@ -24,6 +26,7 @@ interface LocationData {
 }
 
 export default function MachineDetail({ machine, projectId  }: MachineDetailProps) {
+  
   const {
     extras,
     saveAddress,
@@ -48,67 +51,89 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
     clearWorkImage,
     getWorkData,
     projectData,
+    setProjectId
 
   } = useMachineDetail(machine.id, projectId);
 
+  
+
   const [workImagePreview, setWorkImagePreview] = useState<string | null>(null);
+  const {project, projects, loadingProject, openProjects,setLoadingProject, setOpenProjects,setSelectedProject} = useGetProject({projectName});
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
-      </div>
-    );
+console.log(project,'project')
+
+
+
+const currentMachine = machineData || machine;
+
+const imageUrl = currentMachine.image
+  ? getImageUrl(currentMachine.image)
+  : "/images/catalogue/machine5.jpg";
+
+const onMapLocationSelect = (locationData: LocationData) => {
+  handleLocationSelect(locationData);
+};
+
+const handleImageChangeLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    handleImageChange(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setWorkImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   }
+};
 
-  if (error && !error.includes('ubicación')) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
-            Reintentar
-          </button>
-        </div>
-      </div>
-    );
+const clearImage = () => {
+  clearWorkImage();
+  setWorkImagePreview(null);
+  const input = document.getElementById('work-image') as HTMLInputElement;
+  if (input) {
+    input.value = '';
   }
+};
 
-  const currentMachine = machineData || machine;
+const handlerProjectSelect = (value:any) => {
+  setProjectName(value); 
+  setOpenProjects(false);
+  setSelectedProject(value);
+}
 
-  const imageUrl = currentMachine.image
-    ? getImageUrl(currentMachine.image)
-    : "/images/catalogue/machine5.jpg";
+// Move useEffect before any early return
+useEffect(()=>{
+  if(project){
+    setProjectId(project.id.toString());
+  }
+},[project]);
 
-  const onMapLocationSelect = (locationData: LocationData) => {
-    handleLocationSelect(locationData);
-  };
-
-  const handleImageChangeLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleImageChange(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setWorkImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const clearImage = () => {
-    clearWorkImage();
-    setWorkImagePreview(null);
-    const input = document.getElementById('work-image') as HTMLInputElement;
-    if (input) {
-      input.value = '';
-    }
-  };
-
+if (loading) {
   return (
+    <div className="flex justify-center items-center min-h-[400px]">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+    </div>
+  );
+}
+
+if (error && !error.includes('ubicación')) {
+  return (
+    <div className="flex justify-center items-center min-h-[400px]">
+      <div className="text-center">
+        <p className="text-red-600 mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+        >
+          Reintentar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+return (
     <section className="machine-detail py-5 px-4">
       <div className="container mx-auto lg:flex gap-4">
         <div className="lg:w-2/3">
@@ -352,16 +377,22 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
 
        {/* Nombre para la dirección */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">
+               <div className="relative">
+                 <label className="block text-sm font-medium mb-2 text-gray-700">
                   Nombre del proyecto
                 </label>
                 <input
                   type="text"
                   value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
+                  onChange={(e) =>{ 
+                    setProjectName(e.target.value)}
+                  }
+                  onClick={() => setOpenProjects(true)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   placeholder="Ej: Obra Residencial Sur, Proyecto Plaza Central, etc."
                 />
+                <DropdownList open={openProjects} options={projects || []} handlerChange={handlerProjectSelect} isLoading={loadingProject} />
+               </div>
                 
                 <p className="text-xs text-gray-500 mt-1">
                  Nombre del proyecto de la obra
@@ -375,7 +406,7 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
   <input
     type="text"
     value={responsibleName}
-    onChange={(e) => setResponsibleName(e.target.value)}
+    onChange={(e) =>{ setResponsibleName(e.target.value)}}
     className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
     placeholder="Ej: Juan Pérez, María González, etc."
   />

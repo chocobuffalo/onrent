@@ -4,11 +4,14 @@ import {useCheckout, PaymentElement} from '@stripe/react-stripe-js/checkout';
 import React, { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useSession } from 'next-auth/react';
+import { useToast } from '@/hooks/frontend/ui/useToast';
+import { redirect } from 'next/navigation';
 
 const StripeForm = ({getCheckSummary,stripeSecret}:{getCheckSummary:{amount:number,currency:string,user_id:number | null,method:string},stripeSecret:string}) => {
     console.log('getCheckSummary in StripeForm:', getCheckSummary);
     console.log('stripeSecret in StripeForm:', stripeSecret);
 
+    const { toastSuccess,toastError } = useToast();
 
    const stripe = useStripe();
   const elements = useElements();
@@ -65,8 +68,15 @@ const StripeForm = ({getCheckSummary,stripeSecret}:{getCheckSummary:{amount:numb
     if (error) {
       console.error(error);
       setMessage(`Error: ${error.message}`);
+      toastError(`Error en el pago: ${error.message}`);
     } else if (paymentIntent.status === "succeeded") {
       setMessage("Pago completado ✅");
+      toastSuccess("Pago realizado con éxito");
+
+      setTimeout(() => {
+        redirect('/thank-you');
+      }, 3000); // Espera 3 segundos antes de recargar
+
     } else {
       setMessage(`Estado del pago: ${paymentIntent.status}`);
     }

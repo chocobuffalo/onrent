@@ -33,7 +33,7 @@ export default function Checkout({
   onSubmit,
 }: CheckoutWithLogicProps) {
   const [loading, setLoading] = useState(false);
-  console.log(order)
+  console.log(order,'order in checkout')
   const {project_name, project_responsible, project_location, client_notes,items,preorder_id,session_id} = order || {};
     const {data:session} = useSession(); 
     console.log(session?.user)
@@ -102,20 +102,6 @@ useEffect(() => {
            
             <CheckoutSummary items={items} setGetCheckSummary={setGetCheckSummary} preorder_id={preorder_id} url={getCheckSummary.url} session_id={session_id} />
             {/*stripe here*/ }
-           {/**
-            * crear un suspense para el stripe
-            */}
-         {/* {
-          getCheckSummary.amount > 0 && (
-            <Suspense fallback={<div>Cargando...</div>} >
-              <CheckoutProvider stripe={stripePromise} options={{fetchClientSecret, elementsOptions: {appearance: {
-                theme: 'stripe',
-              },},}}>
-              <StripeForm getCheckSummary={getCheckSummary} />
-             </CheckoutProvider>
-            </Suspense>
-          )
-         } */}
           <Elements stripe={stripePromise}>
             <StripeForm getCheckSummary={getCheckSummary} stripeSecret={stripSecret} />
           </Elements>
