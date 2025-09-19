@@ -17,9 +17,18 @@ import currentDate from "@/utils/currentDate";
 import { FaCheck } from "react-icons/fa6";
 import { ImSpinner8 } from "react-icons/im";
 
-export default function NewProjectForm({projectID,projectAct}:{projectID?:string,projectAct?:()=>void}){
 
-  
+export default function NewProjectForm({
+    projectID,
+    projectAct,
+    machineId, 
+    machinetype     
+}:{
+    projectID?:string,
+    projectAct?:()=>void,
+    machineId?: string | null,  
+    machinetype?: string | null 
+}){
 
     const {  handlerFocus,
           register,
@@ -43,12 +52,12 @@ export default function NewProjectForm({projectID,projectAct}:{projectID?:string
           setTerrainType,
           onSubmit,
           setProject,
-          isValid } = useNewProjectForm({projectId:projectID || "", projectAct:projectAct || undefined});
-
-
-
-        
-         
+          isValid } = useNewProjectForm({
+              projectId: projectID || "", 
+              projectAct: projectAct || undefined,
+              machineId,      
+              machinetype   
+          });
 
           const dayValue = project.estimated_duration !== "NaN" ? `${project.estimated_duration}  ${project.estimated_duration === "1" ? "día" : "días" }` : "calculando..." ;
           const handlerGetTerrainType = (type:string) => {
@@ -281,7 +290,6 @@ export default function NewProjectForm({projectID,projectAct}:{projectID?:string
 
                       {
                         reserves_types.map(reserve_type=>{
-                         // console.log(project.has_reserve_space);
                           return(<label className="gap-1.5 flex items-center"  key={reserve_type}>{reserve_type}<input checked={project.has_reserve_space === reserve_type} className="appearance-none checked:bg-secondary border-3 rounded-full cursor-pointer border-white   ring-1   ring-secondary h-[18px] w-[18px] " name="has_reserve_space" onClick={() => setProject(prev => ({ ...prev, has_reserve_space: reserve_type }))} type="radio" value={reserve_type} /> </label>)
                         })
                       }

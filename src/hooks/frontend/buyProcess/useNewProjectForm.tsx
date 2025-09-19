@@ -44,28 +44,39 @@ const Schema = Yup.object({
 })
 
 const initialValues = {
-    end_date: "", // Fecha de fin de la obra
-    name: "", // Nombre del proyecto
-    location: "", // Ubicación de la obra
-    estimated_duration: "1", // Duración estimada
-    start_date: "", // Fecha de inicio de la obra
-    responsible_name: "", // Nombre del responsable
-    manager_phone: "", // Teléfono del encargado de obra
-    work_schedule: "", // Horario de trabajo
-    //site_manager: "", // 
-    work_type: "", // Tipo de trabajo
-    terrain_type: "", // Tipo de terreno
-    access_terrain_condition: "", // Condición de acceso al terreno
-    access_notes: "", // Notas de acceso
-    has_reserve_space: "",// tiene espacio de reserva
-    extra_requirements: "", // Requisitos adicionales
-    observations: "", // Observaciones
-    state: "planning", // Estado del proyecto
+    end_date: "", 
+    name: "",
+    location: "",
+    estimated_duration: "1",
+    start_date: "",
+    responsible_name: "",
+    manager_phone: "",
+    work_schedule: "", 
+    //site_manager: "", 
+    work_type: "",
+    terrain_type: "",
+    access_terrain_condition: "",
+    access_notes: "",
+    has_reserve_space: "",
+    extra_requirements: "",
+    observations: "", 
+    state: "planning",
     resguardo_files: [],
     machinery_type: ""
   }
 
-export default function useNewProjectForm({projectId,projectAct}:{projectId?:string,projectAct?:()=>void}) {
+
+export default function useNewProjectForm({
+    projectId,
+    projectAct,
+    machineId,      
+    machinetype     
+}:{
+    projectId?:string,
+    projectAct?:()=>void,
+    machineId?: string | null,    
+    machinetype?: string | null   
+}) {
 const {
     register,
     handleSubmit,
@@ -114,8 +125,7 @@ const {
     const convertFileToBase64 = (file: File) => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          //console.log(file);
-          //remove data:image/png;base64, del  string
+        
           const base64String = reader.result as string;
           const content_base64 = base64String.replace(/^data:image\/[a-zA-Z]+;base64,/, "");
         const createImage ={
@@ -123,7 +133,7 @@ const {
             content_base64: content_base64 as string,
             mimetype: file.type
         }
-        //console.log(createImage);
+   
 
         //si el archivo pesa menos de 5MB
         if (file.size < 5 * 1024 * 1024 && file.type.startsWith("image/")) {
@@ -137,7 +147,6 @@ const {
     };
   
   const formValues = watch();
-
 
   const handlerWorkSchedule = (startDate:any, endDate:any) => {
     const dayLength = countDays(startDate, endDate) + 1;
@@ -206,8 +215,7 @@ const {
         }else{
           const { name, responsible_name, start_date, end_date, estimated_duration, work_schedule, location, resguardo_files } = data;
           
-          // startDate chance order yyyy-mm-dd to dd-mm-yyyy
-          
+   
           const formattedStartDate = reverseChangeDateFormat(start_date);
           const formattedEndDate = reverseChangeDateFormat(end_date);
 
@@ -266,7 +274,6 @@ const {
     }
   },[project.end_date])
 
-
   useEffect(()=>{
     if(project.location !==''){
       clearErrors("location");
@@ -298,11 +305,11 @@ useEffect(() => {
           }
       }, [session.status,project.start_date, project.end_date]);
 
-
   useEffect(()=>{
     setValue("terrain_type", terrainType.join(", "));
     setProject(prev => ({ ...prev, terrain_type: terrainType.join(", ") }));
   },[terrainType])
+  
   const onSubmit = (data:any) => {
         console.log(data);
         setSending(true);
@@ -355,6 +362,23 @@ useEffect(() => {
               if(res.message =="Proyecto creado correctamente"){
                 console.log(res);
                 toastSuccess(res.message);
+                
+                // AGREGADO - Nueva lógica de redirección
+                setTimeout(() => {
+                    if (typeof window !== 'undefined') {
+                        // Caso 1: Si tenemos machineId y machinetype (viene de una máquina específica)
+                        if (machineId && machinetype) {
+                            router.push(`/${machineId}?projectId=${res.project_id}`);
+                        }
+                        // Caso 2: Fallback al comportamiento original
+                        else {
+                            const currentPath = window.location.pathname;
+                            const machineBasePath = currentPath.replace('/nuevo-proyecto', '');
+                            router.push(`${machineBasePath}?projectId=${res.project_id}`);
+                        }
+                    }
+                }, 1500);
+                
                 //limpiamos el formulario
                 setProject(initialValues);
                 setTerrainType([]);
@@ -412,5 +436,3 @@ useEffect(() => {
           isValid
       };
 }
-
-

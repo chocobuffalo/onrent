@@ -1,7 +1,10 @@
+"use client";
+import OrdersTable from "@/components/organism/OrdersTable/OrdersTable"
+
 export default function Orders() {
   return (
     <div>
-      <h1>No tiene Ordenes</h1>
+      <OrdersTable />
     </div>
-  )
+  );
 }

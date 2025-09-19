@@ -77,7 +77,7 @@ export default function useLogin() {
     toastSuccess(`¡Bienvenido a OnRentX, ${userName}! Acceso concedido correctamente.`);
 
     setTimeout(() => {
-      window.location.href = "/dashboard";
+      window.location.href = "/dashboard/profile";
     }, 1000);
   };
 

@@ -40,13 +40,6 @@ export const dashboardRoutes: SidebarMenuProps[] = [
    * SECCIÓN COMÚN - Accesible para cliente, proveedor y cliente_proveedor
    * Estas son funcionalidades básicas que todos los usuarios necesitan
    * -------------------------------------------------- */
-
-    {
-    link: "/dashboard",
-    title: "Dashboard",
-    icon: DashboardIcon,
-roles: ["cliente", "cliente_proveedor"],
-  },
   {
     link: "/dashboard/profile",
     title: "Perfil",

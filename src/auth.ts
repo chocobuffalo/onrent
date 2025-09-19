@@ -26,7 +26,7 @@ export const authOptions: AuthConfig = {
     maxAge: 24 * 60 * 60 * 6,
   },
   pages: {
-    signIn: "/dashboard",
+    signIn: "/dashboard/profile",
     newUser: "/dashboard/profile",
     error: "/iniciar-session", // Error code passed in query string as ?error=ç
     signOut: "/",

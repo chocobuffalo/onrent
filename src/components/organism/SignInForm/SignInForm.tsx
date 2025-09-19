@@ -19,7 +19,7 @@ export default function SignInForm() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/dashboard");
+      router.replace("/dashboard/profile");
     }
   }, [status, router]);
 

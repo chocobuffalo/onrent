@@ -1,16 +1,15 @@
 'use client';
 
 import { CheckoutWithLogicProps } from '@/types/checkout';
-import {CheckoutProvider} from '@stripe/react-stripe-js/checkout';
 import BackButton from '@/components/atoms/BackButton/BackButton';
 import ProjectInfoTable from '@/components/molecule/ProjectInfoTable/ProjectInfoTable';
-import PaymentForm from '@/components/molecule/PaymentForm/PaymentForm';
 import CheckoutSummary from '@/components/molecule/CheckoutSummary/CheckoutSummary';
 import { Suspense, use, useEffect, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import StripeForm from '@/components/molecule/stripeForm/stripeForm';
 import { useSession } from 'next-auth/react';
 import { Elements } from '@stripe/react-stripe-js';
+import { useToast } from '@/hooks/frontend/ui/useToast';
 
 export interface CheckoutSummaryProps {
    amount: number;
@@ -21,6 +20,8 @@ export interface CheckoutSummaryProps {
         method: 'card',
         url:string
 }
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function Checkout({
   order,
@@ -33,6 +34,8 @@ export default function Checkout({
   onSubmit,
 }: CheckoutWithLogicProps) {
   const [loading, setLoading] = useState(false);
+  const { toastError } = useToast();
+  
   console.log(order,'order in checkout')
   const {project_name, project_responsible, project_location, client_notes,items,preorder_id,session_id} = order || {};
     const {data:session} = useSession(); 
@@ -61,35 +64,102 @@ export default function Checkout({
     url:process.env.NEXT_PUBLIC_SITE_URL || ''
     
   });
-  const [stripePromise, setStripePromise] = useState(() => loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!));
-  const [stripSecret, setStripSecret] = useState('');
+  
+  const [clientSecret, setClientSecret] = useState('');
  
 
 const fetchClientSecret = async () => {
-  // get
-  console.log(getCheckSummary, 'fetchClientSecret called');
+  try {
+    console.log(getCheckSummary, 'fetchClientSecret called');
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/stripe/create-intent`, {
-    method: 'POST',
-    body: JSON.stringify(getCheckSummary),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${session?.user?.access_token}`
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/stripe/create-intent`, {
+      method: 'POST',
+      body: JSON.stringify(getCheckSummary),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.user?.access_token}`
+      }
+    });
+    
+    const json = await response.json();
+
+    
+    // Verificar si hay error de región/ubicación
+    if (!response.ok) {
+      const errorMessage = json.error || json.message || json.detail || '';
+      
+      if (errorMessage.includes('región') || 
+          errorMessage.includes('region') || 
+          errorMessage.includes('ubicacion') || 
+          errorMessage.includes('ubicación') ||
+          errorMessage.includes('cobertura') ||
+          errorMessage.includes('coverage') ||
+          errorMessage.includes('determinar') ||
+          errorMessage.includes('calcular precios') ||
+          response.status === 422) {
+        toastError("La región está fuera de cobertura. Por favor, intente con otra ubicación.");
+        return;
+      }
+      // Otros errores
+      toastError(`Error al procesar la solicitud: ${errorMessage}`);
+      return;
     }
-  });
-  //console.log(await response.json());
-  const json = await response.json();
-  setStripSecret(json.client_secret);
-  return json.client_secret;
+    
+    setClientSecret(json.client_secret);
+    return json.client_secret;
+  } catch (error) {
+    console.error('Error in fetchClientSecret:', error);
+  }
 };
 
-
 useEffect(() => {
-  fetchClientSecret()
-},[
-  getCheckSummary, session
-]) 
+  console.log('useEffect triggered');
+  console.log('session?.user?.access_token:', session?.user?.access_token);
+  console.log('getCheckSummary.amount:', getCheckSummary.amount);
+  console.log('session:', session);
+  console.log('getCheckSummary:', getCheckSummary);
+  
+  // Ejecutar si hay access_token, independientemente del amount
+  // porque el backend puede devolver error de región incluso con amount 0
+  if (session?.user?.access_token) {
+    console.log('Conditions met, calling fetchClientSecret');
+    fetchClientSecret()
+  } else {
+    console.log('Conditions NOT met for fetchClientSecret - no access_token');
+  }
+},[getCheckSummary, session]) 
 
+  // Opciones para Elements
+  const options = {
+    clientSecret,
+    appearance: {
+      theme: 'stripe' as const,
+      variables: {
+        colorPrimary: '#f97316',
+        colorBackground: '#ffffff',
+        colorText: '#374151',
+        colorDanger: '#ef4444',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        spacingUnit: '4px',
+        borderRadius: '8px',
+      },
+      rules: {
+        '.Input': {
+          borderColor: '#d1d5db',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        },
+        '.Input:focus': {
+          borderColor: '#f97316',
+          boxShadow: '0 0 0 3px rgba(249, 115, 22, 0.1)',
+        },
+        '.Label': {
+          fontWeight: '500',
+          marginBottom: '8px',
+        }
+      }
+    },
+    loader: 'auto' as const,
+  };
   
   return typeof window !== 'undefined' && (
     <div className="min-h-screen bg-gray-50">
@@ -101,10 +171,18 @@ useEffect(() => {
             <ProjectInfoTable project_name={project_name} responsible_name={project_responsible} project_location={project_location} />
            
             <CheckoutSummary items={items} setGetCheckSummary={setGetCheckSummary} preorder_id={preorder_id} url={getCheckSummary.url} session_id={session_id} />
-            {/*stripe here*/ }
-          <Elements stripe={stripePromise}>
-            <StripeForm getCheckSummary={getCheckSummary} stripeSecret={stripSecret} />
-          </Elements>
+            
+            {/*stripe here - Solo mostrar si tenemos clientSecret*/ }
+            {clientSecret ? (
+              <Elements stripe={stripePromise} options={options}>
+                <StripeForm getCheckSummary={getCheckSummary} stripeSecret={clientSecret} />
+              </Elements>
+            ) : (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                <span className="ml-2 text-gray-600">Cargando formulario de pago...</span>
+              </div>
+            )}
 
           </div>
         </div>
