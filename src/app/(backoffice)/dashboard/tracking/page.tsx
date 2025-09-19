@@ -1,41 +1,77 @@
 "use client";
 
 import { useState } from "react";
-import TrackingMap, { DeviceLocation } from "@/components/molecule/TrackingMap/TrackingMap";
+import OperatorMap from "@/components/organism/OperatorMap";
+import { useSession } from "next-auth/react"; // Correct import for useSession
 
-/**
- * Página que muestra el mapa de tracking para:
- * - Cliente: ver ubicación de su renta
- * - Proveedor: ver ubicación de su flota
- * - Operador: navegar hacia destino
- */
-export default function TrackingPage() {
-  // Posición inicial simulada del operador (centro CDMX)
-  const [operatorPosition] = useState<DeviceLocation>({
-    id: "operator-1",
-    lat: 19.4326,
-    lng: -99.1332,
-  });
-
-  // Destino fijo (obra) – se puede cambiar dinámicamente en producción
-  const [destination] = useState<{ lat: number; lng: number }>({
-    lat: 19.427,
-    lng: -99.167,
-  });
-
-  // Flota de maquinaria ejemplo (otros operadores/vehículos)
-  const [fleet] = useState<DeviceLocation[]>([
-    { id: "machine-1", lat: 19.436, lng: -99.14 },
-    { id: "machine-2", lat: 19.43, lng: -99.12 },
-  ]);
-
-  return (
-    <div className="w-full h-[600px]">
-      <TrackingMap
-        operatorPosition={operatorPosition}
-        initialDestination={destination}
-        fleet={fleet}
-      />
-    </div>
-  );
+interface LatLng {
+  lat: number;
+  lng: number;
 }
+
+interface RouteStep {
+  lat: number;
+  lng: number;
+}
+
+interface SearchResult {
+  Place: {
+    Label: string;
+    Geometry: { Point: [number, number] }; // [lng, lat]
+  };
+}
+
+const TrackingPage = () => {
+  const { data: session, status } = useSession();
+  const userRole = session?.user?.role; // Access the role from the session
+
+  const [currentLocation, setCurrentLocation] = useState<LatLng | null>(null);
+  const [destination, setDestination] = useState<LatLng | null>(null);
+  const [destinationAddress, setDestinationAddress] = useState<string>("");
+  const [route, setRoute] = useState<RouteStep[]>([]);
+  const [isNavigating, setIsNavigating] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // Placeholder deviceId - in a real app, this would come from user session/machine assignment
+  const deviceId = "operator-machine-123";
+
+  if (status === "loading") {
+    return <div className="container mx-auto p-4">Cargando sesión...</div>;
+  }
+
+  if (userRole === "proveedor") {
+    return (
+      <OperatorMap
+        currentLocation={currentLocation}
+        setCurrentLocation={setCurrentLocation}
+        destination={destination}
+        setDestination={setDestination}
+        destinationAddress={destinationAddress}
+        setDestinationAddress={setDestinationAddress}
+        route={route}
+        setRoute={setRoute}
+        isNavigating={isNavigating}
+        setIsNavigating={setIsNavigating}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        searchResults={searchResults}
+        setSearchResults={setSearchResults}
+        loading={loading}
+        setLoading={setLoading}
+        deviceId={deviceId}
+        session={session} // Pass the session object
+      />
+    );
+  } else {
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Seguimiento de Flota</h1>
+        <p>No tienes permisos para ver esta página.</p>
+      </div>
+    );
+  }
+};
+
+export default TrackingPage;

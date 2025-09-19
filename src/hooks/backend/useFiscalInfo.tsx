@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 "use client";
 //mport { useUIAppDispatch } from "@/libs/redux/hooks";
 import { useEffect, useState } from "react";

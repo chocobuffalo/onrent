@@ -1,6 +1,7 @@
 export interface AuthStateInterface {
     isLogin: boolean;
     profile: {
+        odoo_partner_id: any;
         name: string;
         email: string;
         avatarUrl: string;

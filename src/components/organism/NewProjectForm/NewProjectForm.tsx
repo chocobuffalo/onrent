@@ -282,7 +282,19 @@ export default function NewProjectForm({projectID,projectAct}:{projectID?:string
                       {
                         reserves_types.map(reserve_type=>{
                          // console.log(project.has_reserve_space);
-                          return(<label className="gap-1.5 flex items-center"  key={reserve_type}>{reserve_type}<input checked={project.has_reserve_space === reserve_type} className="appearance-none checked:bg-secondary border-3 rounded-full cursor-pointer border-white   ring-1   ring-secondary h-[18px] w-[18px] " name="has_reserve_space" onClick={() => setProject(prev => ({ ...prev, has_reserve_space: reserve_type }))} type="radio" value={reserve_type} /> </label>)
+                          return(
+                            <label className="gap-1.5 flex items-center" key={reserve_type}>
+                              {reserve_type}
+                              <input
+                                checked={project.has_reserve_space === reserve_type}
+                                className="appearance-none checked:bg-secondary border-3 rounded-full cursor-pointer border-white   ring-1   ring-secondary h-[18px] w-[18px] "
+                                name="has_reserve_space"
+                                type="radio"
+                                value={reserve_type}
+                                onChange={() => setProject(prev => ({ ...prev, has_reserve_space: reserve_type }))}
+                              />
+                            </label>
+                          )
                         })
                       }
                       </fieldset>
