@@ -8,7 +8,7 @@ export function useOrderLocation(orderId: string | number, pollingInterval = 100
 
   useEffect(() => {
     if (!orderId) return;
-    let intervalId;
+  let intervalId;
     const fetchLocation = async () => {
       setLoading(true);
       try {
