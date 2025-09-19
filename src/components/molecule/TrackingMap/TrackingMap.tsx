@@ -1,19 +1,25 @@
 "use client";
 
+
 import { useTrackingMap } from "@/hooks/backend/useTrackingMap";
 
-// Tipado de la posición de un dispositivo / maquinaria
+// Tipado extendido para la flota
 export interface DeviceLocation {
-  id: string;       // Identificador único del dispositivo/operador
-  lat: number;      // Latitud
-  lng: number;      // Longitud
+  id: string;
+  lat: number;
+  lng: number;
 }
 
-// Props del componente
+export interface FleetMapLocation extends DeviceLocation {
+  name?: string;
+  machine_category?: string;
+  status?: string;
+}
+
 interface TrackingMapProps {
-  operatorPosition?: DeviceLocation | null;      // Posición inicial del operador (azul)
-  initialDestination?: { lat: number; lng: number } | null; // Destino de la ruta (rojo)
-  fleet?: DeviceLocation[];                     // Otros vehículos / maquinaria (verde)
+  operatorPosition?: DeviceLocation | null;
+  initialDestination?: { lat: number; lng: number } | null;
+  fleet?: FleetMapLocation[];
 }
 
 /**

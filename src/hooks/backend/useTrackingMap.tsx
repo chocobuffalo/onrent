@@ -1,16 +1,15 @@
+// ...existing code...
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { DeviceLocation } from "@/components/molecule/TrackingMap/TrackingMap";
+import { DeviceLocation, FleetMapLocation } from "@/components/molecule/TrackingMap/TrackingMap";
 
-/**
- * Props del hook
- */
+// Props del hook
 interface UseTrackingMapProps {
-  operatorPosition?: DeviceLocation | null; // Posición inicial del operador
-  initialDestination?: { lat: number; lng: number } | null; // Destino de la ruta
-  fleet?: DeviceLocation[]; // Otros vehículos / maquinaria
-  simulationSpeed?: number; // Tiempo en milisegundos entre pasos de simulación
+  operatorPosition?: DeviceLocation | null;
+  initialDestination?: { lat: number; lng: number } | null;
+  fleet?: FleetMapLocation[];
+  simulationSpeed?: number;
 }
 
 export function useTrackingMap({
@@ -26,9 +25,9 @@ export function useTrackingMap({
   const routeLineRef = useRef<any>(null); // Línea de la ruta
   const [mapLoaded, setMapLoaded] = useState(false); // Indica si el mapa cargó
 
-  /**
-   * Carga MapLibre GL dinámicamente
-   */
+  // ...existing code...
+
+  // Carga MapLibre GL dinámicamente
   const loadMapLibre = useCallback(() => {
     return new Promise<void>((resolve, reject) => {
       if (window.maplibregl) { resolve(); return; }
@@ -56,14 +55,56 @@ export function useTrackingMap({
    * @param color Color del marcador
    * @returns El objeto Marker
    */
-  const addMarker = useCallback((lat: number, lng: number, color: string = "blue") => {
+  // Crea un marcador con popup personalizado y color según estado
+  const addMarker = useCallback((machine: FleetMapLocation, color: string = "green") => {
     if (!mapRef.current || !window.maplibregl) return;
-    const marker = new window.maplibregl.Marker({ color })
-      .setLngLat([lng, lat])
-      .addTo(mapRef.current);
+    // Personaliza el color según el estado
+    let markerColor = color;
+    if (machine.status === "inactivo" || machine.status === "inactive") markerColor = "gray";
+    if (machine.status === "en_mantenimiento" || machine.status === "maintenance") markerColor = "orange";
+    if (machine.status === "activo" || machine.status === "active") markerColor = "green";
+
+    const marker = new window.maplibregl.Marker({ color: markerColor })
+      .setLngLat([machine.lng, machine.lat]);
+
+    // Popup con información
+    const popupHtml = `
+      <div style='min-width:140px'>
+        <strong>${machine.name || "Maquinaria"}</strong><br/>
+        <span>Tipo: ${machine.machine_category || "-"}</span><br/>
+        <span>Estado: ${machine.status || "-"}</span>
+      </div>
+    `;
+    const popup = new window.maplibregl.Popup({ offset: 25 }).setHTML(popupHtml);
+    marker.setPopup(popup);
+
+    marker.addTo(mapRef.current);
     markersRef.current.push(marker);
     return marker;
   }, []);
+
+  // Efecto para actualizar marcadores de la flota dinámicamente
+  useEffect(() => {
+    if (!mapLoaded || !mapRef.current) return;
+    // Elimina marcadores previos de la flota
+    markersRef.current.forEach(m => m.remove());
+    markersRef.current = [];
+    // Agrega nuevos marcadores de la flota
+    if (fleet && fleet.length > 0) {
+      fleet.forEach(machine => addMarker(machine));
+    }
+  }, [fleet, mapLoaded, addMarker]);
+  // Efecto para actualizar marcadores de la flota dinámicamente
+  useEffect(() => {
+    if (!mapLoaded || !mapRef.current) return;
+    // Elimina marcadores previos de la flota
+    markersRef.current.forEach(m => m.remove());
+    markersRef.current = [];
+    // Agrega nuevos marcadores de la flota
+    if (fleet && fleet.length > 0) {
+      fleet.forEach(machine => addMarker(machine));
+    }
+  }, [fleet, mapLoaded, addMarker]);
 
   /**
    * Dibuja la ruta entre origen y destino usando la API de route
@@ -151,15 +192,29 @@ export function useTrackingMap({
 
         // Marcador del operador (azul)
         if (operatorPosition) {
-          operatorMarkerRef.current = addMarker(operatorPosition.lat, operatorPosition.lng, "blue");
+          operatorMarkerRef.current = addMarker({
+            id: operatorPosition.id || "operator",
+            lat: operatorPosition.lat,
+            lng: operatorPosition.lng,
+            name: "Operador",
+            machine_category: "operador",
+            status: "operando"
+          }, "blue");
         }
 
         // Marcador del destino (rojo)
-        if (initialDestination) addMarker(initialDestination.lat, initialDestination.lng, "red");
+        if (initialDestination) addMarker({
+          id: "destino",
+          lat: initialDestination.lat,
+          lng: initialDestination.lng,
+          name: "Destino",
+          machine_category: "destino",
+          status: "objetivo"
+        }, "red");
 
         // Marcadores de la flota (verde)
         if (fleet && fleet.length > 0) {
-          fleet.forEach(machine => addMarker(machine.lat, machine.lng, "green"));
+          fleet.forEach(machine => addMarker(machine));
         }
 
         // Dibuja la ruta y simula movimiento del operador
