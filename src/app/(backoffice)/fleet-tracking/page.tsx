@@ -1,19 +1,39 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
+import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Fix for Leaflet default icon issues
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => {
+    // Fix for Leaflet default icon issues - only run on client
+    if (typeof window !== 'undefined' && mod.Marker) {
+      const L = require('leaflet');
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      });
+    }
+    return mod.MapContainer;
+  }),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+const Popup = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Popup),
+  { ssr: false }
+);
 
 interface LatLng {
   lat: number;
@@ -30,10 +50,15 @@ const ProviderFleetTrackingPage = () => {
   const [machineLocations, setMachineLocations] = useState<MachineLocation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const trackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   // Placeholder for provider's active deviceIds
   // In a real app, this would come from a backend API call specific to the provider
   const providerDeviceIds = useRef<string[]>(["operator-machine-123", "machine-456", "operator-789"]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchAllMachineLocations = useCallback(async () => {
     setLoading(true);
@@ -79,7 +104,7 @@ const ProviderFleetTrackingPage = () => {
       {loading && <p>Cargando ubicaciones de la flota...</p>}
 
       <div style={{ height: "600px", width: "100%", borderRadius: "0.5rem" }}>
-        {mapCenter ? (
+        {mounted && mapCenter ? (
           <MapContainer
             center={[mapCenter.lat, mapCenter.lng]}
             zoom={10}

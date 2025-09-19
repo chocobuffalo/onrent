@@ -1,19 +1,35 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
-import L from "leaflet";
+import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useMap } from "react-leaflet";
 
-// Fix for Leaflet default icon issues
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => {
+    // Fix for Leaflet default icon issues - applied in a useEffect hook
+    return mod.MapContainer;
+  }),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+const Popup = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Popup),
+  { ssr: false }
+);
+const Polyline = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Polyline),
+  { ssr: false }
+);
 
 interface LatLng {
   lat: number;
@@ -42,9 +58,29 @@ const OperatorNavigationPage = () => {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const trackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   // Placeholder deviceId - in a real app, this would come from user session/machine assignment
   const deviceId = "operator-machine-123"; 
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Leaflet icon fix for client-side rendering
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('leaflet').then((LModule) => {
+        const L = LModule.default || LModule; // Handle commonjs vs esm import
+        delete (L.Icon.Default.prototype as any)._getIconUrl;
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.xpng",
+          iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+          shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        });
+      }).catch(error => console.error("Error loading Leaflet for icon fix:", error));
+    }
+  }, []); // Run once on mount
 
   // Get current GPS location
   const getCurrentLocation = useCallback(() => {
@@ -60,7 +96,7 @@ const OperatorNavigationPage = () => {
           console.error("Error getting current location:", error);
           toast.error("No se pudo obtener la ubicación actual.");
         },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     } else {
       toast.error("Geolocalización no soportada por este navegador.");
@@ -76,8 +112,11 @@ const OperatorNavigationPage = () => {
           lng: position.coords.longitude,
         });
       },
-      (error) => console.error("Error watching location:", error),
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      (error) => {
+        console.error("Error watching location:", error);
+        toast.error(`Error al observar la ubicación: ${error.message || error.code || JSON.stringify(error)}`);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
 
     return () => {
@@ -280,7 +319,7 @@ const OperatorNavigationPage = () => {
       </div>
 
       <div style={{ height: "600px", width: "100%", borderRadius: "0.5rem" }}>
-        {currentLocation ? (
+        {mounted && currentLocation ? (
           <MapContainer
             center={[currentLocation.lat, currentLocation.lng]}
             zoom={13}
