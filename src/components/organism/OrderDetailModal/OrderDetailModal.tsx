@@ -18,8 +18,7 @@ export default function OrderDetailModal({
   orderNumber,
   onClose 
 }: OrderDetailModalProps) {
-  if (!isOpen || !orderDetail) return null;
-
+  // Mover el useEffect ANTES del early return
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -31,6 +30,9 @@ export default function OrderDetailModal({
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
+
+  // Ahora el early return después de todos los hooks
+  if (!isOpen || !orderDetail) return null;
 
   const formatState = (state: string) => {
     const stateMap: { [key: string]: string } = {
@@ -106,7 +108,7 @@ export default function OrderDetailModal({
           {/* Información del Cliente */}
           <div className="order-detail-modal__section">
             <h3 className="order-detail-modal__section-title">
-              Información del Cliente
+              Información de la maquinaria
             </h3>
             <div className="order-detail-modal__client-info">
               <div className="order-detail-modal__client-info-grid">
@@ -154,7 +156,7 @@ export default function OrderDetailModal({
                       ${orderDetail.rental_total?.toLocaleString() || "0"}
                     </td>
                     <td>
-                      ${orderDetail.rental_total?.toLocaleString() || "0"}
+                      ${orderDetail.total_final?.toLocaleString() || "0"}
                     </td>
                   </tr>
                 </tbody>
