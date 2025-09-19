@@ -120,7 +120,7 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
               </span>
             </div>
             <span className="text-gray-900 text-base  font-medium lato-font">
-              {(item.price * item.quantity).toLocaleString('es-ES')}$/MXN
+              {(item.price).toLocaleString('es-ES')}$/MXN
             </span>
           </div>
         ))}

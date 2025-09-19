@@ -9,14 +9,14 @@ export interface OperatorLocation {
   status?: string;
 }
 
-export function useActiveOperators(token: string, pollingInterval = 10000) {
+export const useActiveOperators = (token: string, pollingInterval = 10000) => {
   const [operators, setOperators] = useState<OperatorLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) return;
-    let intervalId: NodeJS.Timeout;
+    
     const fetchOperators = async () => {
       setLoading(true);
       try {
@@ -44,10 +44,12 @@ export function useActiveOperators(token: string, pollingInterval = 10000) {
         setLoading(false);
       }
     };
+
     fetchOperators();
-    intervalId = setInterval(fetchOperators, pollingInterval);
+    const intervalId = setInterval(fetchOperators, pollingInterval);
+    
     return () => clearInterval(intervalId);
   }, [token, pollingInterval]);
 
   return { operators, loading, error };
-}
+};

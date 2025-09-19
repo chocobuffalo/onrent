@@ -55,85 +55,82 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
 
   } = useMachineDetail(machine.id, projectId);
 
-  
-
   const [workImagePreview, setWorkImagePreview] = useState<string | null>(null);
+  const [isManualMode, setIsManualMode] = useState(false);
+  
   const {project, projects, loadingProject, openProjects,setLoadingProject, setOpenProjects,setSelectedProject} = useGetProject({projectName});
 
-console.log(project,'project')
+  console.log(project,'project')
 
+  const currentMachine = machineData || machine;
 
+  const imageUrl = currentMachine.image
+    ? getImageUrl(currentMachine.image)
+    : "/images/catalogue/machine5.jpg";
 
-const currentMachine = machineData || machine;
+  const onMapLocationSelect = (locationData: LocationData) => {
+    handleLocationSelect(locationData);
+  };
 
-const imageUrl = currentMachine.image
-  ? getImageUrl(currentMachine.image)
-  : "/images/catalogue/machine5.jpg";
+  const handleImageChangeLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageChange(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setWorkImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-const onMapLocationSelect = (locationData: LocationData) => {
-  handleLocationSelect(locationData);
-};
+  const clearImage = () => {
+    clearWorkImage();
+    setWorkImagePreview(null);
+    const input = document.getElementById('work-image') as HTMLInputElement;
+    if (input) {
+      input.value = '';
+    }
+  };
 
-const handleImageChangeLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    handleImageChange(file);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setWorkImagePreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+  const handlerProjectSelect = (value:any) => {
+    setProjectName(value); 
+    setOpenProjects(false);
+    setSelectedProject(value);
   }
-};
 
-const clearImage = () => {
-  clearWorkImage();
-  setWorkImagePreview(null);
-  const input = document.getElementById('work-image') as HTMLInputElement;
-  if (input) {
-    input.value = '';
-  }
-};
+  
+  useEffect(()=>{
+    if(project){
+      setProjectId(project.id.toString());
+    }
+  },[project]);
 
-const handlerProjectSelect = (value:any) => {
-  setProjectName(value); 
-  setOpenProjects(false);
-  setSelectedProject(value);
-}
-
-// Move useEffect before any early return
-useEffect(()=>{
-  if(project){
-    setProjectId(project.id.toString());
-  }
-},[project]);
-
-if (loading) {
-  return (
-    <div className="flex justify-center items-center min-h-[400px]">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
-    </div>
-  );
-}
-
-if (error && !error.includes('ubicación')) {
-  return (
-    <div className="flex justify-center items-center min-h-[400px]">
-      <div className="text-center">
-        <p className="text-red-600 mb-4">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-        >
-          Reintentar
-        </button>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
+  if (error && !error.includes('ubicación')) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-return (
+  return (
     <section className="machine-detail py-5 px-4">
       <div className="container mx-auto lg:flex gap-4">
         <div className="lg:w-2/3">
@@ -299,6 +296,7 @@ return (
                   className="shadow-sm border-gray-200"
                 />
               </div> 
+
               {/* Estado de la ubicación */}
               {selectedLocation ? (
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -375,45 +373,76 @@ return (
                 </div>
               )}
 
-       {/* Nombre para la dirección */}
+              {/* Nombre del proyecto con toggle manual/búsqueda */}
               <div>
-               <div className="relative">
-                 <label className="block text-sm font-medium mb-2 text-gray-700">
-                  Nombre del proyecto
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Nombre del proyecto
+                  </label>
+                  {!projectId && ( 
+                    <button
+                      type="button"
+                      onClick={() => setIsManualMode(!isManualMode)}
+                      className="text-xs text-orange-600 hover:text-orange-800"
+                    >
+                      {isManualMode ? 'Buscar proyecto existente' : 'Escribir manualmente'}
+                    </button>
+                  )}
+                </div>
+                
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    onClick={() => {
+                      if (!isManualMode && !projectId) {
+                        setOpenProjects(true);
+                      }
+                    }}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder={
+                      isManualMode || projectId 
+                        ? "Ej: Obra Residencial Sur, Proyecto Plaza Central, etc."
+                        : "Buscar proyecto existente o escribir manualmente"
+                    }
+                  />
+                  
+                  {/* Solo mostrar dropdown si NO está en modo manual y NO hay projectId */}
+                  {!isManualMode && !projectId && (
+                    <DropdownList 
+                      open={openProjects} 
+                      options={projects || []} 
+                      handlerChange={handlerProjectSelect} 
+                      isLoading={loadingProject} 
+                    />
+                  )}
+                </div>
+                
+                <p className="text-xs text-gray-500 mt-1">
+                  {isManualMode || projectId 
+                    ? 'Nombre del proyecto de la obra'
+                    : 'Busca un proyecto existente o cambia a modo manual'
+                  }
+                </p>
+              </div>
+
+              {/* Nombre del responsable */}
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  Nombre del responsable
                 </label>
                 <input
                   type="text"
-                  value={projectName}
-                  onChange={(e) =>{ 
-                    setProjectName(e.target.value)}
-                  }
-                  onClick={() => setOpenProjects(true)}
+                  value={responsibleName}
+                  onChange={(e) => setResponsibleName(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Ej: Obra Residencial Sur, Proyecto Plaza Central, etc."
+                  placeholder="Ej: Juan Pérez, María González, etc."
                 />
-                <DropdownList open={openProjects} options={projects || []} handlerChange={handlerProjectSelect} isLoading={loadingProject} />
-               </div>
-                
                 <p className="text-xs text-gray-500 mt-1">
-                 Nombre del proyecto de la obra
+                  Persona responsable de la obra o proyecto.
                 </p>
               </div>
-              {/* Nombre del responsable - NUEVO CAMPO */}
-<div>
-  <label className="block text-sm font-medium mb-2 text-gray-700">
-    Nombre del responsable
-  </label>
-  <input
-    type="text"
-    value={responsibleName}
-    onChange={(e) =>{ setResponsibleName(e.target.value)}}
-    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-    placeholder="Ej: Juan Pérez, María González, etc."
-  />
-  <p className="text-xs text-gray-500 mt-1">
-    Persona responsable de la obra o proyecto.
-  </p>
-</div>
 
               {/* Imagen de la obra */}
               {!projectId && (
@@ -473,7 +502,8 @@ return (
               )}
             </div>
           </div>
-        {/* Formulario de reserva */}
+
+          {/* Formulario de reserva */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <BookingForm
               machine={currentMachine}
@@ -505,7 +535,7 @@ return (
           </div>
         </div>
 
-      </div>  {/* Cerrar container mx-auto lg:flex gap-4 */}
+      </div>
     </section>
   );
 }

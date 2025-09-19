@@ -15,6 +15,7 @@ export const initialAuth: AuthStateInterface = {
     userID: "",
     token: "",
     phone: "",
+    odoo_partner_id: "", // Add missing property
     profileInfo:{
           constancia_pdf:"",
           direccion_fiscal:"",
@@ -60,6 +61,9 @@ const authSlicer = createSlice({
     },
     setPhone: (state, action) => {
       state.profile.phone = action.payload;
+    },
+    setOdooPartnerId: (state, action) => {
+      state.profile.odoo_partner_id = action.payload;
     },
 
     setProfileInfo: (state, action) => {
@@ -127,6 +131,7 @@ export const {
   setRole,
   setPhone,
   setUserID,
+  setOdooPartnerId,
   setProfileInfo,
   setConstanciaPDF,
   setDireccionFiscal,

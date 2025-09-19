@@ -1,4 +1,5 @@
 // src/auth.ts
+
 import NextAuth from "next-auth";
 import { AuthConfig } from "@auth/core/types";
 import { providers } from "./auth/auth.provider";
@@ -26,8 +27,8 @@ export const authOptions: AuthConfig = {
     maxAge: 24 * 60 * 60 * 6,
   },
   pages: {
-    signIn: "/dashboard",
-    newUser: "/dashboard/profile",
+    signIn: "//iniciar-session",
+    newUser: "/iniciar-session",
     error: "/iniciar-session", // Error code passed in query string as ?error=ç
     signOut: "/",
     

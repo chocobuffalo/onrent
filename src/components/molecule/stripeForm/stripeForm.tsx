@@ -1,8 +1,5 @@
-
-import {useCheckout, PaymentElement} from '@stripe/react-stripe-js/checkout';
-
 import React, { useState } from "react";
-import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/hooks/frontend/ui/useToast';
 import { redirect } from 'next/navigation';
@@ -12,87 +9,122 @@ const StripeForm = ({getCheckSummary,stripeSecret}:{getCheckSummary:{amount:numb
     console.log('stripeSecret in StripeForm:', stripeSecret);
 
     const { toastSuccess,toastError } = useToast();
+    const stripe = useStripe();
+    const elements = useElements();
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+    const {data:session} = useSession(); 
+    console.log(session?.user)
 
-   const stripe = useStripe();
-  const elements = useElements();
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-   const {data:session} = useSession(); 
-      console.log(session?.user)
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setMessage("Procesando pago...");
 
-  const fetchClientSecret = async () => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/stripe/create-intent`, {
-    method: 'POST',
-    credentials: 'omit',
-    body: JSON.stringify(getCheckSummary),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${session?.user?.access_token}`
-    }
-  });
-  const json = await response.json();
-  return json.client_secret; // 🔹 devolvemos solo el string
-};
-  const handleSubmit = async (e:any) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("Creando intento de pago...");
+        if (!stripe || !elements) {
+            setMessage("Stripe.js no está cargado todavía.");
+            setLoading(false);
+            return;
+        }
 
-    // 1️⃣ Llamar a tu backend para crear el PaymentIntent
-    
+        try {
+            const { error, paymentIntent } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/thank-you`,
+                },
+                redirect: 'if_required'
+            });
 
+            if (error) {
+                console.error(error);
+                setMessage(`Error: ${error.message}`);
+                toastError(`Error en el pago: ${error.message}`);
+            } else if (paymentIntent && paymentIntent.status === "succeeded") {
+                setMessage("Pago completado ✅");
+                toastSuccess("Pago realizado con éxito");
 
-   
-  
-    // 2️⃣ Confirmar el pago con la tarjeta
-    if (!stripe || !elements) {
-      setMessage("Stripe.js no está cargado todavía.");
-      setLoading(false);
-      return;
-    }
+                setTimeout(() => {
+                    redirect('/thank-you');
+                }, 3000);
+            } else {
+                setMessage(`Estado del pago: ${paymentIntent?.status}`);
+            }
+        } catch (err) {
+            console.error('Error inesperado:', err);
+            setMessage("Ha ocurrido un error inesperado");
+            toastError("Ha ocurrido un error inesperado");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
-      setMessage("No se pudo obtener el elemento de la tarjeta.");
-      setLoading(false);
-      return;
-    }
+    return (
+        <div className="w-full">
+            {/* Título de métodos de pago */}
+            <div className="mb-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Métodos de pago</h3>
+                
+                {/* Imagen de métodos de pago */}
+                <div className="mb-6">
+                    <img 
+                        src="/images/payment/payment-gateway.png" 
+                        alt="Métodos de pago disponibles" 
+                        className="h-auto max-w-full"
+                    />
+                </div>
+            </div>
 
- 
+            <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Payment Element de Stripe */}
+                <div className="p-6 border border-gray-200 rounded-lg bg-white">
+                    <PaymentElement 
+                        options={{
+                            layout: 'tabs',
+                            defaultValues: {
+                                billingDetails: {
+                                    name: session?.user?.name || '',
+                                    email: session?.user?.email || '',
+                                    address: {
+                                        country: 'MX'
+                                    }
+                                }
+                            }
+                        }}
+                    />
+                </div>
 
-    //console.log(resp,'resp client secret')
-    const { paymentIntent, error } = await stripe.confirmCardPayment(stripeSecret, {
-      payment_method: { card: cardElement }
-    });
+                {/* Botón alternativo de transferencia bancaria */}
+                <button
+                    type="button"
+                    className="w-full py-3 px-4 text-sm font-medium text-gray-500 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+                    onClick={() => {
+                        toastError("Método de pago no disponible por el momento");
+                    }}
+                >
+                    Pagar por transferencia bancaria
+                </button>
 
-    if (error) {
-      console.error(error);
-      setMessage(`Error: ${error.message}`);
-      toastError(`Error en el pago: ${error.message}`);
-    } else if (paymentIntent.status === "succeeded") {
-      setMessage("Pago completado ✅");
-      toastSuccess("Pago realizado con éxito");
+                {/* Botón de pagar */}
+                <button
+                    type="submit"
+                    disabled={!stripe || loading}
+                    className="w-full py-3 px-6 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
+                >
+                    {loading ? "Procesando..." : "Pagar"}
+                </button>
 
-      setTimeout(() => {
-        redirect('/thank-you');
-      }, 3000); // Espera 3 segundos antes de recargar
-
-    } else {
-      setMessage(`Estado del pago: ${paymentIntent.status}`);
-    }
-
-    setLoading(false);
-  };
-
-  return (
-    <form  onSubmit={handleSubmit}>
-      <CardElement options={{ style: { base: { fontSize: "16px" } } }} />
-      <button className='cursor-pointer hover:bg-transparent hover:text-secondary w-full max-w-[250px] mx-auto bg-secondary text-white py-2 rounded-lg border-1 border-secondary' type="submit" disabled={!stripe || loading}>
-        {loading ? "Procesando..." : "Pagar"}
-      </button>
-      <div style={{ marginTop: "8px" }}>{message}</div>
-    </form>
-  );
+                {/* Mensaje de estado */}
+                {message && (
+                    <div className={`text-sm text-center ${
+                        message.includes('Error') ? 'text-red-600' : 'text-green-600'
+                    }`}>
+                        {message}
+                    </div>
+                )}
+            </form>
+        </div>
+    );
 };
 
 export default StripeForm;

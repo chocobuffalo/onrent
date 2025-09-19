@@ -2,7 +2,7 @@
 
 import { ImSpinner8 } from "react-icons/im";
 import { HiSearch, HiDocumentText } from "react-icons/hi";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Eye } from "lucide-react";
 import { DynamicTableProps } from "@/types/machinary";
 import "./DynamicTable.scss";
 
@@ -22,6 +22,28 @@ export default function DynamicTable({
 }: DynamicTableProps) {
  
   const showEmptyState = error || (items.length === 0 && !isLoading);
+  
+  
+  const isOrdersTable = title.toLowerCase().includes('orden') || 
+                       items.some(item => item.hasOwnProperty('order_id'));
+
+  const getPlaceholder = () => {
+    return isOrdersTable ? "Nombre maquinaria" : "Nombre, categoría";
+  };
+  
+
+  const getButtonIcon = (buttonLabel: string) => {
+    if (buttonLabel === 'Editar') {
+      return <Edit />;
+    }
+    if (buttonLabel === 'Eliminar') {
+      return <Trash2 />;
+    }
+    if (buttonLabel === 'Detalle') {
+      return <Eye />;
+    }
+    return <Edit />;
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden dynamic-table-container">
@@ -41,7 +63,7 @@ export default function DynamicTable({
             </div>
             <input
               type="text"
-              placeholder="Nombre, categoría"
+              placeholder={getPlaceholder()}
               value={searchValue}
               onChange={(e) => onSearch(e.target.value)}
               className="search-input block w-full pr-4 py-2.5 border border-gray-300 rounded-lg bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent lato-font shadow-sm transition-all duration-200"
@@ -91,7 +113,7 @@ export default function DynamicTable({
             </thead>
             <tbody className="bg-white">
               {items.map((item, index) => (
-                <tr key={item.id || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                <tr key={item.id || item.order_id || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
                   {columns.map((column, colIndex) => (
                     <td key={column.key} className="px-8 py-4 font-medium lato-font">
                       {column.render ? column.render(item[column.key], item) : (item[column.key] || 'N/A')}
@@ -124,13 +146,12 @@ export default function DynamicTable({
                           <button
                             key={buttonIndex}
                             onClick={() => {
-                              console.log(`🔧 Click en ${button.label}, item:`, item);
                               button.onClick(item);
                             }}
                             className="table-action-button futura-font"
                             title={`${button.label} elemento`}
                           >
-                            {button.label === 'Editar' ? <Edit /> : <Trash2 />}
+                            {getButtonIcon(button.label)}
                             <span className="text-secondary">{button.label}</span>
                           </button>
                         ))}

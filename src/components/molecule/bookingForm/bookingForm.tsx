@@ -67,7 +67,6 @@ export const BookingForm = ({
     const dayLength = startDate && endDate ? countDays(startDate, endDate) + 1 : 0;
     const totalPrice = price * dayLength;
 
-    // Determinar si estamos en modo proyecto o modo manual
     const hasProject = Boolean(projectId && projectData);
     const isManualMode = !hasProject;
 
@@ -76,7 +75,6 @@ export const BookingForm = ({
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     };
 
-    console.log(projectData,'projectData in booking form');
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -95,7 +93,6 @@ export const BookingForm = ({
             return;
         }
 
-        // Validar ubicación solo si no tenemos proyecto (modo manual)
         if (isManualMode && validateLocation && !validateLocation()) {
             return;
         }
@@ -105,7 +102,6 @@ export const BookingForm = ({
             let workData = null;
 
             if (hasProject) {
-                // MODO PROYECTO: Usar datos del proyecto
                 locationData = selectedLocation ? {
                     lat: selectedLocation.lat,
                     lng: selectedLocation.lng
@@ -116,21 +112,22 @@ export const BookingForm = ({
                     projectName: projectData?.name || projectName || '',
                     referenceAddress: projectData?.location || selectedLocation?.address || '',
                     projectId: projectData?.id || 0,
+                    responsibleName: projectData?.responsible_name || '',
                 };
                 
             } else {
-                // MODO MANUAL: Usar datos ingresados manualmente
                 locationData = getLocationForBooking ? getLocationForBooking() : null;
                 workData = getWorkData ? getWorkData() : {
                     workImage: null,
-                    locationName: '',
+                    projectName: '',
                     referenceAddress: '',
                     projectId: 0,
+                    responsibleName: '',
                 };
             }
 
             const preorderPayload = {
-                project_id: projectData.id ? (projectData?.id || 0) : 0,
+                project_id: projectData?.id || 0,
                 location: locationData || { lat: 0, lng: 0 },
                 client_notes: clientNotes,
                 work_image: workData?.workImage || null,
@@ -153,7 +150,6 @@ export const BookingForm = ({
             const preorder = await createPreorder(preorderPayload);
 
             if (preorder?.order_id) {
-                // Toast profesional con redirección automática
                 toastSuccessAction(
                     "¡Preorden creada exitosamente! Redirigiendo...",
                     () => {
@@ -198,7 +194,6 @@ export const BookingForm = ({
                 DateRentInput={<DateRentInput grid={true} />}
             />
 
-            {/* Mostrar información del proyecto si existe */}
             {hasProject && (
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
@@ -216,7 +211,6 @@ export const BookingForm = ({
                 </div>
             )}
 
-            {/* Solo mostrar LocationSection en modo manual */}
             {isManualMode && getLocationForBooking && (
                 <LocationSection getLocationForBooking={getLocationForBooking} />
             )}

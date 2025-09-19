@@ -73,7 +73,7 @@ export const otherPages = [
       { href: "/sale-agents-detail/1", text: "Sale agents detail" },
     ],
   },
-  { href: "/dashboard", text: "Dashboard" },
+  { href: "/dashboard/profile", text: "Dashboard" },
 ];
 
 export const blogPages = [

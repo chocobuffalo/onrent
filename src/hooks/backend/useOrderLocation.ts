@@ -1,14 +1,14 @@
 // Hook para obtener la ubicación en tiempo real de una orden (cliente)
 import { useEffect, useState } from "react";
 
-export function useOrderLocation(orderId: string | number, pollingInterval = 10000) {
+export const useOrderLocation = (orderId: string | number, pollingInterval = 10000) => {
   const [location, setLocation] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!orderId) return;
-  let intervalId;
+    
     const fetchLocation = async () => {
       setLoading(true);
       try {
@@ -27,10 +27,12 @@ export function useOrderLocation(orderId: string | number, pollingInterval = 100
         setLoading(false);
       }
     };
+
     fetchLocation();
-    intervalId = setInterval(fetchLocation, pollingInterval);
+    const intervalId = setInterval(fetchLocation, pollingInterval);
+    
     return () => clearInterval(intervalId);
   }, [orderId, pollingInterval]);
 
   return { location, loading, error };
-}
+};
