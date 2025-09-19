@@ -158,13 +158,16 @@ const OperatorMap = ({
 
   // Helper to get auth headers
   const getAuthHeaders = useCallback(() => {
-    if (session?.accessToken) {
-      return {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.accessToken}`,
-      };
+    const sessionWithToken = session as any; // Type assertion for flexibility
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    
+    if (sessionWithToken?.accessToken) {
+      headers["Authorization"] = `Bearer ${sessionWithToken.accessToken}`;
     }
-    return { "Content-Type": "application/json" };
+    
+    return headers;
   }, [session]);
 
   // Search for destination address

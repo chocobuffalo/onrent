@@ -58,6 +58,7 @@
     "@types/node": "^20",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19",
+    "@types/socket.io-client": "^1.4.36",
     "@types/stripe": "^8.0.416",
     "@types/yup": "^0.29.14",
     "eslint": "^9",

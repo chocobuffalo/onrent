@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import io from "socket.io-client";
 
 export interface MachinePosition {
   id: string;
@@ -8,9 +8,9 @@ export interface MachinePosition {
   [key: string]: any;
 }
 
-export function useMachineTracking(serverUrl: string) {
+export const useMachineTracking = (serverUrl: string) => {
   const [machines, setMachines] = useState<MachinePosition[]>([]);
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
 
   useEffect(() => {
     const socket = io(serverUrl, { transports: ["websocket"] });
@@ -39,4 +39,4 @@ export function useMachineTracking(serverUrl: string) {
   }, [serverUrl]);
 
   return machines;
-}
+};
