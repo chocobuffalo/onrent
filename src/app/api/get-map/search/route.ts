@@ -1,4 +1,15 @@
+// src/app/api/get-map/search/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
+import { LocationClient, SearchPlaceIndexForTextCommand } from "@aws-sdk/client-location";
+
+// Usar la variable de entorno de tu proyecto
+const AWS_REGION = process.env.AWS_REGION || "us-east-2"; 
+const PLACE_INDEX_NAME = process.env.AWS_GEOCODING_INDEX_NAME; 
+const NOMINATIM_USER_AGENT = process.env.NOMINATIM_USER_AGENT || 'OnRentX/1.0';
+
+// Crea una instancia del cliente de AWS Location
+const locationClient = new LocationClient({ region: AWS_REGION });
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,44 +21,36 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Intentar con AWS Location Service primero
-    const awsKey = process.env.AWS_ACCESS_KEY || process.env.NEXT_PUBLIC_AWS_KEY;
-    const region = process.env.AWS_REGION || 'us-east-2';
-    const indexName = process.env.AWS_INDEX_NAME || 'Ubicacion_obra';
-
-    if (awsKey) {
+    
+    // Si AWS_PLACE_INDEX no está definido, salta la lógica de AWS y usa Nominatim.
+    if (PLACE_INDEX_NAME) {
+      // Usar el SDK de AWS Location Service
       try {
-        const awsResponse = await fetch(
-          `https://places.geo.${region}.amazonaws.com/places/v0/indexes/${indexName}/search/text?key=${awsKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              Text: query,
-              MaxResults: 5,
-              BiasPosition: center || [-123.115898, 49.295868]
-            }),
-          }
-        );
+        const awsCommand = new SearchPlaceIndexForTextCommand({
+          IndexName: PLACE_INDEX_NAME,
+          Text: query,
+          MaxResults: 5,
+          BiasPosition: center || [-123.115898, 49.295868],
+        });
+        
+        const awsResponse = await locationClient.send(awsCommand);
 
-        if (awsResponse.ok) {
-          const awsData = await awsResponse.json();
+        if (awsResponse.Results) {
           return NextResponse.json({
-            Results: awsData.Results || [],
-            source: 'aws'
+            Results: awsResponse.Results,
+            source: 'aws',
           });
         }
       } catch (awsError) {
         console.warn('AWS Location Service failed, falling back to Nominatim:', awsError);
       }
     }
-
+    
     // Fallback a Nominatim
     const nominatimResponse = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
       {
-        headers: { 'User-Agent': process.env.NOMINATIM_USER_AGENT || 'OnRentX/1.0' }
+        headers: { 'User-Agent': NOMINATIM_USER_AGENT }
       }
     );
 
@@ -63,7 +66,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         Results: results,
-        source: 'nominatim'
+        source: 'nominatim',
       });
     }
 

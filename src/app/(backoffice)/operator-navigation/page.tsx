@@ -1,65 +1,122 @@
+// src/app/(backoffice)/operator-navigation/page.tsx
 "use client";
 
-import { useState } from "react";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import OperatorMap from "@/components/organism/OperatorMap"; // Import the new component
-import { useSession } from "next-auth/react"; // Import useSession
+import dynamic from "next/dynamic";
+import { useSession } from "next-auth/react";
+import { useOperatorNavigation } from "@/hooks/component/useOperatorNavigation";
 
-interface LatLng {
-  lat: number;
-  lng: number;
-}
-
-interface RouteStep {
-  lat: number;
-  lng: number;
-}
-
+// Definición de tipos para los resultados de búsqueda
 interface SearchResult {
   Place: {
     Label: string;
-    Geometry: { Point: [number, number] }; // [lng, lat]
+    Geometry: { Point: [number, number] };
   };
 }
 
-const OperatorNavigationPage = () => {
-  const { data: session } = useSession(); // Get session data
+// Importación dinámica para asegurar que el mapa se renderice solo en el cliente
+const OperatorMap = dynamic(
+  () => import("@/components/organism/OperatorMap").then((mod) => mod.default),
+  { ssr: false }
+);
 
-  const [currentLocation, setCurrentLocation] = useState<LatLng | null>(null);
-  const [destination, setDestination] = useState<LatLng | null>(null);
-  const [destinationAddress, setDestinationAddress] = useState<string>("");
-  const [route, setRoute] = useState<RouteStep[]>([]);
-  const [isNavigating, setIsNavigating] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+// Importación dinámica para el ToastContainer
+const ToastContainer = dynamic(
+  () =>
+    import("react-toastify").then((mod) => mod.ToastContainer),
+  { ssr: false }
+);
 
-  // Placeholder deviceId - in a real app, this would come from user session/machine assignment
-  const deviceId = "operator-machine-123";
+export default function OperatorNavigationPage() {
+  const { data: session } = useSession();
+
+  const {
+    currentLocation,
+    destination,
+    destinationAddress,
+    route,
+    isNavigating,
+    searchQuery,
+    searchResults,
+    loading,
+    setSearchQuery,
+    selectDestination,
+    handleSearch,
+    toggleNavigation,
+  } = useOperatorNavigation("id-del-dispositivo", session);
 
   return (
-    <OperatorMap
-      currentLocation={currentLocation}
-      setCurrentLocation={setCurrentLocation}
-      destination={destination}
-      setDestination={setDestination}
-      destinationAddress={destinationAddress}
-      setDestinationAddress={setDestinationAddress}
-      route={route}
-      setRoute={setRoute}
-      isNavigating={isNavigating}
-      setIsNavigating={setIsNavigating}
-      searchQuery={searchQuery}
-      setSearchQuery={setSearchQuery}
-      searchResults={searchResults}
-      setSearchResults={setSearchResults}
-      loading={loading}
-      setLoading={setLoading}
-      deviceId={deviceId}
-      session={session} // Pass the session object
-    />
-  );
-};
+    <div className="container mx-auto p-4">
+      <ToastContainer />
+      <h1 className="text-2xl font-bold mb-4">Navegación del Operador</h1>
 
-export default OperatorNavigationPage;
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold mb-2">Destino</h2>
+        <div className="flex gap-2 mb-2">
+          <input
+            type="text"
+            className="border p-2 flex-grow"
+            placeholder="Buscar dirección de la obra..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+            disabled={isNavigating}
+          />
+          <button
+            onClick={handleSearch}
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            disabled={loading || isNavigating}
+          >
+            {loading ? "Buscando..." : "Buscar"}
+          </button>
+        </div>
+        {searchResults.length > 0 && (
+          <ul className="border rounded mt-2 max-h-40 overflow-y-auto bg-white">
+            {searchResults.map((result: SearchResult, index: number) => (
+              <li
+                key={index}
+                className="p-2 cursor-pointer hover:bg-gray-100"
+                onClick={() => selectDestination(result)}
+              >
+                {result.Place.Label}
+              </li>
+            ))}
+          </ul>
+        )}
+        {destinationAddress && (
+          <p className="mt-2 font-semibold">
+            Destino Seleccionado: {destinationAddress}
+          </p>
+        )}
+      </div>
+
+      <div className="mb-4 flex gap-2">
+        <button
+          onClick={toggleNavigation}
+          className={`px-6 py-3 rounded text-white font-bold ${
+            isNavigating ? "bg-red-600" : "bg-green-600"
+          } disabled:opacity-50`}
+          disabled={!currentLocation || !destination || loading}
+        >
+          {isNavigating ? "Detener Navegación" : "Iniciar Navegación"}
+        </button>
+        {isNavigating && (
+          <button
+            onClick={handleSearch}
+            className="bg-yellow-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            disabled={loading}
+          >
+            Recalcular Ruta
+          </button>
+        )}
+      </div>
+
+      <OperatorMap
+        currentLocation={currentLocation}
+        destination={destination}
+        destinationAddress={destinationAddress}
+        route={route}
+        isNavigating={isNavigating}
+      />
+    </div>
+  );
+}
