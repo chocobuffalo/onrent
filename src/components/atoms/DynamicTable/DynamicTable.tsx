@@ -2,7 +2,7 @@
 
 import { ImSpinner8 } from "react-icons/im";
 import { HiSearch, HiDocumentText } from "react-icons/hi";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, CheckCircle, XCircle } from "lucide-react";
 import { DynamicTableProps } from "@/types/machinary";
 import "./DynamicTable.scss";
 
@@ -41,6 +41,12 @@ export default function DynamicTable({
     }
     if (buttonLabel === 'Detalle') {
       return <Eye />;
+    }
+    if (buttonLabel === 'Confirmar') {
+      return <CheckCircle />;
+    }
+    if (buttonLabel === 'Rechazar') {
+      return <XCircle />;
     }
     return <Edit />;
   };

@@ -41,7 +41,7 @@ export default function ProfileSync() {
             
             if(data === null){
                 console.log("No se pudo obtener la información de la empresa, forzando logout");
-                toastCriticalAction('El token ha expirado o es inválido',()=>{
+                toastCriticalAction('Tu sesión ha expirado. Por favor, inicia sesión nuevamente',()=>{
                     signOut({callbackUrl:'/iniciar-session',redirect:true});
                 })
             }

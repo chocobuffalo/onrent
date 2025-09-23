@@ -48,3 +48,9 @@ export interface GetOrderDetailResult {
   message?: string;
   error?: string;
 }
+
+export interface BaseApiResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+}

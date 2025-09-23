@@ -1,22 +1,36 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import useOrders from "@/hooks/backend/useOrders";
 import { OrderResponse, OrderDetail } from "@/types/orders";
 import { TableColumn, ActionButton } from "../../../types/machinary";
+import { acceptOrder } from "@/services/acceptOrder";
+import { rejectOrder } from "@/services/rejectOrder";
 
 export default function useOrdersTable() {
   const [searchValue, setSearchValue] = useState("");
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [orderDetail, setOrderDetail] = useState<OrderDetail | null>(null);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [modalAction, setModalAction] = useState<'accept' | 'reject' | null>(null);
+  const [selectedOrderForAction, setSelectedOrderForAction] = useState<OrderResponse | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
   
+  const pathname = usePathname();
+  const isRentalsPage = pathname?.includes('/rentals') || pathname?.includes('/rentas');
+  
+  const { data: session } = useSession();
   const {
     orders,
     isLoading,
     error,
     getOrderDetailById,
+    refreshOrders,
   } = useOrders();
 
+  const token = (session as any)?.accessToken || "";
 
   const filteredOrders = useMemo(() => {
     if (!searchValue) return orders;
@@ -65,31 +79,23 @@ export default function useOrdersTable() {
     },
   ], []);
 
-  // Handlers
   const handleSearch = (value: string) => {
     setSearchValue(value);
   };
-
 
   const handleViewDetail = (item?: any) => {
     const order = item as OrderResponse; 
     if (!order) return;
     
-    console.log("📋 Visualizando detalle de orden:", order.order_id);
-    
     getOrderDetailById(order.order_id)
       .then(detail => {
-        console.log("📋 Respuesta de getOrderDetailById:", detail);
         if (detail) {
-          console.log("📋 Detalle válido, seteando estados");
           setOrderDetail(detail);
           setDetailModalOpen(true);
-        } else {
-          console.log("❌ Detalle es null/undefined");
         }
       })
       .catch(error => {
-        console.error("❌ Error en getOrderDetailById:", error);
+        console.error('Error al cargar el detalle de la orden:', error);
       });
   };
 
@@ -98,33 +104,116 @@ export default function useOrdersTable() {
     setOrderDetail(null);
   };
 
+  const handleConfirmOrder = (item?: any) => {
+    const order = item as OrderResponse;
+    if (!order) return;
+    setSelectedOrderForAction(order);
+    setModalAction('accept');
+    setConfirmModalOpen(true);
+  };
 
-  const actionButtons: ActionButton[] = useMemo(() => [
-    {
-      label: "Detalle",
-      className: "table-action-button",
-      onClick: handleViewDetail,
-    },
-  ], []);
+  const handleRejectOrder = (item?: any) => {
+    const order = item as OrderResponse;
+    if (!order) return;
+    setSelectedOrderForAction(order);
+    setModalAction('reject');
+    setConfirmModalOpen(true);
+  };
+
+  const handleConfirmAction = async () => {
+    if (!selectedOrderForAction || !modalAction) return;
+    
+    if (!token) {
+      console.error("Token no disponible");
+      return;
+    }
+
+    setActionLoading(true);
+    
+    try {
+      let result;
+      if (modalAction === 'accept') {
+        result = await acceptOrder(selectedOrderForAction.order_id, token);
+      } else {
+        result = await rejectOrder(selectedOrderForAction.order_id, token);
+      }
+
+      if (result.success) {
+        refreshOrders();
+      }
+    } catch (error) {
+      console.error('Error al procesar la acción:', error);
+    } finally {
+      setActionLoading(false);
+      setConfirmModalOpen(false);
+      setSelectedOrderForAction(null);
+      setModalAction(null);
+    }
+  };
+
+  const handleCancelAction = () => {
+    if (actionLoading) return;
+    setConfirmModalOpen(false);
+    setSelectedOrderForAction(null);
+    setModalAction(null);
+  };
+
+  const actionButtons: ActionButton[] = useMemo(() => {
+    if (isRentalsPage) {
+      return [
+        {
+          label: "Confirmar",
+          className: "table-action-button",
+          onClick: handleConfirmOrder,
+        },
+        {
+          label: "Rechazar",
+          className: "table-action-button", 
+          onClick: handleRejectOrder,
+        },
+      ];
+    } else {
+      return [
+        {
+          label: "Detalle",
+          className: "table-action-button",
+          onClick: handleViewDetail,
+        },
+      ];
+    }
+  }, [isRentalsPage]);
+
+  // Configuración del modal para acciones
+  const getModalConfig = () => {
+    if (!selectedOrderForAction || !modalAction) return null;
+
+    const isAccept = modalAction === 'accept';
+    return {
+      title: isAccept ? 'CONFIRMAR ORDEN' : 'RECHAZAR ORDEN',
+      message: isAccept 
+        ? `¿Estás seguro de que deseas confirmar la orden #${selectedOrderForAction.order_id}?`
+        : `¿Estás seguro de que deseas rechazar la orden #${selectedOrderForAction.order_id}?`,
+      confirmText: isAccept ? 'CONFIRMAR ORDEN' : 'RECHAZAR ORDEN',
+      variant: isAccept ? 'info' : 'warning' as 'info' | 'warning' | 'danger',
+    };
+  };
 
   return {
     items: filteredOrders,
     isLoading,
     error,
     searchValue,
-    
-  
     detailModalOpen,
     orderDetail,
     handleCloseDetailModal,
-    
-
+    confirmModalOpen,
+    modalConfig: getModalConfig(),
+    actionLoading,
+    handleConfirmAction,
+    handleCancelAction,
     columns,
     actionButtons,
-
     onSearch: handleSearch,
-    
- 
     statusField: undefined,
     statusOptions: undefined,
     statusColors: undefined,
