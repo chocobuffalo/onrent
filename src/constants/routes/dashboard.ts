@@ -75,18 +75,6 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     icon: WrenckIcon,
     roles: ["cliente", "cliente_proveedor", "proveedor"], // Tracking de órdenes activas
   },
-  {
-    link: "/dashboard/support",
-    title: "Soporte",
-    icon: HearthIcon,
-    roles: ["cliente", "cliente_proveedor"], // Soporte técnico/comercial
-  },
-  {
-    link: "/dashboard/notifications",
-    title: "Notificaciones",
-    icon: HearthIcon,
-    roles: ["cliente", "cliente_proveedor"], // Notificaciones específicas de cliente
-  },
 
   /* ----------------------------------------------------
    * SECCIÓN PROVEEDOR - Funcionalidades para usuarios que rentan maquinaria
@@ -115,12 +103,6 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     title: "Mis referidos",
     icon: HearthIcon,
     roles: ["proveedor", "cliente_proveedor"], // Sistema de referidos para proveedores
-  },
-  {
-    link: "/dashboard/notifications-provider",
-    title: "Notificaciones",
-    icon: HearthIcon,
-    roles: ["proveedor", "cliente_proveedor"], // Notificaciones específicas de proveedor
   },
 
   /* ----------------------------------------------------
@@ -156,12 +138,6 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     title: "Reporte de incidencias",
     icon: EnvelopeIcon,
     roles: ["operador"], // Reportar problemas, fallas, incidentes
-  },
-  {
-    link: "/dashboard/operator/notifications",
-    title: "Notificaciones",
-    icon: HearthIcon,
-    roles: ["operador"], // Notificaciones específicas para operadores
   },
   {
     link: "/dashboard/operator/operational-check",

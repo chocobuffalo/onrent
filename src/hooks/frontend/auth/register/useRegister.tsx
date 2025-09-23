@@ -74,7 +74,7 @@ export default function useRegister() {
           email: data.email,
           password: data.password,
           redirect:true,
-          callbackUrl: `/dashboard/profile`
+          callbackUrl: `/catalogo`
         });});
         
         // - Mostrar mensaje de éxito

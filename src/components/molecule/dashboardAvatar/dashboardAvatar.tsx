@@ -11,15 +11,6 @@ export default function DashboardAvatar(){
     <div className="author">
       <div className="avatar">
         <Link href="/dashboard/profile" title={name} className="avatar-link">
-            <Image
-            loading="lazy"
-            id="tfre_avatar_thumbnail"
-            alt={name}
-            title={name}
-            src={avatarUrl}
-            width={52}
-            height={52}
-            />
         </Link>
       </div>
       <Link href="/dashboard/profile" className="content" title="Ir al perfil">

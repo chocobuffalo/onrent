@@ -25,7 +25,6 @@ export default function OrdersTable() {
   return (
     <div className="orders-table-container p-6">
       <div className="orders-table-header">
-        <h1 className="orders-table-title">Gestión de Órdenes</h1>
       </div>
       <div className="orders-table-content">
         <DynamicTable
