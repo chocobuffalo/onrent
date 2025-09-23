@@ -39,7 +39,6 @@ export default function MachineTable() {
   return (
     <div className="machine-table-container p-6">
       <div className="machine-table-header">
-        <h1 className="machine-table-title">Gestión de maquinaria</h1>
         <div className="machine-table-add-button">
           <AddEnginery active={createModalOpen} func={handleAddEnginery} />
         </div>

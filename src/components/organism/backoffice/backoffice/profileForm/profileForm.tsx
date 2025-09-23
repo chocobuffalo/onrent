@@ -13,7 +13,6 @@ export default function ProfileForm() {
     return (
         <div className="">
             <div className="tfcl-add-listing">
-                <ChangeAvatar  />
                 <PersonalForm  />
             </div>
             <div className="tfcl-add-listing">

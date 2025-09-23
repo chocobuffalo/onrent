@@ -19,7 +19,7 @@ export default function SignInForm() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/dashboard/profile");
+      router.replace("/catalogo");
     }
   }, [status, router]);
 
@@ -101,7 +101,7 @@ export default function SignInForm() {
 
         {/* Google Login */}
         <button
-          onClick={() => signIn("google", { callbackUrl: "/dashboard/profile" })}
+          onClick={() => signIn("google", { callbackUrl: "/catalogo" })}
           className=" hover:bg-[#0f0f26] hover:text-white w-full flex cursor-pointer items-center justify-center gap-3 bg-white border px-6 py-4 rounded-md shadow-sm hover:shadow-md transition text-[12px] font-light"
         >
           <Image

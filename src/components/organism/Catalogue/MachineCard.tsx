@@ -45,7 +45,6 @@ export default function MachineCard({ data }: Props) {
           <p className="text-xs font-bold text-black uppercase">
             {data.name.split(" ").pop()}
           </p>
-          <p className="text-xs text-gray-500">{data.location}</p>
         </div>
 
         <div className="flex items-center justify-between mt-3">
