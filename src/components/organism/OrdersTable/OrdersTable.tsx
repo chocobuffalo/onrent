@@ -2,6 +2,7 @@
 
 import DynamicTable from "@/components/atoms/DynamicTable/DynamicTable";
 import OrderDetailModal from "@/components/organism/OrderDetailModal/OrderDetailModal";
+import ConfirmationModal from "@/components/organism/ConfirmationModal/ConfirmationModal";
 import useOrdersTable from "@/hooks/frontend/ui/useOrdersTable";
 
 export default function OrdersTable() {
@@ -20,6 +21,11 @@ export default function OrdersTable() {
     detailModalOpen,
     orderDetail,
     handleCloseDetailModal,
+    confirmModalOpen,
+    modalConfig,
+    actionLoading,
+    handleConfirmAction,
+    handleCancelAction,
   } = useOrdersTable();
 
   return (
@@ -50,6 +56,21 @@ export default function OrdersTable() {
         orderNumber={orderDetail ? items.find(item => item.order_id)?.order_id?.toString() : ''}
         onClose={handleCloseDetailModal}
       />
+
+      {/* Modal de confirmación para confirmar/rechazar */}
+      {modalConfig && (
+        <ConfirmationModal
+          isOpen={confirmModalOpen}
+          title={modalConfig.title}
+          message={modalConfig.message}
+          confirmText={modalConfig.confirmText}
+          cancelText="CANCELAR"
+          variant={modalConfig.variant}
+          loading={actionLoading}
+          onConfirm={handleConfirmAction}
+          onCancel={handleCancelAction}
+        />
+      )}
     </div>
   );
 }
