@@ -58,9 +58,14 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
   const [workImagePreview, setWorkImagePreview] = useState<string | null>(null);
   const [isManualMode, setIsManualMode] = useState(false);
   
+  // CORRECCIÓN: Detectar si hay proyecto vinculado - mejorar la condición
+  const hasProject = Boolean(
+    (projectId && (projectData || projectName)) || 
+    (projectData && projectName)
+  );
+  
   const {project, projects, loadingProject, openProjects,setLoadingProject, setOpenProjects,setSelectedProject} = useGetProject({projectName});
 
-  console.log(project,'project')
 
   const currentMachine = machineData || machine;
 
@@ -444,8 +449,8 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                 </p>
               </div>
 
-              {/* Imagen de la obra */}
-              {!projectId && (
+              {/* CORRECCIÓN: Imagen de la obra - solo en modo manual */}
+              {!hasProject && (
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700">
                     Imagen de la obra
