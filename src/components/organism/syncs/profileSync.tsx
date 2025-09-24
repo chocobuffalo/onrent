@@ -12,12 +12,17 @@ import { useEffect } from "react";
    
 export default function ProfileSync() {
     const dispatch = useUIAppDispatch();
-    const { toastCriticalAction } = useToast();
+    const { toastCritical } = useToast();
     const phone = useUIAppSelector((state) => state.auth.profile.phone);
     const name = useUIAppSelector((state) => state.auth.profile.name);
     const email = useUIAppSelector((state) => state.auth.profile.email);
     const avatar = useUIAppSelector((state) => state.auth.profile.avatarUrl);
     const {data:user} = useSession();
+
+    const handleSessionExpired = () => {
+        signOut({callbackUrl:'/iniciar-session',redirect:true});
+    };
+
     const getProfileAsync = async(token:string)=>{
          getProfile(token).then((data)=>{
             dispatch(setName(data.name || ""));
@@ -41,17 +46,21 @@ export default function ProfileSync() {
             
             if(data === null){
                 console.log("No se pudo obtener la información de la empresa, forzando logout");
-                toastCriticalAction('Tu sesión ha expirado. Por favor, inicia sesión nuevamente',()=>{
-                    signOut({callbackUrl:'/iniciar-session',redirect:true});
-                })
+                toastCritical('Tu sesión ha expirado. Por favor, inicia sesión nuevamente');
+                
+                // Redirección después de mostrar la notificación
+                setTimeout(() => {
+                    handleSessionExpired();
+                }, 5000);
+            }else{
+                dispatch(setEmpresa(data?.empresa || ""));
+                dispatch(setRfcEmpresa(data?.rfc_empresa || ""));
+                dispatch(setDireccionEmpresa(data?.direccion_empresa || ""));
+                dispatch(setContactoFiscal(data?.contacto_fiscal || ""));
+                dispatch(setTelefonoContacto(data?.telefono_contacto || ""));
+                dispatch(setRepresentanteLegal(data?.representante_legal || ""));
+                dispatch(setEmpleados(data?.empleados || 0));
             }
-            dispatch(setEmpresa(data?.empresa || ""));
-            dispatch(setRfcEmpresa(data?.rfc_empresa || ""));
-            dispatch(setDireccionEmpresa(data?.direccion_empresa || ""));
-            dispatch(setContactoFiscal(data?.contacto_fiscal || ""));
-            dispatch(setTelefonoContacto(data?.telefono_contacto || ""));
-            dispatch(setRepresentanteLegal(data?.representante_legal || ""));
-            dispatch(setEmpleados(data?.empleados || 0));
          })
     }
 
