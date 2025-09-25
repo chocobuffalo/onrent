@@ -171,6 +171,11 @@ export default function useOrdersTable() {
           className: "table-action-button", 
           onClick: handleRejectOrder,
         },
+        {
+          label: "Detalle",
+          className: "table-action-button table-action-button--icon-only",
+          onClick: handleViewDetail,
+        },
       ];
     } else {
       return [
