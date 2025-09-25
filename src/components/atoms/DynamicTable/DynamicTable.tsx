@@ -154,11 +154,13 @@ export default function DynamicTable({
                             onClick={() => {
                               button.onClick(item);
                             }}
-                            className="table-action-button futura-font"
+                            className={`table-action-button futura-font ${button.className || ''}`}
                             title={`${button.label} elemento`}
                           >
                             {getButtonIcon(button.label)}
-                            <span className="text-secondary">{button.label}</span>
+                            <span className={`text-secondary ${button.className?.includes('icon-only') ? 'sr-only' : ''}`}>
+                              {button.label}
+                            </span>
                           </button>
                         ))}
                       </div>

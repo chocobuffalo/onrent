@@ -11,9 +11,8 @@ export default function useOrders() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
-  // Usar el mismo patrón que en useMachineryList
   const token = (session as any)?.accessToken || "";
 
   const fetchOrders = async () => {
@@ -27,7 +26,6 @@ export default function useOrders() {
 
       if (result.success && result.data) {
         setOrders(result.data);
-        console.log("Órdenes cargadas:", result.data.length);
       } else {
         setError(result.message || "Error al cargar órdenes");
         toast.error(result.message || "Error al cargar las órdenes");
@@ -73,13 +71,17 @@ export default function useOrders() {
     fetchOrders();
   };
 
+  // Esperar a que la sesión esté lista antes de hacer fetch
   useEffect(() => {
-    if (token) {
+    if (status === "loading") return;
+    if (status === "unauthenticated") return;
+    
+    if (status === "authenticated" && token) {
       fetchOrders();
     }
-  }, [token]);
+  }, [token, status]);
 
-  // Escuchar eventos de actualización
+
   useEffect(() => {
     const handleOrderUpdate = () => {
       fetchOrders();
