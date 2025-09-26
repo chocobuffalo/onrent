@@ -170,7 +170,7 @@ export default function MapWithFleet({
 
   // Aplicar filtros
   useEffect(() => {
-    let filtered = locations.filter(location => {
+    const filtered = locations.filter(location => {
       const status = location.status?.toLowerCase() || 'unknown';
       const entityType = location.entity_type?.toLowerCase() || 'unknown';
 
