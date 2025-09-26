@@ -73,6 +73,7 @@ export interface OrderProp {
   project_location: string;
   client_notes: string;
   status: string;
+  ui_notice?: string | null;
   items:  ItemProps[];
 }
 

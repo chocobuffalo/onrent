@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import { OrderDetail } from "@/types/orders";
 import "./OrderDetailModal.scss";
 
@@ -18,6 +19,9 @@ export default function OrderDetailModal({
   orderNumber,
   onClose 
 }: OrderDetailModalProps) {
+  const pathname = usePathname();
+  const isRentalsPage = pathname?.includes('/rentals') || pathname?.includes('/rentas');
+
   // Mover el useEffect ANTES del early return
   useEffect(() => {
     if (isOpen) {
@@ -31,7 +35,7 @@ export default function OrderDetailModal({
     };
   }, [isOpen]);
 
-  // Ahora el early return después de todos los hooks
+
   if (!isOpen || !orderDetail) return null;
 
   const formatState = (state: string) => {
@@ -97,99 +101,119 @@ export default function OrderDetailModal({
                 {orderDetail.state || 'pending_payment'}
               </span>
             </div>
-            <div className="order-detail-modal__main-info-item">
-              <div className="label">Total</div>
-              <p className="value value--large value--accent">
-                ${orderDetail.total_final?.toLocaleString() || "0"}
-              </p>
-            </div>
+            
+            {/* Mostrar diferentes campos según la página */}
+            {isRentalsPage ? (
+              <>
+                <div className="order-detail-modal__main-info-item">
+                  <div className="label">Precio</div>
+                  <p className="value value--large value--accent">
+                    ${orderDetail.net_provider_price?.toLocaleString() || "15,500"}
+                  </p>
+                </div>
+                <div className="order-detail-modal__main-info-item">
+                  <div className="label">Comisión</div>
+                  <p className="value value--large value--accent">
+                    {orderDetail.commission_rate ? `${orderDetail.commission_rate}%` : "8.5%"}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="order-detail-modal__main-info-item">
+                <div className="label">Total</div>
+                <p className="value value--large value--accent">
+                  ${orderDetail.total_final?.toLocaleString() || "0"}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Información del Cliente */}
           <div className="order-detail-modal__section">
             <h3 className="order-detail-modal__section-title">
-              Información de la maquinaria
+              Información del Cliente
             </h3>
             <div className="order-detail-modal__client-info">
               <div className="order-detail-modal__client-info-grid">
                 <div className="order-detail-modal__client-info-item">
-                  <div className="field-label">Ubicación</div>
+                  <div className="field-label">Nombre</div>
                   <p className="field-value">
-                    {orderDetail.location_coords 
-                      ? `Lat: ${(orderDetail.location_coords.lat || orderDetail.location_coords.additionalProp1)?.toFixed(6)}, Lng: ${(orderDetail.location_coords.lng || orderDetail.location_coords.additionalProp2)?.toFixed(6)}`
-                      : 'No especificada'
-                    }
+                    {orderDetail.client_name || orderDetail.name || 'No especificado'}
                   </p>
                 </div>
                 <div className="order-detail-modal__client-info-item">
-                  <div className="field-label">Máquina</div>
+                  <div className="field-label">Teléfono</div>
                   <p className="field-value">
-                    {orderDetail.machine_name || 'No especificado'}
+                    {orderDetail.client_phone || 'No especificado'}
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Productos */}
+          {/* Información de la maquinaria */}
           <div className="order-detail-modal__section">
-            <h3 className="order-detail-modal__section-title">Detalles del Servicio</h3>
+            <h3 className="order-detail-modal__section-title">
+              Información de la maquinaria
+            </h3>
             <div className="order-detail-modal__products-table">
               <table>
                 <thead>
                   <tr>
-                    <th>Proyecto</th>
-                    <th>Duración</th>
-                    <th>Precio Base</th>
-                    <th>Subtotal</th>
+                    {orderDetail.project && <th>Producto</th>}
+                    <th>Cantidad</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>
-                      {orderDetail.project || "Proyecto no especificado"}
-                    </td>
-                    <td>
-                      {orderDetail.duration_days || 1} días
-                    </td>
-                    <td>
-                      ${orderDetail.rental_total?.toLocaleString() || "0"}
-                    </td>
-                    <td>
-                      ${orderDetail.total_final?.toLocaleString() || "0"}
-                    </td>
-                  </tr>
+                  {orderDetail.items && orderDetail.items.length > 0 ? (
+                    orderDetail.items.map((item, index) => (
+                      <tr key={item.line_id || index}>
+                        {orderDetail.project && <td>{item.product}</td>}
+                        <td>{item.quantity}</td>
+                        <td>{new Date(item.start_date).toLocaleDateString('es-ES')}</td>
+                        <td>{new Date(item.end_date).toLocaleDateString('es-ES')}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={orderDetail.project ? 4 : 3}>No hay productos disponibles</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Resumen de costos */}
-          <div className="order-detail-modal__section">
-            <h3 className="order-detail-modal__section-title">Resumen de Costos</h3>
-            <div className="order-detail-modal__costs">
-              <div className="order-detail-modal__costs-row">
-                <span className="cost-label">Precio del Servicio:</span>
-                <span className="cost-value">${orderDetail.rental_total?.toLocaleString() || "0"}</span>
-              </div>
-              <div className="order-detail-modal__costs-row">
-                <span className="cost-label">Costo de Flota:</span>
-                <span className="cost-value">${orderDetail.fleet_cost?.toLocaleString() || "0"}</span>
-              </div>
-              <div className="order-detail-modal__costs-row">
-                <span className="cost-label">Seguro:</span>
-                <span className="cost-value">${orderDetail.insurance_cost?.toLocaleString() || "0"}</span>
-              </div>
-              <div className="order-detail-modal__costs-row">
-                <span className="cost-label">Impuestos:</span>
-                <span className="cost-value">${orderDetail.taxes?.toLocaleString() || "0"}</span>
-              </div>
-              <div className="order-detail-modal__costs-row order-detail-modal__costs-row--total">
-                <span className="cost-label">Total Final:</span>
-                <span className="cost-value">${orderDetail.total_final?.toLocaleString() || "0"}</span>
+          {/* Detalles del Servicio - Solo si existe proyecto */}
+          {orderDetail.project && (
+            <div className="order-detail-modal__section">
+              <h3 className="order-detail-modal__section-title">Detalles del Servicio</h3>
+              <div className="order-detail-modal__products-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Nombre del Proyecto</th>
+                      <th>Nombre del Responsable</th>
+                      <th>Dirección</th>
+                      <th>Teléfono</th>
+                      <th>Duración</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{orderDetail.project}</td>
+                      <td>{orderDetail.responsible_name || 'No especificado'}</td>
+                      <td>{orderDetail.location || 'No especificada'}</td>
+                      <td>{orderDetail.responsible_phone || 'No especificado'}</td>
+                      <td>{orderDetail.duration_days || 1} días</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

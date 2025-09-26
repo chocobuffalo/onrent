@@ -2,7 +2,7 @@
 import AddFormItems from "@/components/atoms/addFormITems/addFormItems";
 import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
 import { countDays, fixDate } from "@/utils/compareDate";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DateRentInput from "../dateRentInput/dateRentInput";
 import useAddFormItems from "@/hooks/frontend/buyProcess/useAddFormItems";
 import useBookingPreorder from "@/hooks/frontend/buyProcess/useBookingPreorder";
@@ -57,6 +57,7 @@ export const BookingForm = ({
     const { startDate, endDate } = useDateRange();
     const [open, setOpen] = useState(false);
     const [clientNotes, setClientNotes] = useState("");
+    const [locationLoaded, setLocationLoaded] = useState(false);
 
     const { count, increment, decrement, disableTop, disableBottom } = useAddFormItems();
     const { createPreorder, loading, error } = useBookingPreorder();
@@ -69,6 +70,36 @@ export const BookingForm = ({
 
     const hasProject = Boolean(projectId && projectData);
     const isManualMode = !hasProject;
+
+    // CORRECCIÓN: Escuchar cambios en selectedLocation y projectData
+    useEffect(() => {
+        if (hasProject && selectedLocation && projectData) {
+            setLocationLoaded(true);
+            console.log('✅ Ubicación del proyecto cargada:', selectedLocation);
+        } else if (!hasProject) {
+            // En modo manual, resetear el estado
+            setLocationLoaded(false);
+        }
+    }, [hasProject, selectedLocation, projectData]);
+
+    // CORRECCIÓN: Función para obtener la dirección correcta
+    const getProjectAddress = () => {
+        if (!hasProject) return '';
+        
+        // Usar la misma lógica que getWorkData() del hook
+        return projectData?.location || selectedLocation?.address || '';
+    };
+
+    // CORRECCIÓN: Función para validar si hay ubicación disponible
+    const hasValidLocation = () => {
+        if (hasProject) {
+            // Para proyectos, verificar que los datos estén cargados y tenga dirección
+            return locationLoaded && Boolean(getProjectAddress());
+        } else {
+            // Para modo manual, usar la validación existente
+            return validateLocation ? validateLocation() : false;
+        }
+    };
 
     const formatDateForBackend = (dateString: string): string => {
         const { day, month, year } = fixDate(dateString) || { day: 0, month: 0, year: 0 };
@@ -93,7 +124,16 @@ export const BookingForm = ({
             return;
         }
 
-        if (isManualMode && validateLocation && !validateLocation()) {
+        // CORRECCIÓN: Validación mejorada de ubicación
+        if (!hasValidLocation()) {
+            if (hasProject) {
+                toastError("Error: No se pudo cargar la ubicación del proyecto seleccionado");
+            } else {
+                // Para modo manual, usar la validación original que ya maneja el toast
+                if (validateLocation) {
+                    validateLocation(); // Esto ya maneja el error internamente
+                }
+            }
             return;
         }
 
@@ -110,7 +150,7 @@ export const BookingForm = ({
                 workData = {
                     workImage: null,
                     projectName: projectData?.name || projectName || '',
-                    referenceAddress: projectData?.location || selectedLocation?.address || '',
+                    referenceAddress: projectData?.location || selectedLocation?.address || '', // CORRECCIÓN: Usar misma lógica que el hook
                     projectId: projectData?.id || 0,
                     responsibleName: projectData?.responsible_name || '',
                 };
@@ -199,14 +239,36 @@ export const BookingForm = ({
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-4 h-4 bg-green-500 rounded-full"></div>
                         <span className="font-semibold text-green-800">Proyecto vinculado</span>
+                        {!locationLoaded && (
+                            <div className="ml-2 text-xs text-gray-500">Cargando datos...</div>
+                        )}
                     </div>
                     <p className="text-sm text-green-700">
-                        <strong>Nombre:</strong> {projectData?.name || projectName}
+                        <strong>Nombre:</strong> {projectData?.name || projectName || 'Cargando...'}
                     </p>
-                    {selectedLocation?.address && (
+                    {projectData?.responsible_name && (
                         <p className="text-sm text-green-700">
-                            <strong>Ubicación:</strong> {selectedLocation.address}
+                            <strong>Responsable:</strong> {projectData.responsible_name}
                         </p>
+                    )}
+                    {locationLoaded && getProjectAddress() && (
+                        <div className="mt-2 p-2 bg-white bg-opacity-50 rounded">
+                            <p className="text-sm text-green-700">
+                                <strong>Ubicación confirmada:</strong> {getProjectAddress()}
+                            </p>
+                        </div>
+                    )}
+                    {locationLoaded && !getProjectAddress() && (
+                        <p className="text-sm text-red-600">
+                            <strong>Ubicación:</strong> No se pudo cargar la dirección del proyecto
+                        </p>
+                    )}
+                    {!locationLoaded && (
+                        <div className="mt-2 p-2 bg-yellow-50 rounded">
+                            <p className="text-sm text-yellow-700">
+                                <strong>Cargando ubicación del proyecto...</strong>
+                            </p>
+                        </div>
                     )}
                 </div>
             )}

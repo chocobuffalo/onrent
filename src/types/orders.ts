@@ -26,26 +26,52 @@ export interface LocationCoords {
   additionalProp3?: number;
 }
 
+export interface OrderItem {
+  line_id: number;
+  product: string;
+  start_date: string;
+  end_date: string;
+  quantity: number;
+  machine: string | null;
+  provider: string | null;
+  rent_price: number;
+  fleet_cost: number;
+  extras: number;
+  total_price: number;
+}
+
 export interface OrderDetail {
   order_id: number;
+  name: string;
   state: string;
-  machine_name: string;
+  project: string | null;
+  client_name: string | null;
+  client_phone: string | null;
+  responsible_name: string | null;
+  responsible_phone: string | null;
+  net_provider_price: number | null;
+  commission_rate: number | null;
+  response_state: string | null;
+  machine_name: string | null;
+  operator_name: string | null;
+  provider_name: string | null;
   start_date: string;
-  end_date?: string;
-  name?: string;
-  operator_name?: string;
-  provider_name?: string;
-  project: string;
+  end_date: string;
   duration_days: number;
   location_coords: LocationCoords;
-  work_description: string;
-  items: any[];
-  rental_items?: RentalItem[]; // También en OrderDetail por consistencia
+  location: string;
+  work_description: string | null;
+  work_image: string | null;
+  items: OrderItem[];
   rental_total: number;
   fleet_cost: number;
   insurance_cost: number;
   taxes: number;
   total_final: number;
+  invoice: string | null;
+  cancellation_policy: string | null;
+  refund_type: string | null;
+  penalty_amount: number;
 }
 
 export interface GetOrdersResult {
@@ -58,6 +84,12 @@ export interface GetOrdersResult {
 export interface GetOrderDetailResult {
   success: boolean;
   data?: OrderDetail;
+  message?: string;
+  error?: string;
+}
+
+export interface BaseApiResult {
+  success: boolean;
   message?: string;
   error?: string;
 }

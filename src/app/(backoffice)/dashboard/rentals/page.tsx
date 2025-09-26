@@ -1,7 +1,10 @@
+"use client";
+import OrdersTable from "@/components/organism/OrdersTable/OrdersTable"
+
 export default function Rentals() {
   return (
     <div>
-      <h1>Gestionar rentas</h1>
+    <OrdersTable />
     </div>
   )
 }

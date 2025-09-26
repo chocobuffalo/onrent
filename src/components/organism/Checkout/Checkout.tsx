@@ -34,10 +34,10 @@ export default function Checkout({
   onSubmit,
 }: CheckoutWithLogicProps) {
   const [loading, setLoading] = useState(false);
-  const { toastError } = useToast();
+  const { toastError, toastSuccess } = useToast();
   
   console.log(order,'order in checkout')
-  const {project_name, project_responsible, project_location, client_notes,items,preorder_id,session_id} = order || {};
+  const {project_name, project_responsible, project_location, client_notes,items,preorder_id,session_id, ui_notice} = order || {};
     const {data:session} = useSession(); 
     console.log(session?.user)
  const fleetSum = items?.reduce((sum, item) => sum + (item.estimated_fleet || 0), 0);
@@ -66,6 +66,13 @@ export default function Checkout({
   });
   
   const [clientSecret, setClientSecret] = useState('');
+
+  // useEffect para mostrar notificación de descuento
+  useEffect(() => {
+    if (ui_notice && ui_notice !== null) {
+      toastSuccess("Se aplicó automáticamente una tarifa con descuento por duración ¡Te ahorras 6,300 MXN!");
+    }
+  }, [ui_notice]);
  
 
 const fetchClientSecret = async () => {

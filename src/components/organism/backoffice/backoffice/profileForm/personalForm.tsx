@@ -9,7 +9,11 @@ export default function PersonalForm() {
         register,
         isValid,
         isLoading,
-        authEmail
+        authEmail,
+        regions,
+        isLoadingRegions,
+        selectedRegion,
+        setSelectedRegion,
     } = usePersonalForm();
     
     return (
@@ -57,6 +61,38 @@ export default function PersonalForm() {
                                     placeholder="Tu correo electrónico"
                                     value={authEmail}
                                 />
+                            </div>
+                        </div>
+                        <div className="col-md-12">
+                            <div className="form-group">
+                                <label htmlFor="region">Ciudad (Región)</label>
+                                {isLoadingRegions ? (
+                                    <div className="form-control d-flex align-items-center">
+                                        <ImSpinner8 color="#6c757d" size={16} className="animate-spin me-2" />
+                                        <span>Cargando regiones...</span>
+                                    </div>
+                                ) : (
+                                    <select
+                                        className="form-control placeholder:text-gray-400"
+                                        value={selectedRegion || ""}
+                                        onChange={(e) => setSelectedRegion(e.target.value ? Number(e.target.value) : null)}
+                                        style={{ 
+                                            fontSize: '14px', 
+                                            color: selectedRegion ? '#212529' : '#6c757d',
+                                            borderRadius: '1rem',
+                                            padding: '0.75rem 0.90rem',
+                                            height: 'auto',
+                                            minHeight: '55px'
+                                        }}
+                                    >
+                                        <option value="" disabled style={{ color: '#6c757d' }}>Selecciona tu región</option>
+                                        {regions.map((region) => (
+                                            <option key={region.id} value={region.id} className="text-gray-900">
+                                                {region.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
                             </div>
                         </div>
                     </div>
