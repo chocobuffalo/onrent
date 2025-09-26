@@ -1,6 +1,79 @@
-import Image from "next/image";
+"use client";
 
-export default function Dashboard() {
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
+import useOrdersTable from "@/hooks/frontend/ui/useOrdersTable";
+
+const Dashboard = () => {
+  const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+  
+  const {
+    items: orders,
+    isLoading,
+    error,
+    searchValue,
+    detailModalOpen,
+    orderDetail,
+    handleCloseDetailModal,
+    actionButtons,
+    onSearch,
+  } = useOrdersTable();
+
+  // Fix hydration issues
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Debug: Log orders to see the actual structure
+  useEffect(() => {
+    if (orders && orders.length > 0) {
+      console.log("🔍 DEBUG: Primera orden:", orders[0]);
+      console.log("🔍 DEBUG: Propiedades disponibles:", Object.keys(orders[0]));
+    }
+  }, [orders]);
+
+  // Función para manejar el seguimiento GPS
+  const handleTrackOrder = (order: any) => {
+    console.log("🗺️ Orden completa:", order);
+    
+    // Múltiples opciones para obtener el ID de la máquina
+    let deviceId = null;
+    
+    // Opción 1: machine_id directo
+    if (order?.machine_id) {
+      deviceId = order.machine_id;
+    }
+    // Opción 2: rental_items array
+    else if (order?.rental_items && order.rental_items.length > 0) {
+      deviceId = order.rental_items[0]?.machine_id;
+    }
+    // Opción 3: usar order_id como fallback
+    else if (order?.order_id) {
+      deviceId = order.order_id.toString();
+      console.log("⚠️ Usando order_id como deviceId fallback");
+    }
+
+    if (deviceId) {
+      console.log("✅ DeviceId encontrado:", deviceId);
+      router.push(`/dashboard/tracking?deviceId=${deviceId}`);
+    } else {
+      console.error("❌ No se encontró ningún ID válido para el seguimiento");
+      toast.error('ID de dispositivo no disponible para seguimiento.');
+    }
+  };
+
+  // Show loading state during hydration
+  if (!isClient) {
+    return (
+      <>
+        <h1 className="admin-title">Dashboard</h1>
+        <div className="text-center p-4">Cargando...</div>
+      </>
+    );
+  }
+
   return (
     <>
       <h1 className="admin-title">Dashboard</h1>
@@ -12,7 +85,9 @@ export default function Dashboard() {
         <div className="row">
           <div className="tfcl-dashboard-middle-left col-md-12">
             <div className="tfcl-dashboard-listing">
-              <h5 className="title-dashboard-table">New listing</h5>
+              <h5 className="title-dashboard-table">Mis Órdenes</h5>
+              
+              {/* Filtros de búsqueda */}
               <div className="row">
                 <div className="col-xl-3 col-lg-6 mb-2">
                   <div className="group-input-icon search">
@@ -20,8 +95,9 @@ export default function Dashboard() {
                       type="text"
                       name="title_search"
                       id="title_search"
-                      defaultValue=""
-                      placeholder="Search..."
+                      value={searchValue}
+                      onChange={(e) => onSearch(e.target.value)}
+                      placeholder="Buscar órdenes..."
                     />
                     <span className="datepicker-icon">
                       <svg
@@ -42,91 +118,222 @@ export default function Dashboard() {
                     </span>
                   </div>
                 </div>
-                <div className="col-xl-3 col-lg-6 mb-2">
-                  <div className="group-input-icon">
-                    <input
-                      type="text"
-                      id="from-date"
-                      className="datetimepicker hasDatepicker"
-                      name="from_date"
-                      defaultValue=""
-                      placeholder="From Date"
-                    />
-                    <span className="datepicker-icon">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width={19}
-                        height={18}
-                        viewBox="0 0 19 18"
-                        fill="none"
-                      >
-                        <path
-                          d="M5.5625 2.25V3.9375M13.4375 2.25V3.9375M2.75 14.0625V5.625C2.75 5.17745 2.92779 4.74823 3.24426 4.43176C3.56072 4.11529 3.98995 3.9375 4.4375 3.9375H14.5625C15.0101 3.9375 15.4393 4.11529 15.7557 4.43176C16.0722 4.74823 16.25 5.17745 16.25 5.625V14.0625M2.75 14.0625C2.75 14.5101 2.92779 14.9393 3.24426 15.2557C3.56072 15.5722 3.98995 15.75 4.4375 15.75H14.5625C15.0101 15.75 15.4393 15.5722 15.7557 15.2557C16.0722 14.9393 16.25 14.5101 16.25 14.0625M2.75 14.0625V8.4375C2.75 7.98995 2.92779 7.56073 3.24426 7.24426C3.56072 6.92779 3.98995 6.75 4.4375 6.75H14.5625C15.0101 6.75 15.4393 6.92779 15.7557 7.24426C16.0722 7.56073 16.25 7.98995 16.25 8.4375V14.0625M9.5 9.5625H9.506V9.5685H9.5V9.5625ZM9.5 11.25H9.506V11.256H9.5V11.25ZM9.5 12.9375H9.506V12.9435H9.5V12.9375ZM7.8125 11.25H7.8185V11.256H7.8125V11.25ZM7.8125 12.9375H7.8185V12.9435H7.8125V12.9375ZM6.125 11.25H6.131V11.256H6.125V11.25ZM6.125 12.9375H6.131V12.9435H6.125V12.9375ZM11.1875 9.5625H11.1935V9.5685H11.1875V9.5625ZM11.1875 11.25H11.1935V11.256H11.1875V11.25ZM11.1875 12.9375H11.1935V12.9435H11.1875V12.9375ZM12.875 9.5625H12.881V9.5685H12.875V9.5625ZM12.875 11.25H12.881V11.256H12.875V11.25Z"
-                          stroke="#B6B6B6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-                <div className="col-xl-3 col-lg-6 mb-2">
-                  <div className="group-input-icon">
-                    <input
-                      type="text"
-                      id="to-date"
-                      className="datetimepicker hasDatepicker"
-                      name="to_date"
-                      defaultValue=""
-                      placeholder="To Date"
-                    />
-                    <span className="datepicker-icon">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width={19}
-                        height={18}
-                        viewBox="0 0 19 18"
-                        fill="none"
-                      >
-                        <path
-                          d="M5.5625 2.25V3.9375M13.4375 2.25V3.9375M2.75 14.0625V5.625C2.75 5.17745 2.92779 4.74823 3.24426 4.43176C3.56072 4.11529 3.98995 3.9375 4.4375 3.9375H14.5625C15.0101 3.9375 15.4393 4.11529 15.7557 4.43176C16.0722 4.74823 16.25 5.17745 16.25 5.625V14.0625M2.75 14.0625C2.75 14.5101 2.92779 14.9393 3.24426 15.2557C3.56072 15.5722 3.98995 15.75 4.4375 15.75H14.5625C15.0101 15.75 15.4393 15.5722 15.7557 15.2557C16.0722 14.9393 16.25 14.5101 16.25 14.0625M2.75 14.0625V8.4375C2.75 7.98995 2.92779 7.56073 3.24426 7.24426C3.56072 6.92779 3.98995 6.75 4.4375 6.75H14.5625C15.0101 6.75 15.4393 6.92779 15.7557 7.24426C16.0722 7.56073 16.25 7.98995 16.25 8.4375V14.0625M9.5 9.5625H9.506V9.5685H9.5V9.5625ZM9.5 11.25H9.506V11.256H9.5V11.25ZM9.5 12.9375H9.506V12.9435H9.5V12.9375ZM7.8125 11.25H7.8185V11.256H7.8125V11.25ZM7.8125 12.9375H7.8185V12.9435H7.8125V12.9375ZM6.125 11.25H6.131V11.256H6.125V11.25ZM6.125 12.9375H6.131V12.9435H6.125V12.9375ZM11.1875 9.5625H11.1935V9.5685H11.1875V9.5625ZM11.1875 11.25H11.1935V11.256H11.1875V11.25ZM11.1875 12.9375H11.1935V12.9435H11.1875V12.9375ZM12.875 9.5625H12.881V9.5685H12.875V9.5625ZM12.875 11.25H12.881V11.256H12.875V11.25Z"
-                          stroke="#B6B6B6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-                <div className="col-xl-3 col-lg-6 mb-2">
+                <div className="col-xl-9 col-lg-6 mb-2">
+                  <span className="text-muted small">
+                    Total: {orders?.length || 0} órdenes
+                  </span>
                 </div>
               </div>
+
+              {/* Tabla de órdenes */}
               <div className="tfcl-table-listing">
                 <div className="table-responsive">
                   <span className="result-text">
-                    <b>16</b> results found
+                    <b>{orders?.length || 0}</b> resultados encontrados
                   </span>
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Listing</th>
-                        <th>Status</th>
-                        <th>Posting date</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="tfcl-table-content">
-                    </tbody>
-                  </table>
+                  
+                  {isLoading ? (
+                    <div className="text-center p-4">
+                      <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Cargando...</span>
+                      </div>
+                      <p className="mt-2">Cargando órdenes...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="text-center p-4">
+                      <div className="alert alert-danger" role="alert">
+                        <strong>Error:</strong> {error}
+                      </div>
+                      <button 
+                        className="btn btn-primary"
+                        onClick={() => window.location.reload()}
+                      >
+                        Reintentar
+                      </button>
+                    </div>
+                  ) : (
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>ID Orden</th>
+                          <th>Maquinaria</th>
+                          <th>Estado</th>
+                          <th>Fecha Inicio</th>
+                          <th>Fecha Fin</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="tfcl-table-content">
+                        {orders && orders.length > 0 ? (
+                          orders.map((order) => (
+                            <tr key={order.order_id}>
+                              <td>#{order.order_id || "N/A"}</td>
+                              <td>{order.machine_name || "N/A"}</td>
+                              <td>
+                                <span className={`badge ${getStatusClass(order.state)}`}>
+                                  {order.state || "N/A"}
+                                </span>
+                              </td>
+                              <td>
+                                {order.start_date 
+                                  ? new Date(order.start_date).toLocaleDateString('es-ES')
+                                  : "N/A"
+                                }
+                              </td>
+                              <td>
+                                {order.end_date 
+                                  ? new Date(order.end_date).toLocaleDateString('es-ES')
+                                  : "N/A"
+                                }
+                              </td>
+                              <td>
+                                <div className="d-flex gap-1">
+                                  {/* Botón Detalles */}
+                                  <button
+                                    className="btn btn-sm btn-primary"
+                                    onClick={() => {
+                                      actionButtons[0].onClick(order);
+                                    }}
+                                    title="Ver detalles"
+                                  >
+                                    Detalles
+                                  </button>
+                                  
+                                  {/* Botón Seguimiento GPS - siempre mostrar */}
+                                  <button
+                                    className="btn btn-sm btn-success"
+                                    onClick={() => handleTrackOrder(order)}
+                                    title="Seguimiento GPS"
+                                  >
+                                    Seguimiento
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="text-center p-4">
+                              <div className="text-muted">
+                                <p>No se encontraron órdenes</p>
+                                <small>Intenta ajustar los filtros de búsqueda</small>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
+                
                 <div className="themesflat-pagination clearfix mt-40">
-                  <ul>{/* <Pagination2 /> */}</ul>
+                  <ul>{/* Paginación si es necesario */}</ul>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Modal de detalles */}
+      {detailModalOpen && orderDetail && (
+        <div 
+          className="modal fade show" 
+          style={{ 
+            display: 'block',
+            backgroundColor: 'rgba(0,0,0,0.5)'
+          }}
+          onClick={handleCloseDetailModal}
+        >
+          <div 
+            className="modal-dialog modal-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  Detalle de Orden #{orderDetail.order_id}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={handleCloseDetailModal}
+                  aria-label="Cerrar"
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="row">
+                  <div className="col-md-6">
+                    <p><strong>Estado:</strong> {orderDetail.state}</p>
+                    <p><strong>Maquinaria:</strong> {orderDetail.machine_name}</p>
+                    <p><strong>Proyecto:</strong> {orderDetail.project}</p>
+                  </div>
+                  <div className="col-md-6">
+                    <p><strong>Fecha inicio:</strong> {orderDetail.start_date}</p>
+                    <p><strong>Fecha fin:</strong> {orderDetail.end_date}</p>
+                    <p><strong>Duración:</strong> {orderDetail.duration_days} días</p>
+                  </div>
+                </div>
+                
+                {orderDetail.work_description && (
+                  <div className="mt-3">
+                    <strong>Descripción del trabajo:</strong>
+                    <p className="text-muted">{orderDetail.work_description}</p>
+                  </div>
+                )}
+
+                <div className="mt-3">
+                  <strong>Total:</strong> ${orderDetail.total_final?.toLocaleString()}
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleCloseDetailModal}
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={() => {
+                    handleTrackOrder(orderDetail);
+                    handleCloseDetailModal();
+                  }}
+                >
+                  Ver Seguimiento
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
-}
+};
+
+// Función auxiliar para los estilos de estado
+const getStatusClass = (status: string) => {
+  if (!status) return 'bg-secondary';
+  
+  switch (status.toLowerCase()) {
+    case 'active':
+    case 'activo':
+    case 'en progreso':
+      return 'bg-success';
+    case 'pending':
+    case 'pendiente':
+      return 'bg-warning';
+    case 'cancelled':
+    case 'cancelado':
+      return 'bg-danger';
+    case 'completed':
+    case 'completado':
+      return 'bg-info';
+    default:
+      return 'bg-secondary';
+  }
+};
+
+export default Dashboard;

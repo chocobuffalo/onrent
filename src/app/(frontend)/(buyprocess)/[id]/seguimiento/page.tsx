@@ -1,4 +1,5 @@
 "use client";
+//src\app\(frontend)\(buyprocess)\[id]\seguimiento\page.tsx
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
