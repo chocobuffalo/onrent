@@ -1,5 +1,5 @@
 // src/app/api/location/[entity_id]/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
@@ -14,11 +14,11 @@ const client = new DynamoDBClient({
 const docClient = DynamoDBDocumentClient.from(client);
 
 export async function GET(
-  request: Request,
-  { params }: { params: { entity_id: string } }
+  request: NextRequest,
+  context: { params: { entity_id: string } }
 ) {
   try {
-    const { entity_id } = params;
+    const { entity_id } = context.params;
 
     if (!entity_id) {
       return NextResponse.json(
@@ -77,7 +77,7 @@ export async function GET(
     return NextResponse.json(locationData, { status: 200 });
 
   } catch (error) {
-    console.error(`❌ Error fetching location for ${params.entity_id}:`, error);
+    console.error(`❌ Error fetching location for ${context.params.entity_id}:`, error);
     
     return NextResponse.json(
       { 
