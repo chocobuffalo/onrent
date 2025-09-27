@@ -1,49 +1,50 @@
 // src/components/organism/MapWithTracking/MapWithTracking.tsx
+"use client";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import { useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import L from "leaflet";
 
-// Se asume que LatLng es una interfaz global o está definida aquí.
-interface LatLng {
-  lat: number;
-  lng: number;
+interface Props {
+  initialPosition: [number, number];
 }
 
-interface MapWithTrackingProps {
-  initialPosition?: [number, number];
-  zoom?: number;
-  // La propiedad 'location' es una nueva adición para mostrar un marcador único.
-  location?: LatLng | null;
-}
+const RecenterOnChange = ({ position }: { position: [number, number] | null }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (position) {
+      map.setView(position, map.getZoom(), { animate: true });
+    }
+  }, [position, map]);
+  return null;
+};
 
-export default function MapWithTracking({
-  initialPosition = [22.1565, -100.9855],
-  zoom = 6,
-  location,
-}: MapWithTrackingProps) {
-  // Ahora el componente solo se encarga de mostrar el mapa.
-  // La lógica de obtención de datos se maneja en la página que lo utiliza.
+const MapWithTracking = ({ initialPosition }: Props) => {
+  const markerRef = useRef<any>(null);
+
+  // ícono (pon tu /car-icon.png en public/)
+  const vehicleIcon = L.icon({
+    iconUrl: "/car-icon.png",
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+  });
 
   return (
-    <div style={{ height: "500px", width: "100%", borderRadius: "0.5rem" }}>
-      <MapContainer
-        center={initialPosition}
-        zoom={zoom}
-        scrollWheelZoom
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-        />
-
-        {/* Si la ubicación es proporcionada, muestra un marcador en el mapa. */}
-        {location && (
-          <Marker position={[location.lat, location.lng]}>
-            <Popup>Ubicación de la maquinaria</Popup>
-          </Marker>
-        )}
-      </MapContainer>
-    </div>
+    <MapContainer
+      center={initialPosition}
+      zoom={15}
+      className="h-[500px] w-full rounded-2xl shadow-lg"
+      style={{ minHeight: 400 }}
+    >
+      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <Marker
+        position={initialPosition}
+        icon={vehicleIcon}
+        ref={markerRef}
+      />
+      <RecenterOnChange position={initialPosition} />
+    </MapContainer>
   );
-}
+};
+
+export default MapWithTracking;

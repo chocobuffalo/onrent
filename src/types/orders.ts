@@ -1,9 +1,21 @@
+// Interfaz para los elementos de renta
+export interface RentalItem {
+  machine_id: string;
+  machine_name?: string;
+  quantity?: number;
+  daily_rate?: number;
+  duration_days?: number;
+  subtotal?: number;
+}
+
 export interface OrderResponse {
   order_id: number;
   state: string;
   machine_name: string;
   start_date: string;
   end_date: string;
+  machine_id?: string; // Para compatibilidad directa
+  rental_items?: RentalItem[]; // Array de elementos rentados
 }
 
 export interface LocationCoords {
