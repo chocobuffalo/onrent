@@ -12,14 +12,12 @@ $color-section-bg: #fafafa;
 $color-accent: #059669;
 $color-close-hover: #ef4444;
 
-
 $spacing-xs: 8px;
 $spacing-sm: 12px;
 $spacing-md: 16px;
 $spacing-lg: 24px;
 $spacing-xl: 32px;
 $spacing-2xl: 48px;
-
 
 @mixin flex-center {
   display: flex;
@@ -60,7 +58,6 @@ $spacing-2xl: 48px;
     @include card-shadow;
     z-index: 10000;
   }
-
 
   &__header {
     background-color: $color-header-bg;
@@ -107,13 +104,11 @@ $spacing-2xl: 48px;
     }
   }
 
-
   &__body {
     padding: $spacing-2xl;
     overflow-y: auto;
     max-height: calc(90vh - 140px);
   }
-
 
   &__main-info {
     display: grid;
@@ -124,6 +119,18 @@ $spacing-2xl: 48px;
     background-color: $color-section-bg;
     border-radius: 8px;
     border: 1px solid $color-border-light;
+
+    // Clase específica para rentas (4 columnas)
+    &--rentals {
+      grid-template-columns: repeat(4, 1fr);
+      gap: $spacing-lg;
+
+      .order-detail-modal__main-info-item {
+        &::after {
+          right: -#{$spacing-sm};
+        }
+      }
+    }
 
     &-item {
       text-align: center;
@@ -171,7 +178,6 @@ $spacing-2xl: 48px;
     }
   }
 
-
   &__status {
     display: inline-flex;
     align-items: center;
@@ -214,7 +220,6 @@ $spacing-2xl: 48px;
     }
   }
 
-
   &__client-info {
     background-color: $color-section-bg;
     border-radius: 8px;
@@ -245,7 +250,6 @@ $spacing-2xl: 48px;
       }
     }
   }
-
 
   &__products {
     &-table {
@@ -299,7 +303,6 @@ $spacing-2xl: 48px;
     }
   }
 
-
   &__costs {
     background-color: $color-section-bg;
     border-radius: 8px;
@@ -349,7 +352,6 @@ $spacing-2xl: 48px;
   }
 }
 
-
 @media (max-width: 768px) {
   .order-detail-modal {
     &__content {
@@ -373,6 +375,11 @@ $spacing-2xl: 48px;
       grid-template-columns: 1fr;
       gap: $spacing-lg;
       padding: $spacing-lg;
+
+      // Para rentas en móvil, usar 2 columnas
+      &--rentals {
+        grid-template-columns: repeat(2, 1fr);
+      }
 
       &-item::after {
         display: none;

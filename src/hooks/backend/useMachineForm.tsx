@@ -1,5 +1,4 @@
 "use client";
-"use client";
 
 import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -19,27 +18,39 @@ const schema = Yup.object().shape({
   daily_rate: Yup.number()
     .typeError("Debe ser un número")
     .required("Tarifa diaria es requerida")
-    .positive("La tarifa diaria debe ser un número positivo"),
+    .min(0, "La tarifa diaria no puede ser negativa"),
   status: Yup.string().required("Estado de la maquinaria es requerido"),
   location_info: Yup.string().required("Información de ubicación es requerida"),
   weight_tn: Yup.number()
     .typeError("Debe ser un número")
-    .positive("El peso debe ser un número positivo")
-    .required("Peso en toneladas es requerido"),
+    .min(0, "El peso no puede ser negativo")
+    .nullable()
+    .transform((value, originalValue) => {
+      return originalValue === "" ? null : value;
+    }),
   motor_spec: Yup.string(),
   height_m: Yup.number()
     .typeError("Debe ser un número")
-    .required("Altura en metros es requerida")
-    .positive("La altura debe ser un número positivo"),
+    .min(0, "La altura no puede ser negativa")
+    .nullable()
+    .transform((value, originalValue) => {
+      return originalValue === "" ? null : value;
+    }),
   width_m: Yup.number()
     .typeError("Debe ser un número")
-    .required("Ancho en metros es requerido")
-    .positive("El ancho debe ser un número positivo"),
+    .min(0, "El ancho no puede ser negativo")
+    .nullable()
+    .transform((value, originalValue) => {
+      return originalValue === "" ? null : value;
+    }),
   seat_count: Yup.number()
     .typeError("Debe ser un número")
-    .required("Número de asientos es requerido")
-    .positive("El número de asientos debe ser un número positivo")
-    .integer("El número de asientos debe ser un número entero"),
+    .min(0, "El número de asientos no puede ser negativo")
+    .integer("El número de asientos debe ser un número entero")
+    .nullable()
+    .transform((value, originalValue) => {
+      return originalValue === "" ? null : value;
+    }),
   fuel_type: Yup.string().required("Tipo de combustible es requerido"),
   machine_category: Yup.string().required(
     "Categoría de maquinaria es requerida"
@@ -100,11 +111,11 @@ export default function useMachineForm() {
         location_info: data.location_info.trim(),
         machine_category: data.machine_category,
         fuel_type: data.fuel_type,
-        weight_tn: Number(data.weight_tn),
+        weight_tn: data.weight_tn ? Number(data.weight_tn) : 0,
         motor_spec: data.motor_spec?.trim() || "",
-        height_m: Number(data.height_m),
-        width_m: Number(data.width_m),
-        seat_count: Number(data.seat_count),
+        height_m: data.height_m ? Number(data.height_m) : 0,
+        width_m: data.width_m ? Number(data.width_m) : 0,
+        seat_count: data.seat_count ? Number(data.seat_count) : 0,
         gps_lat: data.gps_lat ? Number(data.gps_lat) : undefined,
         gps_lng: data.gps_lng ? Number(data.gps_lng) : undefined,
         geospatial_status: data.gps_lat && data.gps_lng ? "available" : undefined,
@@ -135,6 +146,6 @@ export default function useMachineForm() {
     isLoading,
     isValid,
     watch,
-    setValue, // Exponer setValue para que el hook UI maneje Redux
+    setValue,
   };
 }

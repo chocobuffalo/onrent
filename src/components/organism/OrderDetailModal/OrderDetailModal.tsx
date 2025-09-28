@@ -35,7 +35,6 @@ export default function OrderDetailModal({
     };
   }, [isOpen]);
 
-
   if (!isOpen || !orderDetail) return null;
 
   const formatState = (state: string) => {
@@ -85,7 +84,7 @@ export default function OrderDetailModal({
         <div className="order-detail-modal__body">
           
           {/* Información principal */}
-          <div className="order-detail-modal__main-info">
+          <div className={`order-detail-modal__main-info ${isRentalsPage ? 'order-detail-modal__main-info--rentals' : ''}`}>
             <div className="order-detail-modal__main-info-item">
               <div className="label">Fecha</div>
               <p className="value">

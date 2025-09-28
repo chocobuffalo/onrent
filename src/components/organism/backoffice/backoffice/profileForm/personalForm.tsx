@@ -14,6 +14,7 @@ export default function PersonalForm() {
         isLoadingRegions,
         selectedRegion,
         setSelectedRegion,
+        hasChanges,
     } = usePersonalForm();
     
     return (
@@ -97,7 +98,7 @@ export default function PersonalForm() {
                         </div>
                     </div>
                     <div className="group-button-submit left mb-0">
-                        <button className="pre-btn" type="submit" disabled={!isValid && !isLoading}>
+                        <button className="pre-btn" type="submit" disabled={(!isValid && !hasChanges()) || isLoading}>
                             {isLoading ? (
                                 <ImSpinner8 color="#ffffff" size={20} className="animate-spin mx-auto" />
                             ) : (

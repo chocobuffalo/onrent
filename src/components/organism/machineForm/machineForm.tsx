@@ -17,7 +17,7 @@ interface MachineFormProps {
 }
 
 const MachineForm = ({ onCreated }: MachineFormProps) => {
-  // Hook de frontend que coordina toda la lógica
+
   const {
     register,
     handleSubmit,
@@ -28,7 +28,7 @@ const MachineForm = ({ onCreated }: MachineFormProps) => {
   } = useMachineFormUI({ onCreated });
 
   return (
-    <form className="container" onSubmit={handleSubmit(submit)}>
+    <form className="container" onSubmit={handleSubmit(submit)} noValidate>
       <div className="modal-body">
         <div className="row p-4">
           <div className="col-md-6 pb-3">
@@ -127,8 +127,8 @@ const MachineForm = ({ onCreated }: MachineFormProps) => {
           </div>
           <div className="col-md-6 col-lg-4">
             <Input
-              label="Peso de la maquinaria"
-              type="text"
+              label="Peso de la maquinaria (TN)"
+              type="number"
               name="weight_tn"
               placeHolder="0"
               register={register}
@@ -137,8 +137,8 @@ const MachineForm = ({ onCreated }: MachineFormProps) => {
           </div>
           <div className="col-md-6 col-lg-4">
             <Input
-              label="Altura de la maquinaria"
-              type="text"
+              label="Altura de la maquinaria (M)"
+              type="number"
               name="height_m"
               placeHolder="0"
               register={register}
@@ -147,8 +147,8 @@ const MachineForm = ({ onCreated }: MachineFormProps) => {
           </div>
           <div className="col-md-6 col-lg-4">
             <Input
-              label="Longitud de la maquinaria"
-              type="text"
+              label="Longitud de la maquinaria (M)"
+              type="number"
               name="width_m"
               placeHolder="0"
               register={register}
@@ -158,8 +158,8 @@ const MachineForm = ({ onCreated }: MachineFormProps) => {
 
           <div className="col-md-6 col-lg-4">
             <Input
-              label="Numero de asientos"
-              type="text"
+              label="Número de asientos"
+              type="number"
               name="seat_count"
               placeHolder="0"
               register={register}

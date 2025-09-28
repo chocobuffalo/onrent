@@ -19,5 +19,11 @@ export const userRoles:RoleInterface[] = [
         label:'Cliente y Proveedor',
         value:'cliente_proveedor',
         color:"#fff"
+    },
+       {
+        id:4,
+        label:'Operador',
+        value:'operador',
+        color:"#fff"
     }
 ]

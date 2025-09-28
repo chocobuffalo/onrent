@@ -81,3 +81,54 @@ export interface BaseApiResult {
   message?: string;
   error?: string;
 }
+
+export interface TableColumn {
+  key: string;
+  label: string;
+  render?: (value: any, item: any) => React.ReactNode;
+}
+
+export interface StatusOption {
+  value: string;
+  label: string;
+}
+
+export interface ActionButton {
+  label: string;
+  onClick: (item: any) => void;
+  className?: string;
+}
+
+export interface StatusColors {
+  [key: string]: string;
+}
+
+export interface RentalTableProps {
+  title?: string;
+  items?: any[];
+  isLoading?: boolean;
+  error?: string | null;
+  searchValue?: string;
+  columns?: TableColumn[];
+  statusField?: string;
+  statusOptions?: StatusOption[];
+  statusColors?: StatusColors;
+  actionButtons?: ActionButton[];
+  onSearch?: (value: string) => void;
+  onStatusChange?: (itemId: any, newStatus: string) => void;
+}
+
+export interface DynamicTableProps {
+  title?: string;
+  items?: any[];
+  isLoading?: boolean;
+  error?: string | null;
+  searchValue?: string;
+  columns?: TableColumn[];
+  statusField?: string;
+  statusOptions?: StatusOption[];
+  statusColors?: StatusColors;
+  actionButtons?: ActionButton[];
+  onSearch?: (value: string) => void;
+  onStatusChange?: (itemId: any, newStatus: string) => void;
+}
