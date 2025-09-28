@@ -8,7 +8,7 @@ export default function RoleForm(){
    // console.log(roleOption)
     return(
            <div className="">
-                     <h2 className="form-title mb-2">Tipo de usuario</h2>
+                     <h2 className="form-title mb-2">Quiero ser</h2>
                     <form onSubmit={handleSubmit(onSubmit)} className="">
                         <div className="profile-personal">
                             <div className="row">

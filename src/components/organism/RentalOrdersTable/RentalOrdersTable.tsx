@@ -1,11 +1,11 @@
 "use client";
 
-import DynamicTable from "@/components/atoms/DynamicTable/DynamicTable";
+import RentalTable from "@/components/atoms/RentalTable/RentalTable";
 import OrderDetailModal from "@/components/organism/OrderDetailModal/OrderDetailModal";
 import ConfirmationModal from "@/components/organism/ConfirmationModal/ConfirmationModal";
 import useOrdersTable from "@/hooks/frontend/ui/useOrdersTable";
 
-const OrdersTable = () => {
+const RentalOrdersTable = () => {
   const {
     items,
     isLoading,
@@ -30,8 +30,8 @@ const OrdersTable = () => {
 
   return (
     <div className="orders-table-container p-6">
-      <div className="orders-table-content orders-table">
-        <DynamicTable
+      <div className="orders-table-content">
+        <RentalTable
           title="Lista de Órdenes"
           items={items}
           isLoading={isLoading}
@@ -73,4 +73,4 @@ const OrdersTable = () => {
   );
 };
 
-export default OrdersTable;
+export default RentalOrdersTable;

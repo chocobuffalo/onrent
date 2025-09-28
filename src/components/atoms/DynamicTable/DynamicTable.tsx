@@ -3,7 +3,7 @@
 import { ImSpinner8 } from "react-icons/im";
 import { HiSearch, HiDocumentText } from "react-icons/hi";
 import { Edit, Trash2, Eye, CheckCircle, XCircle } from "lucide-react";
-import { DynamicTableProps } from "@/types/machinary";
+import { DynamicTableProps, TableColumn, StatusOption, ActionButton } from "@/types/machinary";
 import "./DynamicTable.scss";
 
 export default function DynamicTable({

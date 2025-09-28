@@ -20,7 +20,7 @@ interface EditMachineFormProps {
 }
 
 const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
-  // Hook de frontend que coordina toda la lógica
+  
   const {
     register,
     handleSubmit,
@@ -33,7 +33,7 @@ const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
   } = useEditMachineFormUI({ editData, onSuccess });
 
   return (
-    <form className="container" onSubmit={handleSubmit(submit)}>
+    <form className="container" onSubmit={handleSubmit(submit)} noValidate>
       <div className="modal-body">
         <div className="row p-4">
           <div className="col-md-6 pb-3">

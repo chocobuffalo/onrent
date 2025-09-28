@@ -16,26 +16,26 @@ const schema = Yup.object().shape({
   daily_rate: Yup.number()
     .typeError("Debe ser un número")
     .required("Tarifa diaria es requerida")
-    .positive("La tarifa diaria debe ser un número positivo"),
+    .min(0, "La tarifa diaria no puede ser negativa"),
   status: Yup.string().required("Estado de la maquinaria es requerido"),
   location_info: Yup.string().required("Información de ubicación es requerida"),
   weight_tn: Yup.number()
     .typeError("Debe ser un número")
-    .positive("El peso debe ser un número positivo")
+    .min(0, "El peso no puede ser negativo")
     .required("Peso en toneladas es requerido"),
   motor_spec: Yup.string(),
   height_m: Yup.number()
     .typeError("Debe ser un número")
     .required("Altura en metros es requerida")
-    .positive("La altura debe ser un número positivo"),
+    .min(0, "La altura no puede ser negativa"),
   width_m: Yup.number()
     .typeError("Debe ser un número")
     .required("Ancho en metros es requerido")
-    .positive("El ancho debe ser un número positivo"),
+    .min(0, "El ancho no puede ser negativo"),
   seat_count: Yup.number()
     .typeError("Debe ser un número")
     .required("Número de asientos es requerido")
-    .positive("El número de asientos debe ser un número positivo")
+    .min(0, "El número de asientos no puede ser negativo")
     .integer("El número de asientos debe ser un número entero"),
   fuel_type: Yup.string().required("Tipo de combustible es requerido"),
   machine_category: Yup.string().required("Categoría de maquinaria es requerida"),

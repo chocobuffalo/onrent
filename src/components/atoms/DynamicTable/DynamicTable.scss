@@ -313,12 +313,23 @@ $spacing-scale: (
 }
 
 // =============================================================================
-// CONTENEDOR PRINCIPAL DE LA TABLA
+// CONTENEDOR PRINCIPAL DE LA TABLA CON FIXES INTEGRADOS
 // =============================================================================
 .dynamic-table-container {
   h2 {
     @include responsive-typography(1.25rem);
     @include responsive-spacing(margin, 1rem);
+    
+    // FIX ESPECÍFICO PARA ÓRDENES: Rango problemático 320px-396px
+    @include respond-to(320px, 396px) {
+      margin: 0.2rem;
+      font-size: 0.56rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      margin: 0.3rem;
+      font-size: 0.69rem;
+    }
   }
 
   .element-counter {
@@ -339,6 +350,17 @@ $spacing-scale: (
 
     @include respond-to(map-get($breakpoints, xxxl)) {
       font-weight: 700;
+    }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      font-size: 0.39rem;
+      padding: 0.15rem 0.4rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      font-size: 0.48rem;
+      padding: 0.2rem 0.5rem;
     }
   }
 
@@ -364,6 +386,15 @@ $spacing-scale: (
 
     @include respond-to(map-get($breakpoints, xs), map-get($breakpoints, xs-max)) {
       left: 0.5rem; // Manteniendo exacto para 320px
+    }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      left: 0.25rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      left: 0.4rem;
     }
   }
 
@@ -400,6 +431,17 @@ $spacing-scale: (
       width: 1.5rem;
       height: 1.5rem;
     }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      width: 0.6rem;
+      height: 0.6rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      width: 0.8rem;
+      height: 0.8rem;
+    }
   }
 
   .search-input {
@@ -431,6 +473,19 @@ $spacing-scale: (
     @include respond-to(map-get($breakpoints, xxxl)) {
       padding: 0.875rem 1.5rem 0.875rem 3.5rem;
     }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      padding: 0.25rem 0.3rem 0.25rem 1.2rem;
+      border-radius: 0.25rem;
+      font-size: 0.45rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      padding: 0.4rem 0.4rem 0.4rem 1.6rem;
+      border-radius: 0.3rem;
+      font-size: 0.55rem;
+    }
 
     &::placeholder {
       color: #6b7280;
@@ -452,6 +507,15 @@ $spacing-scale: (
     @include respond-to(map-get($breakpoints, xs), map-get($breakpoints, xs-max)) {
       padding-left: 0.5rem; // Manteniendo exacto para 320px
     }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      padding-left: 0.2rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      padding-left: 0.3rem;
+    }
   }
 
   // Table headers
@@ -462,6 +526,17 @@ $spacing-scale: (
     @include respond-to(map-get($breakpoints, xs), map-get($breakpoints, xs-max)) {
       font-size: 0.5rem; // Manteniendo exacto para 320px
     }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      font-size: 0.35rem;
+      padding: 0.19rem 0.16rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      font-size: 0.45rem;
+      padding: 0.3rem 0.2rem;
+    }
   }
 
   // Table body cells
@@ -471,6 +546,17 @@ $spacing-scale: (
 
     @include respond-to(map-get($breakpoints, xs), map-get($breakpoints, xs-max)) {
       font-size: 0.8125rem; // Manteniendo exacto para 320px
+    }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      font-size: 0.6rem;
+      padding: 0.25rem 0.16rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      font-size: 0.7rem;
+      padding: 0.4rem 0.2rem;
     }
   }
 
@@ -558,6 +644,25 @@ $spacing-scale: (
       min-height: 2.125rem;
       max-width: 11.5rem;
     }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      font-size: 0.35rem;
+      padding: 0.1rem 0.8rem 0.1rem 0.2rem;
+      background-size: 0.5em 0.5em;
+      background-position: right 0.15rem center;
+      min-height: 0.8rem;
+      max-width: 2.5rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      font-size: 0.45rem;
+      padding: 0.15rem 1rem 0.15rem 0.3rem;
+      background-size: 0.6em 0.6em;
+      background-position: right 0.2rem center;
+      min-height: 1rem;
+      max-width: 3rem;
+    }
   }
 
   select option,
@@ -580,6 +685,21 @@ $spacing-scale: (
       padding: 0;
       justify-content: center;
       flex-direction: row;
+    }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      gap: 0.05rem;
+      padding: 0;
+      justify-content: center;
+      flex-direction: column;
+    }
+    
+    @include respond-to(397px, 470px) {
+      gap: 0.1rem;
+      padding: 0;
+      justify-content: center;
+      flex-direction: column;
     }
   }
 
@@ -606,6 +726,15 @@ $spacing-scale: (
         justify-content: center;
         flex-wrap: nowrap;
       }
+    }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      padding: 0.15rem 0.2rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      padding: 0.25rem 0.3rem;
     }
   }
 
@@ -644,6 +773,30 @@ $spacing-scale: (
     th:nth-child(2), td:nth-child(2) { width: 10%; }
     th:nth-child(3), td:nth-child(3) { width: 14%; }
     th:nth-child(4), td:nth-child(4) { width: 60%; }
+  }
+  
+  // FIX ESPECÍFICO PARA ÓRDENES: Distribución de columnas optimizada
+  @include respond-to(320px, 396px) {
+    th, td {
+      padding-left: 0.2rem;
+      padding-right: 0.1rem;
+    }
+
+    th:nth-child(1), td:nth-child(1) { width: 12%; }
+    th:nth-child(2), td:nth-child(2) { width: 12%; }
+    th:nth-child(3), td:nth-child(3) { width: 16%; }
+    th:nth-child(4), td:nth-child(4) { width: 14%; }
+    th:nth-child(5), td:nth-child(5) { width: 14%; }
+    th:nth-child(6), td:nth-child(6) { width: 32%; }
+  }
+  
+  @include respond-to(397px, 470px) {
+    th:nth-child(1), td:nth-child(1) { width: 14%; }
+    th:nth-child(2), td:nth-child(2) { width: 12%; }
+    th:nth-child(3), td:nth-child(3) { width: 16%; }
+    th:nth-child(4), td:nth-child(4) { width: 14%; }
+    th:nth-child(5), td:nth-child(5) { width: 14%; }
+    th:nth-child(6), td:nth-child(6) { width: 30%; }
   }
 
   @include respond-to(map-get($breakpoints, sm), map-get($breakpoints, sm-max)) {
@@ -708,7 +861,7 @@ $spacing-scale: (
   }
 }
 
-// Action button component
+// Action button component con fixes integrados
 .table-action-button {
   @include responsive-button();
 
@@ -752,6 +905,17 @@ $spacing-scale: (
       width: 1rem;
       height: 1rem;
     }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      width: 0.3rem;
+      height: 0.3rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      width: 0.4rem;
+      height: 0.4rem;
+    }
   }
 
   // Hover principal para todos los tamaños
@@ -766,6 +930,37 @@ $spacing-scale: (
         animation: bounce 0.6s ease-in-out;
         transform: scale(1.1);
       }
+    }
+  }
+  
+  // FIX ESPECÍFICO PARA ÓRDENES: Botones ultra compactos
+  @include respond-to(320px, 396px) {
+    height: 1rem;
+    padding: 0.1rem 0.15rem;
+    font-size: 0.4rem;
+    border-radius: 0.125rem;
+    border-width: 1px;
+    min-width: 1.2rem;
+    max-width: 1.2rem;
+    gap: 0.05rem;
+    
+    span {
+      display: none;
+    }
+  }
+
+  @include respond-to(397px, 470px) {
+    height: 1.2rem;
+    padding: 0.15rem 0.25rem;
+    font-size: 0.5rem;
+    border-radius: 0.15rem;
+    border-width: 1px;
+    min-width: 1.5rem;
+    max-width: 1.5rem;
+    gap: 0.08rem;
+    
+    span {
+      display: none;
     }
   }
 
@@ -822,6 +1017,19 @@ $spacing-scale: (
       min-width: 2.5rem;
       max-width: 2.5rem;
     }
+    
+    // FIX ESPECÍFICO PARA ÓRDENES
+    @include respond-to(320px, 396px) {
+      padding: 0.05rem 0.1rem;
+      min-width: 0.8rem;
+      max-width: 0.8rem;
+    }
+    
+    @include respond-to(397px, 470px) {
+      padding: 0.1rem 0.15rem;
+      min-width: 1rem;
+      max-width: 1rem;
+    }
   }
 }
 
@@ -851,5 +1059,57 @@ $spacing-scale: (
   }
   90% {
     transform: translate3d(0, -2px, 0);
+  }
+}
+
+// Al final de DynamicTable.scss - Fix solo para scroll horizontal en órdenes
+
+.dynamic-table-container {
+  // Comportamiento normal para pantallas grandes (maquinaria - 4 columnas)
+  @include respond-to(map-get($breakpoints, lg)) {
+    .overflow-x-auto {
+      overflow-x: visible;
+    }
+
+    table {
+      table-layout: auto !important;
+      width: 100% !important;
+      
+      th, td {
+        width: auto !important;
+      }
+    }
+  }
+  
+  &.orders-table {
+    @include respond-to(map-get($breakpoints, lg)) {
+      table {
+        table-layout: fixed !important;
+        
+        th:nth-child(1), td:nth-child(1) { width: 13% !important; }
+        th:nth-child(2), td:nth-child(2) { width: 15% !important; }
+        th:nth-child(3), td:nth-child(3) { width: 20% !important; }
+        th:nth-child(4), td:nth-child(4) { width: 17% !important; }
+        th:nth-child(5), td:nth-child(5) { width: 17% !important; }
+        th:nth-child(6), td:nth-child(6) { width: 18% !important; }
+        
+        th, td {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          word-wrap: break-word;
+      
+          padding-left: 1rem !important;
+          padding-right: 0.75rem !important;
+        }
+        
+        th:first-child, td:first-child {
+          padding-left: 1.5rem !important;
+        }
+        
+        th:last-child, td:last-child {
+          padding-right: 1.5rem !important;
+        }
+      }
+    }
   }
 }
