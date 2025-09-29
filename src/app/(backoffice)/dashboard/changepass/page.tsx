@@ -4,9 +4,8 @@ import { Metadata } from "next";
 
 export const metadata:Metadata ={
     title: 'Cambiar Contraseña',
-    description: 'Página para cambiar la contraseña del usuario',
+    description: 'Cambia la contraseña de tu cuenta de forma segura',
 }
-
 
 export default function ChangePass() {
 return <ChangePassForm />
