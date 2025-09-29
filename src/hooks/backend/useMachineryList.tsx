@@ -5,8 +5,6 @@ import { getMachineryList } from "@/services/getMachinery.adapter";
 import { 
   MachineryResponse, 
   TableColumn, 
-  StatusOption, 
-  StatusColors, 
   ActionButton 
 } from "@/types/machinary";
 import { useSession } from "next-auth/react";
@@ -62,14 +60,6 @@ export default function useMachineryList(props?: UseMachineryListProps) {
     setSearchValue(value);
   }, []);
 
-  const handleStatusChange = useCallback((machineryId: string | number, newStatus: string) => {
-    setMachineries(prev => 
-      prev.map(machinery => 
-        machinery.id === machineryId ? { ...machinery, status: newStatus } : machinery
-      )
-    );
-  }, []);
-
   const handleCreate = useCallback((newItem: MachineryResponse) => {
     setMachineries(prev => [newItem, ...prev]);
     props?.onCreate?.(newItem);
@@ -81,7 +71,6 @@ export default function useMachineryList(props?: UseMachineryListProps) {
 
   const refreshList = useCallback(() => fetchMachineries(), [fetchMachineries]);
 
-  // Filtrado simple
   const filteredMachineries = useMemo(() => {
     if (!searchValue.trim()) return machineries;
     
@@ -92,7 +81,6 @@ export default function useMachineryList(props?: UseMachineryListProps) {
     );
   }, [machineries, searchValue]);
 
-  // Configuraciones estáticas (sin useMemo innecesario)
   const columns: TableColumn[] = [
     {
       key: 'name',
@@ -112,25 +100,16 @@ export default function useMachineryList(props?: UseMachineryListProps) {
         </div>
       ),
     },
+    {
+      key: 'status',
+      label: 'Estado',
+      render: (value: any) => (
+        <div className="text-sm font-medium capitalize text-gray-700">
+          {value || 'N/A'}
+        </div>
+      ),
+    },
   ];
-
-  const statusOptions: StatusOption[] = [
-    { value: 'disponible', label: 'Disponible' },
-    { value: 'ha_llegado', label: 'Ha llegado' },
-    { value: 'llegando_a_tu_obra', label: 'Llegando a tu obra' },
-    { value: 'en_camino', label: 'En camino' },
-    { value: 'preparando_maquina', label: 'Preparando maquina' },
-    { value: 'completado', label: 'Completado' },
-  ];
-
-  const statusColors: StatusColors = {
-    'disponible': 'bg-white text-black border-orange-500',
-    'ha_llegado': 'bg-[#009145] text-white border-[#009145]',
-    'llegando_a_tu_obra': 'bg-[#8BC53F] text-white border-[#8BC53F]',
-    'en_camino': 'bg-[#FBED21] text-black border-[#FBED21]',
-    'preparando_maquina': 'bg-[#F05A24] text-white border-[#F05A24]',
-    'completado': 'bg-[#13123D] text-white border-[#13123D]',
-  };
 
   const actionButtons: ActionButton[] = [
     {
@@ -155,12 +134,8 @@ export default function useMachineryList(props?: UseMachineryListProps) {
     error,
     searchValue,
     columns,
-    statusField: 'status',
-    statusOptions,
-    statusColors,
     actionButtons,
     onSearch: handleSearch,
-    onStatusChange: handleStatusChange,
     onAction: () => {},
     refreshList,
     removeFromLocalState,

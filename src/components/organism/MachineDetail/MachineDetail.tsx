@@ -13,6 +13,7 @@ import AmazonLocationMap from "@/components/organism/AmazonLocationService/amazo
 import { getImageUrl } from "@/utils/imageUrl";
 import { useGetProject } from "@/hooks/component/useGetProject";
 import DropdownList from "@/components/atoms/dropdownList/dropdownList";
+import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
 
 interface MachineDetailProps {
   machine: CatalogueItem;
@@ -58,7 +59,10 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
   const [workImagePreview, setWorkImagePreview] = useState<string | null>(null);
   const [isManualMode, setIsManualMode] = useState(false);
   
-  // CORRECCIÓN: Detectar si hay proyecto vinculado - mejorar la condición
+
+  const { needProject } = useDateRange();
+  
+ 
   const hasProject = Boolean(
     (projectId && (projectData || projectName)) || 
     (projectData && projectName)
@@ -181,11 +185,21 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                 }
               />
             </div>
-            <p className="font-semibold mb-2">
-              Disponible del 5 de agosto al 23 diciembre
-            </p>
             <div className="flex flex-col gap-3.5 w-full">
-              <DateRentInput grid={true}/>
+              <DateRentInput 
+                grid={true}
+                projectName={projectName}
+                onProjectNameChange={setProjectName}
+                isManualMode={isManualMode}
+                onToggleManualMode={() => setIsManualMode(!isManualMode)}
+                projectId={projectId}
+                openProjects={openProjects}
+                onOpenProjects={setOpenProjects}
+                projects={projects}
+                onProjectSelect={handlerProjectSelect}
+                loadingProject={loadingProject}
+                DropdownComponent={DropdownList}
+              />
             </div>
           </div>
 
@@ -378,59 +392,61 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                 </div>
               )}
 
-              {/* Nombre del proyecto con toggle manual/búsqueda */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Nombre del proyecto
-                  </label>
-                  {!projectId && ( 
-                    <button
-                      type="button"
-                      onClick={() => setIsManualMode(!isManualMode)}
-                      className="text-xs text-orange-600 hover:text-orange-800"
-                    >
-                      {isManualMode ? 'Buscar proyecto existente' : 'Escribir manualmente'}
-                    </button>
-                  )}
-                </div>
-                
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                    onClick={() => {
-                      if (!isManualMode && !projectId) {
-                        setOpenProjects(true);
-                      }
-                    }}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder={
-                      isManualMode || projectId 
-                        ? "Ej: Obra Residencial Sur, Proyecto Plaza Central, etc."
-                        : "Buscar proyecto existente o escribir manualmente"
-                    }
-                  />
+              {/* Nombre del proyecto - Solo mostrar si NO hay needProject (ya que se muestra en DateRentInput cuando needProject es true) */}
+              {!needProject && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Nombre del proyecto
+                    </label>
+                    {!projectId && ( 
+                      <button
+                        type="button"
+                        onClick={() => setIsManualMode(!isManualMode)}
+                        className="text-xs text-orange-600 hover:text-orange-800"
+                      >
+                        {isManualMode ? 'Buscar proyecto existente' : 'Escribir manualmente'}
+                      </button>
+                    )}
+                  </div>
                   
-                  {/* Solo mostrar dropdown si NO está en modo manual y NO hay projectId */}
-                  {!isManualMode && !projectId && (
-                    <DropdownList 
-                      open={openProjects} 
-                      options={projects || []} 
-                      handlerChange={handlerProjectSelect} 
-                      isLoading={loadingProject} 
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                      onClick={() => {
+                        if (!isManualMode && !projectId) {
+                          setOpenProjects(true);
+                        }
+                      }}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder={
+                        isManualMode || projectId 
+                          ? "Ej: Obra Residencial Sur, Proyecto Plaza Central, etc."
+                          : "Buscar proyecto existente o escribir manualmente"
+                      }
                     />
-                  )}
+                    
+                    {/* Solo mostrar dropdown si NO está en modo manual y NO hay projectId */}
+                    {!isManualMode && !projectId && (
+                      <DropdownList 
+                        open={openProjects} 
+                        options={projects || []} 
+                        handlerChange={handlerProjectSelect} 
+                        isLoading={loadingProject} 
+                      />
+                    )}
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 mt-1">
+                    {isManualMode || projectId 
+                      ? 'Nombre del proyecto de la obra'
+                      : 'Busca un proyecto existente o cambia a modo manual'
+                    }
+                  </p>
                 </div>
-                
-                <p className="text-xs text-gray-500 mt-1">
-                  {isManualMode || projectId 
-                    ? 'Nombre del proyecto de la obra'
-                    : 'Busca un proyecto existente o cambia a modo manual'
-                  }
-                </p>
-              </div>
+              )}
 
               {/* Nombre del responsable */}
               <div>
@@ -449,7 +465,10 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                 </p>
               </div>
 
-              {/* CORRECCIÓN: Imagen de la obra - solo en modo manual */}
+              {/* SECCIÓN OCULTA - Imagen de la obra */}
+              {/* NOTA: Esta sección está comentada temporalmente. 
+                  Para reactivarla en el futuro, descomenta el bloque completo */}
+              {/*
               {!hasProject && (
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700">
@@ -505,6 +524,8 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                   </p>
                 </div>
               )}
+              */}
+              {/* FIN SECCIÓN OCULTA */}
             </div>
           </div>
 

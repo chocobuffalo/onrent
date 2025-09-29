@@ -4,7 +4,7 @@ export const getMachineryList = async (token: string): Promise<GetMachineryResul
   try {
     console.log("Iniciando petición para obtener lista de maquinarias...");
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/machineri/list`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/machinery/list`,{
       method: "GET",
       headers: {
         "Content-Type": "application/json",
