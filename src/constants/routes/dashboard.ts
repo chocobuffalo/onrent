@@ -98,23 +98,18 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     icon: PencilWrite,
     roles: ["proveedor", "cliente_proveedor"], // Gestión de contratos de renta
   },
+  /*
   {
     link: "/dashboard/referrals",
     title: "Mis referidos",
     icon: HearthIcon,
     roles: ["proveedor", "cliente_proveedor"], // Sistema de referidos para proveedores
-  },
+  },*/
 
   /* ----------------------------------------------------
    * SECCIÓN OPERADORES - Funcionalidades específicas para operadores
    * Los operadores son creados por proveedores y tienen un conjunto específico de funcionalidades
    * -------------------------------------------------- */
-  {
-    link: "/dashboard/operator/profile",
-    title: "Perfil",
-    icon: UserProfileIcon,
-    roles: ["operador"], // Gestión del perfil del operador (completar datos que el proveedor no llenó)
-  },
   {
     link: "/dashboard/operator/assigned-tasks",
     title: "Tareas asignadas",
@@ -122,28 +117,10 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     roles: ["operador"], // Tareas asignadas por el proveedor
   },
   {
-    link: "/dashboard/operator/operational-log",
-    title: "Registro operativo",
-    icon: BulldozerIcon,
-    roles: ["operador"], // Registro de operaciones realizadas
-  },
-  {
     link: "/dashboard/operator/guided-navigation",
     title: "Navegación guiada",
     icon: WrenckIcon,
     roles: ["operador"], // Sistema de navegación/GPS para operaciones
-  },
-  {
-    link: "/dashboard/operator/incident-report",
-    title: "Reporte de incidencias",
-    icon: EnvelopeIcon,
-    roles: ["operador"], // Reportar problemas, fallas, incidentes
-  },
-  {
-    link: "/dashboard/operator/operational-check",
-    title: "Check operativo y seguridad",
-    icon: WrenckIcon,
-    roles: ["operador"], // Checklist de seguridad y operativo antes de iniciar trabajo
   },
 
   /* ----------------------------------------------------
