@@ -1,12 +1,13 @@
-// src/app/(backoffice)/operator-navigation/page.tsx
 "use client";
 
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
+import { useRouter, usePathname } from "next/navigation";
 import { useOperatorNavigation } from "@/hooks/component/useOperatorNavigation";
 import { useState, useEffect } from "react";
+import { getOrderDetail } from "@/services/getOrderDetail";
+import { toast } from "react-toastify";
 
-// Definición de tipos para los resultados de búsqueda
 interface SearchResult {
   Place: {
     Label: string;
@@ -14,7 +15,6 @@ interface SearchResult {
   };
 }
 
-// Importación dinámica para asegurar que se renderice solo en el cliente
 const OperatorMap = dynamic(
   () => import("@/components/organism/OperatorMap").then((mod) => mod.default),
   { ssr: false }
@@ -27,9 +27,61 @@ const ToastContainer = dynamic(
 
 const OperatorNavigationPage = () => {
   const { data: session } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
   const [deviceId, setDeviceId] = useState<string>("");
+  const [orderIdInput, setOrderIdInput] = useState<string>("");
+  const [loadingOrder, setLoadingOrder] = useState(false);
 
-  // Obtener deviceId del operador (puede venir de la sesión o ser configurado)
+  const handleLoadFromOrder = async () => {
+    if (!orderIdInput.trim()) {
+      toast.error("Por favor ingresa un ID de orden");
+      return;
+    }
+
+    setLoadingOrder(true);
+    try {
+      const nextAuthToken = (session as any)?.accessToken || (session as any)?.user?.accessToken;
+      const localStorageToken = typeof window !== 'undefined' ? localStorage.getItem("api_access_token") : null;
+      const token = nextAuthToken || localStorageToken;
+
+      if (!token) {
+        toast.error("No se encontró token de autenticación");
+        return;
+      }
+
+      const result = await getOrderDetail(parseInt(orderIdInput), token);
+
+      if (!result.success || !result.data) {
+        toast.error(result.message || "No se pudo cargar la orden");
+        return;
+      }
+
+      const orderData = result.data;
+
+      if (!orderData.location) {
+        toast.error("La orden no tiene dirección de destino configurada");
+        return;
+      }
+
+      // Cargar la dirección en el campo de búsqueda
+      setSearchQuery(orderData.location);
+      
+      // Buscar automáticamente la dirección
+      toast.success(`Dirección cargada desde orden #${orderIdInput}`);
+      
+      // Ejecutar la búsqueda
+      setTimeout(() => {
+        handleSearch();
+      }, 500);
+
+    } catch (error) {
+      console.error("Error cargando orden:", error);
+      toast.error("Error al cargar la orden");
+    } finally {
+      setLoadingOrder(false);
+    }
+  };
   useEffect(() => {
     if (session?.user) {
       const sessionWithId = session as any;
@@ -56,7 +108,6 @@ const OperatorNavigationPage = () => {
     loadDestinationFromOrder,
   } = useOperatorNavigation(deviceId, session);
 
-  // Función para formatear el tiempo transcurrido de navegación
   const formatNavigationTime = (startTime: string | null): string => {
     if (!startTime) return "0:00";
     
@@ -105,41 +156,58 @@ const OperatorNavigationPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <ToastContainer position="top-right" />
       
-      {/* Container principal con padding responsivo */}
-      <div className="max-w-7xl mx-auto p-4 space-y-6">
+      <div className="max-w-7xl mx-auto p-4 space-y-8">
         
-        {/* Header con diseño moderno */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Navegación del Operador</h1>
-                <p className="text-gray-600 mt-1">
-                  Sistema de navegación y seguimiento GPS en tiempo real
-                </p>
+          <div className="flex flex-col gap-4">
+            {/* Breadcrumb de navegación */}
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-500">Dashboard /</span>
+              <div className="flex items-center gap-2 bg-gray-50 rounded-lg shadow-sm border border-gray-200 p-1">
+                <button
+                  onClick={() => router.push('/dashboard/tracking')}
+                  className="px-3 py-1.5 rounded-md font-medium transition-all text-gray-600 hover:bg-white hover:shadow-sm"
+                >
+                  Seguimiento
+                </button>
+                <button
+                  onClick={() => router.push('/operator-navigation')}
+                  className="px-3 py-1.5 rounded-md font-medium transition-all bg-orange-500 text-white shadow-sm"
+                >
+                  Navegación
+                </button>
               </div>
             </div>
-            
-            <div className="flex flex-col items-end space-y-2">
-            
-              {isNavigating && navigationStartTime && (
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    Navegando: {formatNavigationTime(navigationStartTime)}
-                  </span>
+
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
                 </div>
-              )}
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Navegación del Operador</h1>
+                  <p className="text-gray-600 mt-1">
+                    Sistema de navegación y seguimiento GPS en tiempo real
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex flex-col items-end space-y-2">
+                {isNavigating && navigationStartTime && (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      Navegando: {formatNavigationTime(navigationStartTime)}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Panel de configuración de destino */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
             <h2 className="text-lg font-semibold text-white flex items-center">
@@ -152,7 +220,6 @@ const OperatorNavigationPage = () => {
           </div>
           
           <div className="p-6">
-            {/* Búsqueda de destino */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -204,35 +271,55 @@ const OperatorNavigationPage = () => {
                   Cargar desde orden
                 </label>
                 <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    className={`flex-1 px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 ${
-                      isNavigating ? 'bg-gray-50 cursor-not-allowed' : 'bg-white hover:border-gray-400'
-                    }`}
-                    placeholder="ID de orden"
-                    disabled={isNavigating}
-                  />
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={orderIdInput}
+                      onChange={(e) => setOrderIdInput(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && handleLoadFromOrder()}
+                      className={`w-full px-3 py-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 ${
+                        isNavigating ? 'bg-gray-50 cursor-not-allowed' : 'bg-white hover:border-gray-400'
+                      }`}
+                      placeholder="ID de orden"
+                      disabled={isNavigating || loadingOrder}
+                    />
+                    {orderIdInput && !isNavigating && !loadingOrder && (
+                      <button
+                        onClick={() => setOrderIdInput("")}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        title="Limpiar"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                   <button
                     className={`px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                      isNavigating 
+                      isNavigating || loadingOrder || !orderIdInput.trim()
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         : 'bg-gray-500 text-white hover:bg-gray-600 shadow-sm hover:shadow-md'
                     }`}
-                    disabled={isNavigating}
-                    onClick={() => {
-                      const orderId = (document.querySelector('input[placeholder="ID de orden"]') as HTMLInputElement)?.value;
-                      if (orderId) {
-                        loadDestinationFromOrder(orderId);
-                      }
-                    }}
+                    disabled={isNavigating || loadingOrder || !orderIdInput.trim()}
+                    onClick={handleLoadFromOrder}
                   >
-                    Cargar
+                    {loadingOrder ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current inline" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Cargando...
+                      </>
+                    ) : (
+                      'Cargar'
+                    )}
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Resultados de búsqueda */}
             {searchResults.length > 0 && !isNavigating && (
               <div className="mt-6">
                 <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -267,7 +354,6 @@ const OperatorNavigationPage = () => {
               </div>
             )}
 
-            {/* Destino seleccionado */}
             {destinationAddress && (
               <div className="mt-6">
                 <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl p-4">
@@ -279,7 +365,7 @@ const OperatorNavigationPage = () => {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-green-800">🎯 Destino seleccionado</p>
+                        <p className="text-sm font-medium text-green-800">Destino seleccionado</p>
                         <p className="text-green-700 mt-1">{destinationAddress}</p>
                       </div>
                     </div>
@@ -288,7 +374,6 @@ const OperatorNavigationPage = () => {
                         className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm"
                         onClick={() => {
                           setSearchQuery("");
-                          // Reset destination logic would be added here
                         }}
                       >
                         Limpiar
@@ -301,7 +386,6 @@ const OperatorNavigationPage = () => {
           </div>
         </div>
 
-        {/* Controles de navegación */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-4">
             <h2 className="text-lg font-semibold text-white flex items-center">
@@ -377,7 +461,6 @@ const OperatorNavigationPage = () => {
               </div>
             </div>
 
-            {/* Información de la ruta */}
             {(routeDistance || estimatedDuration) && (
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-6 text-center">
@@ -409,7 +492,6 @@ const OperatorNavigationPage = () => {
               </div>
             )}
 
-            {/* Advertencias y validaciones */}
             {!currentLocation && (
               <div className="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <div className="flex items-center space-x-3">
@@ -444,7 +526,6 @@ const OperatorNavigationPage = () => {
           </div>
         </div>
 
-        {/* Mapa de navegación */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="bg-gradient-to-r from-gray-800 to-black px-6 py-4">
             <h2 className="text-lg font-semibold text-white flex items-center">
@@ -466,7 +547,6 @@ const OperatorNavigationPage = () => {
           </div>
         </div>
 
-        {/* Panel de estado inferior - Navegación activa */}
         {isNavigating && (
           <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
             <div className="bg-gradient-to-r from-green-400 to-green-500 text-white rounded-2xl shadow-2xl border border-green-300 max-w-sm mx-auto">
@@ -478,7 +558,7 @@ const OperatorNavigationPage = () => {
                       <div className="absolute inset-0 w-3 h-3 bg-white rounded-full"></div>
                     </div>
                     <div>
-                      <p className="font-semibold text-sm">📡 Navegación Activa</p>
+                      <p className="font-semibold text-sm">Navegación Activa</p>
                       <p className="text-green-100 text-xs">
                         Ubicación compartida en tiempo real
                       </p>
@@ -497,7 +577,6 @@ const OperatorNavigationPage = () => {
           </div>
         )}
 
-        {/* Floating Action Button */}
         {!isNavigating && destination && (
           <div className="fixed bottom-6 right-6 z-40">
             <button
@@ -512,7 +591,6 @@ const OperatorNavigationPage = () => {
           </div>
         )}
 
-        {/* Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
             <div className="flex items-center space-x-3">

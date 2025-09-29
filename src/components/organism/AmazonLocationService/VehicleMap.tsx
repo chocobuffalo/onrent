@@ -2,19 +2,44 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { getAvailableDevices } from "@/services/locationService";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+// Importación dinámica del mapa para evitar errores de SSR
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+
+const Popup = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Popup),
+  { ssr: false }
+);
+
+if (typeof window !== 'undefined') {
+  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  });
+}
 
 const createCustomIcon = (color: string, symbol: string) => {
+  if (typeof window === 'undefined') return null;
+  
   return L.divIcon({
     className: 'custom-div-icon',
     html: `
@@ -46,11 +71,6 @@ const createCustomIcon = (color: string, symbol: string) => {
   });
 };
 
-const deviceIcon = createCustomIcon('#e74c3c', '🚛');
-const operatorIcon = createCustomIcon('#3498db', '🔧');
-const navigatingIcon = createCustomIcon('#f39c12', '🧭');
-const maquinariaIcon = createCustomIcon('#9b59b6', '🏗️');
-
 interface LocationData {
   entity_id: string;
   entity_type: string;
@@ -60,7 +80,6 @@ interface LocationData {
     latitude: number;
     longitude: number;
   };
-  // Campos adicionales para máquinas
   model?: string;
   brand?: string;
   name?: string;
@@ -93,7 +112,33 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
   const [deviceLocation, setDeviceLocation] = useState<LocationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  const [icons, setIcons] = useState<{
+    deviceIcon: L.DivIcon | null;
+    operatorIcon: L.DivIcon | null;
+    navigatingIcon: L.DivIcon | null;
+    maquinariaIcon: L.DivIcon | null;
+  }>({
+    deviceIcon: null,
+    operatorIcon: null,
+    navigatingIcon: null,
+    maquinariaIcon: null,
+  });
+
+  useEffect(() => {
+    setIsClient(true);
+    setLastUpdate(new Date());
+    
+    if (typeof window !== 'undefined') {
+      setIcons({
+        deviceIcon: createCustomIcon('#e74c3c', '🚛'),
+        operatorIcon: createCustomIcon('#3498db', '🔧'),
+        navigatingIcon: createCustomIcon('#f39c12', '🧭'),
+        maquinariaIcon: createCustomIcon('#9b59b6', '🏗️'),
+      });
+    }
+  }, []);
 
   const fetchDeviceLocation = async () => {
     try {
@@ -101,14 +146,11 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
       
       console.log(`🔍 [${new Date().toLocaleTimeString()}] Buscando ubicación para deviceId:`, userId);
       
-      // Obtener token de next-auth o localStorage como fallback
-      // Ajusta la siguiente línea según cómo almacenes el token en tu sesión NextAuth
       const nextAuthToken = (session as any)?.user?.accessToken || (session as any)?.accessToken || (session as any)?.token;
-      const localStorageToken = localStorage.getItem("api_access_token");
+      const localStorageToken = typeof window !== 'undefined' ? localStorage.getItem("api_access_token") : null;
       const token = nextAuthToken || localStorageToken;
       
       console.log("🔑 Usando token para VehicleMap:", token ? "Disponible" : "No disponible");
-      console.log("🌐 Consultando API desde servicio");
 
       const data = await getAvailableDevices(token);
       console.log("📡 Respuesta de API:", { count: data.count, totalLocations: data.locations?.length });
@@ -155,9 +197,11 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
   };
 
   useEffect(() => {
-    if (!userId) {
-      setError("No se proporcionó un ID de dispositivo");
-      setLoading(false);
+    if (!userId || !isClient) {
+      if (!userId) {
+        setError("No se proporcionó un ID de dispositivo");
+        setLoading(false);
+      }
       return;
     }
 
@@ -166,7 +210,7 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
     const interval = setInterval(fetchDeviceLocation, 15000);
     
     return () => clearInterval(interval);
-  }, [userId, session]);
+  }, [userId, session, isClient]);
 
   const getMapCenter = (): [number, number] => {
     const deviceCoords = normalizeLocation(deviceLocation);
@@ -178,11 +222,20 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
   };
 
   const getLocationIcon = (location: LocationData) => {
-    if (location.status === 'navigating') return navigatingIcon;
-    if (location.entity_type === 'operador') return operatorIcon;
-    if (location.entity_type === 'maquinaria') return maquinariaIcon;
-    return deviceIcon;
+    if (location.status === 'navigating') return icons.navigatingIcon;
+    if (location.entity_type === 'operador') return icons.operatorIcon;
+    if (location.entity_type === 'maquinaria') return icons.maquinariaIcon;
+    return icons.deviceIcon;
   };
+
+  if (!isClient) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full">
+        <div className="border-gray-300 h-8 w-8 animate-spin rounded-full border-4 border-t-blue-600 mb-3"></div>
+        <p className="text-gray-500">Inicializando mapa...</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -203,7 +256,7 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
         <div className="flex justify-between items-center mb-2">
           <h6 className="mb-0 font-bold">Información de Seguimiento</h6>
           <small className="text-gray-500">
-            Actualizado: {lastUpdate.toLocaleTimeString()}
+            {lastUpdate && `Actualizado: ${lastUpdate.toLocaleTimeString()}`}
           </small>
         </div>
         
@@ -266,7 +319,7 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
         )}
       </div>
 
-      {hasValidDevice ? (
+      {hasValidDevice && icons.deviceIcon ? (
         <MapContainer
           center={getMapCenter()}
           zoom={15}
@@ -280,7 +333,7 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
           
           <Marker 
             position={[deviceCoords!.lat, deviceCoords!.lng]}
-            icon={getLocationIcon(deviceLocation!)}
+            icon={getLocationIcon(deviceLocation!)!}
           >
             <Popup>
               <div className="text-center">
