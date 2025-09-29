@@ -2,7 +2,9 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import VehicleMap from "@/components/organism/AmazonLocationService/VehicleMap";
+import { getAvailableDevices } from "@/services/locationService";
 
 interface LocationData {
   entity_id: string;
@@ -15,9 +17,17 @@ interface LocationData {
   };
   latitude?: number;
   longitude?: number;
+  name?: string;
+  brand?: string;
+  model?: string;
+  machine_type?: string;
+  daily_rate?: number;
+  provider_id?: string;
+  certified?: boolean;
 }
 
-export default function TrackingPage() {
+const TrackingPage = () => {
+  const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const deviceId = searchParams.get("deviceId");
@@ -30,14 +40,8 @@ export default function TrackingPage() {
   const initialTrackingId = orderId || deviceId;
 
   useEffect(() => {
-    console.log("=== DEBUGGING TRACKING PAGE ===");
-    
     const apiUserData = localStorage.getItem("api_user_data");
     const apiToken = localStorage.getItem("api_access_token");
-    
-    console.log("localStorage api_user_data:", apiUserData);
-    console.log("localStorage api_access_token:", apiToken);
-    
     if (apiUserData) {
       try {
         const parsedUserData = JSON.parse(apiUserData);
@@ -51,61 +55,49 @@ export default function TrackingPage() {
     if (initialTrackingId) {
       setSelectedDeviceId(initialTrackingId);
     }
-  }, [initialTrackingId]);
+  }, [initialTrackingId, session, status]);
 
   useEffect(() => {
     const fetchAvailableDevices = async () => {
       try {
         setIsLoading(true);
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/location/sync/list`;
-        console.log("🌐 Consultando API:", apiUrl);
-
-        const response = await fetch(apiUrl);
         
-        if (response.ok) {
-          const data = await response.json();
-          console.log("📡 Dispositivos cargados desde backend:", data);
-          
-          const allDevices = data.locations || [];
-          
-          let filteredDevices = allDevices;
-          
-          if (userData) {
-            const userRole = userData.role;
-            const userEntityId = userData.entity_id || userData.user_id;
-            
-            console.log("🔒 Filtrando dispositivos para usuario:", userRole, userEntityId);
-            
-            if (userRole === 'provider') {
-              filteredDevices = allDevices.filter((device: LocationData) => {
-                if (device.entity_id === userEntityId && device.entity_type === 'provider') {
-                  return true;
-                }
-                
-                if (device.entity_type === 'maquinaria') {
-                  const lat: number = device.location?.latitude ?? device.latitude ?? 0;
-                  const lng: number = device.location?.longitude ?? device.longitude ?? 0;
-                  return Math.abs(lat) > 0.001 || Math.abs(lng) > 0.001;
-                }
-                
-                return false;
-              });
-            } else if (userRole === 'client') {
-              filteredDevices = allDevices.filter((device: LocationData) => {
-                if (device.entity_type === 'maquinaria') {
-                  const lat: number = device.location?.latitude ?? device.latitude ?? 0;
-                  const lng: number = device.location?.longitude ?? device.longitude ?? 0;
-                  return Math.abs(lat) > 0.001 || Math.abs(lng) > 0.001;
-                }
-                return false;
-              });
-            } else {
-              filteredDevices = allDevices.filter((device: LocationData) => {
+        // Obtener token de next-auth o localStorage como fallback
+        const nextAuthToken = (session as any)?.accessToken || (session as any)?.user?.accessToken;
+        const localStorageToken = localStorage.getItem("api_access_token");
+        const token = nextAuthToken || localStorageToken;
+        const data = await getAvailableDevices(token)
+        
+        const allDevices = data.locations || [];
+        
+        let filteredDevices = allDevices;
+        
+        if (userData) {
+          const userRole = userData.role;
+          const userEntityId = userData.entity_id || userData.user_id;
+          if (userRole === 'provider') {
+            filteredDevices = allDevices.filter((device: LocationData) => {
+              if (device.entity_id === userEntityId && device.entity_type === 'provider') {
+                return true;
+              }
+              
+              if (device.entity_type === 'maquinaria') {
                 const lat: number = device.location?.latitude ?? device.latitude ?? 0;
                 const lng: number = device.location?.longitude ?? device.longitude ?? 0;
                 return Math.abs(lat) > 0.001 || Math.abs(lng) > 0.001;
-              });
-            }
+              }
+              
+              return false;
+            });
+          } else if (userRole === 'client') {
+            filteredDevices = allDevices.filter((device: LocationData) => {
+              if (device.entity_type === 'maquinaria') {
+                const lat: number = device.location?.latitude ?? device.latitude ?? 0;
+                const lng: number = device.location?.longitude ?? device.longitude ?? 0;
+                return Math.abs(lat) > 0.001 || Math.abs(lng) > 0.001;
+              }
+              return false;
+            });
           } else {
             filteredDevices = allDevices.filter((device: LocationData) => {
               const lat: number = device.location?.latitude ?? device.latitude ?? 0;
@@ -113,16 +105,20 @@ export default function TrackingPage() {
               return Math.abs(lat) > 0.001 || Math.abs(lng) > 0.001;
             });
           }
-          
-          console.log("🎯 Dispositivos filtrados:", filteredDevices.length, "de", allDevices.length);
-          setAvailableDevices(filteredDevices);
-          
-          if (!initialTrackingId && filteredDevices.length > 0) {
-            const firstDevice = filteredDevices[0];
-            setSelectedDeviceId(firstDevice.entity_id);
-          }
         } else {
-          console.error("Error loading devices:", response.status, response.statusText);
+          filteredDevices = allDevices.filter((device: LocationData) => {
+            const lat: number = device.location?.latitude ?? device.latitude ?? 0;
+            const lng: number = device.location?.longitude ?? device.longitude ?? 0;
+            return Math.abs(lat) > 0.001 || Math.abs(lng) > 0.001;
+          });
+        }
+        
+        console.log("🎯 Dispositivos filtrados:", filteredDevices.length, "de", allDevices.length);
+        setAvailableDevices(filteredDevices);
+        
+        if (!initialTrackingId && filteredDevices.length > 0) {
+          const firstDevice = filteredDevices[0];
+          setSelectedDeviceId(firstDevice.entity_id);
         }
       } catch (error) {
         console.error("Error loading available devices:", error);
@@ -132,7 +128,7 @@ export default function TrackingPage() {
     };
 
     fetchAvailableDevices();
-  }, [initialTrackingId, userData]);
+  }, [initialTrackingId, userData, session]);
 
   const handleDeviceChange = (newDeviceId: string) => {
     setSelectedDeviceId(newDeviceId);
@@ -160,9 +156,6 @@ export default function TrackingPage() {
     
     return Math.abs(lat) > 0.001 || Math.abs(lng) > 0.001;
   });
-
-  console.log("📍 Dispositivo seleccionado:", selectedDeviceId);
-  console.log("📊 Dispositivos con GPS:", devicesWithGPS.length);
 
   if (isLoading) {
     return (
@@ -290,6 +283,11 @@ export default function TrackingPage() {
                     <p className="text-sm text-green-600">
                       Actualización en tiempo real cada 15 segundos
                     </p>
+                    {availableDevices.find(d => d.entity_id === selectedDeviceId)?.name && (
+                      <p className="text-xs text-green-600">
+                        {availableDevices.find(d => d.entity_id === selectedDeviceId)?.name}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -305,7 +303,7 @@ export default function TrackingPage() {
                     </p>
                     {devicesWithGPS.length > 0 && (
                       <p className="text-sm text-yellow-600">
-                        Sugerencia: Prueba con {devicesWithGPS[0].entity_id}
+                        Sugerencia: Prueba con {devicesWithGPS[0].name || devicesWithGPS[0].entity_id}
                       </p>
                     )}
                   </div>
@@ -366,4 +364,6 @@ export default function TrackingPage() {
       </div>
     </div>
   );
-}
+};
+
+export default TrackingPage;
