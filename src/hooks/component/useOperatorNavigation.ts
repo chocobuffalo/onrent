@@ -32,6 +32,13 @@ export const useOperatorNavigation = (
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // ✅ NUEVAS PROPIEDADES AGREGADAS
+  const [routeDistance, setRouteDistance] = useState<number | null>(null);
+  const [estimatedDuration, setEstimatedDuration] = useState<number | null>(null);
+  const [navigationStartTime, setNavigationStartTime] = useState<string | null>(null);
+  const [navigationState, setNavigationState] = useState<string>('idle');
+  
   const trackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Helper para los encabezados de autenticación
@@ -99,6 +106,43 @@ export const useOperatorNavigation = (
     }
   };
 
+  // ✅ FUNCIÓN AGREGADA: Cargar destino desde orden
+  const loadDestinationFromOrder = useCallback(async (orderId: string) => {
+    if (!orderId) {
+      toast.warn("Por favor proporciona un ID de orden válido.");
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // Ajusta esta URL según tu API
+      const response = await fetch(`/api/orders/${orderId}/destination`, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.destination) {
+        setDestination({
+          lat: data.destination.latitude,
+          lng: data.destination.longitude
+        });
+        setDestinationAddress(data.destination.address || `Orden ${orderId}`);
+        setSearchQuery("");
+        setSearchResults([]);
+        toast.success(`Destino cargado desde la orden ${orderId}`);
+      } else {
+        toast.error(data.error || `No se pudo cargar la orden ${orderId}`);
+      }
+    } catch (error) {
+      console.error("Load destination error:", error);
+      toast.error("Error al cargar el destino desde la orden");
+    } finally {
+      setLoading(false);
+    }
+  }, [getAuthHeaders]);
+
   // Función para calcular la ruta
   const calculateRoute = useCallback(async () => {
     if (!currentLocation || !destination) {
@@ -108,6 +152,8 @@ export const useOperatorNavigation = (
       return;
     }
     setLoading(true);
+    setNavigationState('calculating');
+    
     try {
       const response = await fetch("/api/get-map/route", {
         method: "POST",
@@ -118,6 +164,7 @@ export const useOperatorNavigation = (
         }),
       });
       const data = await response.json();
+      
       if (response.ok && data.Legs && data.Legs.length > 0) {
         const newRoute: RouteStep[] = data.Legs[0].Geometry.LineString.map(
           (point: [number, number]) => ({
@@ -126,13 +173,25 @@ export const useOperatorNavigation = (
           })
         );
         setRoute(newRoute);
+        
+        // ✅ CALCULAR DISTANCIA Y DURACIÓN
+        if (data.Summary) {
+          setRouteDistance(data.Summary.Distance); // En metros
+          setEstimatedDuration(data.Summary.DurationSeconds); // En segundos
+        }
+        
+        setNavigationState('ready');
         toast.success("Ruta calculada con éxito.");
       } else {
         setRoute([]);
+        setRouteDistance(null);
+        setEstimatedDuration(null);
+        setNavigationState('error');
         toast.error(data.error || "Error al calcular la ruta.");
       }
     } catch (error) {
       console.error("Route API error:", error);
+      setNavigationState('error');
       toast.error("Error de conexión al calcular la ruta.");
     } finally {
       setLoading(false);
@@ -150,6 +209,9 @@ export const useOperatorNavigation = (
   const toggleNavigation = useCallback(async () => {
     if (isNavigating) {
       setIsNavigating(false);
+      setNavigationState('idle');
+      setNavigationStartTime(null);
+      
       if (trackingIntervalRef.current) {
         clearInterval(trackingIntervalRef.current);
         trackingIntervalRef.current = null;
@@ -162,8 +224,11 @@ export const useOperatorNavigation = (
         );
         return;
       }
+      
       await calculateRoute();
       setIsNavigating(true);
+      setNavigationState('navigating');
+      setNavigationStartTime(new Date().toISOString()); // ✅ GUARDAR HORA DE INICIO
       toast.success("Navegación iniciada. Compartiendo ubicación.");
 
       trackingIntervalRef.current = setInterval(async () => {
@@ -202,7 +267,7 @@ export const useOperatorNavigation = (
     };
   }, []);
 
-  // Retornar los estados y las funciones
+  // ✅ RETORNO ACTUALIZADO CON TODAS LAS PROPIEDADES
   return {
     currentLocation,
     destination,
@@ -212,6 +277,10 @@ export const useOperatorNavigation = (
     searchQuery,
     searchResults,
     loading,
+    navigationState,        // ✅ AGREGADO
+    routeDistance,          // ✅ AGREGADO  
+    estimatedDuration,      // ✅ AGREGADO
+    navigationStartTime,    // ✅ AGREGADO
     setSearchQuery,
     selectDestination: (result: SearchResult) => {
       const [lng, lat] = result.Place.Geometry.Point;
@@ -222,5 +291,6 @@ export const useOperatorNavigation = (
     handleSearch,
     calculateRoute,
     toggleNavigation,
+    loadDestinationFromOrder, // ✅ AGREGADO
   };
 };

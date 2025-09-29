@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { getAvailableDevices } from "@/services/locationService";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -58,6 +60,14 @@ interface LocationData {
     latitude: number;
     longitude: number;
   };
+  // Campos adicionales para máquinas
+  model?: string;
+  brand?: string;
+  name?: string;
+  machine_type?: string;
+  daily_rate?: number;
+  provider_id?: string;
+  certified?: boolean;
 }
 
 interface VehicleMapProps {
@@ -78,7 +88,8 @@ const normalizeLocation = (location: LocationData | null): { lat: number; lng: n
   return { lat: latitude, lng: longitude };
 };
 
-export default function VehicleMap({ userId }: VehicleMapProps) {
+const VehicleMap = ({ userId }: VehicleMapProps) => {
+  const { data: session } = useSession();
   const [deviceLocation, setDeviceLocation] = useState<LocationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,24 +101,16 @@ export default function VehicleMap({ userId }: VehicleMapProps) {
       
       console.log(`🔍 [${new Date().toLocaleTimeString()}] Buscando ubicación para deviceId:`, userId);
       
-      const apiToken = localStorage.getItem("api_access_token");
+      // Obtener token de next-auth o localStorage como fallback
+      // Ajusta la siguiente línea según cómo almacenes el token en tu sesión NextAuth
+      const nextAuthToken = (session as any)?.user?.accessToken || (session as any)?.accessToken || (session as any)?.token;
+      const localStorageToken = localStorage.getItem("api_access_token");
+      const token = nextAuthToken || localStorageToken;
       
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/location/sync/list`;
-      console.log("🌐 Consultando API:", apiUrl);
+      console.log("🔑 Usando token para VehicleMap:", token ? "Disponible" : "No disponible");
+      console.log("🌐 Consultando API desde servicio");
 
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(apiToken && { 'Authorization': `Bearer ${apiToken}` })
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await getAvailableDevices(token);
       console.log("📡 Respuesta de API:", { count: data.count, totalLocations: data.locations?.length });
 
       if (!data.locations || !Array.isArray(data.locations)) {
@@ -125,30 +128,21 @@ export default function VehicleMap({ userId }: VehicleMapProps) {
         throw new Error(`Dispositivo "${userId}" no encontrado. Disponibles: ${availableIds.slice(0, 3).join(", ")}${availableIds.length > 3 ? '...' : ''}`);
       }
 
-      const locationData: LocationData = {
-        entity_id: userLocation.entity_id,
-        entity_type: userLocation.entity_type || 'maquinaria',
-        timestamp: userLocation.timestamp,
-        status: userLocation.status || 'active',
-        location: {
-          latitude: userLocation.location?.latitude || userLocation.latitude || 0,
-          longitude: userLocation.location?.longitude || userLocation.longitude || 0
-        }
-      };
-
-      const normalizedLocation = normalizeLocation(locationData);
+      const normalizedLocation = normalizeLocation(userLocation);
       
       if (!normalizedLocation) {
         throw new Error(`El dispositivo "${userId}" no tiene coordenadas GPS válidas`);
       }
 
       console.log("✅ Ubicación válida encontrada:", {
-        id: locationData.entity_id,
+        id: userLocation.entity_id,
         coordinates: normalizedLocation,
-        status: locationData.status
+        status: userLocation.status,
+        type: userLocation.entity_type,
+        name: userLocation.name
       });
 
-      setDeviceLocation(locationData);
+      setDeviceLocation(userLocation);
 
     } catch (error) {
       console.error("❌ Error al obtener ubicación:", error);
@@ -172,7 +166,7 @@ export default function VehicleMap({ userId }: VehicleMapProps) {
     const interval = setInterval(fetchDeviceLocation, 15000);
     
     return () => clearInterval(interval);
-  }, [userId]);
+  }, [userId, session]);
 
   const getMapCenter = (): [number, number] => {
     const deviceCoords = normalizeLocation(deviceLocation);
@@ -223,14 +217,30 @@ export default function VehicleMap({ userId }: VehicleMapProps) {
               <strong>Dispositivo: {deviceLocation.entity_id}</strong>
               {deviceLocation.status && (
                 <span className={`px-2 py-1 text-xs rounded ${
-                  deviceLocation.status === 'navigating' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+                  deviceLocation.status === 'navigating' ? 'bg-yellow-100 text-yellow-800' : 
+                  deviceLocation.status === 'available' ? 'bg-green-100 text-green-800' :
+                  'bg-blue-100 text-blue-800'
                 }`}>
                   {deviceLocation.status}
                 </span>
               )}
             </div>
+            
+            {deviceLocation.name && (
+              <div className="mb-1">
+                <strong>Nombre:</strong> {deviceLocation.name}
+              </div>
+            )}
+            
+            {deviceLocation.brand && deviceLocation.model && (
+              <div className="mb-1">
+                <strong>Equipo:</strong> {deviceLocation.brand} {deviceLocation.model}
+              </div>
+            )}
+            
             <small className="text-gray-500 block">
               Tipo: {deviceLocation.entity_type}
+              {deviceLocation.machine_type && ` (${deviceLocation.machine_type})`}
               <br />
               {hasValidDevice ? (
                 <>Coordenadas: {deviceCoords!.lat.toFixed(6)}, {deviceCoords!.lng.toFixed(6)}</>
@@ -239,6 +249,12 @@ export default function VehicleMap({ userId }: VehicleMapProps) {
               )}
               <br />
               Última actualización: {new Date(deviceLocation.timestamp).toLocaleString('es-ES')}
+              {deviceLocation.daily_rate && (
+                <>
+                  <br />
+                  Tarifa diaria: ${deviceLocation.daily_rate.toLocaleString()}
+                </>
+              )}
             </small>
           </div>
         )}
@@ -268,12 +284,22 @@ export default function VehicleMap({ userId }: VehicleMapProps) {
           >
             <Popup>
               <div className="text-center">
-                <strong className="text-blue-600">DISPOSITIVO</strong><br />
+                <strong className="text-blue-600">
+                  {deviceLocation!.entity_type === 'maquinaria' ? 'MAQUINARIA' : 
+                   deviceLocation!.entity_type === 'operador' ? 'OPERADOR' : 'DISPOSITIVO'}
+                </strong><br />
                 <strong>ID:</strong> {deviceLocation!.entity_id}<br />
+                {deviceLocation!.name && <><strong>Nombre:</strong> {deviceLocation!.name}<br /></>}
+                {deviceLocation!.brand && deviceLocation!.model && (
+                  <><strong>Equipo:</strong> {deviceLocation!.brand} {deviceLocation!.model}<br /></>
+                )}
                 <strong>Tipo:</strong> {deviceLocation!.entity_type}<br />
                 {deviceLocation!.status && <><strong>Estado:</strong> {deviceLocation!.status}<br /></>}
                 <strong>Coordenadas:</strong> {deviceCoords!.lat.toFixed(6)}, {deviceCoords!.lng.toFixed(6)}<br />
                 <strong>Actualizado:</strong> {new Date(deviceLocation!.timestamp).toLocaleString('es-ES')}
+                {deviceLocation!.daily_rate && (
+                  <><br /><strong>Tarifa:</strong> ${deviceLocation!.daily_rate.toLocaleString()}/día</>
+                )}
               </div>
             </Popup>
           </Marker>
@@ -319,4 +345,6 @@ export default function VehicleMap({ userId }: VehicleMapProps) {
       </div>
     </div>
   );
-}
+};
+
+export default VehicleMap;
