@@ -19,6 +19,20 @@ import getProjectDetail from "@/services/getProjectDetail";
 import { machine } from "os";
 import { updateProject } from "@/services/updateProject";
 
+interface LocationData {
+  lat: number;
+  lng: number;
+  address?: string;
+}
+
+interface SearchResult {
+  Place: {
+    Label: string;
+    Geometry: {
+      Point: [number, number];
+    };
+  };
+}
 
 const phoneRegExp = /^(\+?\d{0,4})?\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{4}\)?)?$/;
 const Schema = Yup.object({
@@ -52,7 +66,6 @@ const initialValues = {
     responsible_name: "",
     manager_phone: "",
     work_schedule: "", 
-    //site_manager: "", 
     work_type: "",
     terrain_type: "",
     access_terrain_condition: "",
@@ -64,7 +77,6 @@ const initialValues = {
     resguardo_files: [],
     machinery_type: ""
   }
-
 
 export default function useNewProjectForm({
     projectId,
@@ -102,7 +114,6 @@ const {
     responsible_name: string;
     manager_phone: string;
     work_schedule: string;
-    //site_manager?: string;
     work_type: string;
     terrain_type: string;
     access_terrain_condition: string;
@@ -117,10 +128,83 @@ const {
 
   const [project, setProject] = useState<ProjectState>(initialValues)
   const [terrainType, setTerrainType] = useState<string[]>([]);
+  const [selectedLocationData, setSelectedLocationData] = useState<LocationData | null>(null);
+  
+  // Estados para búsqueda del mapa
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  
   const session = useSession();
   const router = useRouter();
 
-  
+  const searchPlaces = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      const response = await fetch('/api/get-map/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          query, 
+          center: [-123.115898, 49.295868] 
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSearchResults(data.Results || []);
+        setShowResults((data.Results || []).length > 0);
+      } else {
+        setSearchResults([]);
+        setShowResults(false);
+      }
+    } catch (error) {
+      console.error('Error searching places:', error);
+      setSearchResults([]);
+      setShowResults(false);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Debounce para la búsqueda
+  const debouncedSearch = useCallback(
+    debounce(async (query: string) => {
+      await searchPlaces(query);
+    }, 500),
+    []
+  );
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setValue("location", query);
+    setProject(prev => ({ ...prev, location: query }));
+    debouncedSearch(query);
+  };
+
+  const selectSearchResult = (result: SearchResult) => {
+    const coords = result.Place.Geometry.Point;
+    const fullAddress = result.Place.Label;
+    
+    setSearchQuery(fullAddress);
+    setValue("location", fullAddress);
+    setProject(prev => ({ ...prev, location: fullAddress }));
+    setShowResults(false);
+    setSearchResults([]);
+    
+    setSelectedLocationData({
+      lat: coords[1],
+      lng: coords[0],
+      address: fullAddress
+    });
+  };
 
     const convertFileToBase64 = (file: File) => {
         const reader = new FileReader();
@@ -133,9 +217,7 @@ const {
             content_base64: content_base64 as string,
             mimetype: file.type
         }
-   
 
-        //si el archivo pesa menos de 5MB
         if (file.size < 5 * 1024 * 1024 && file.type.startsWith("image/")) {
           setValue("resguardo_files", [createImage]);
           setProject(prev => ({ ...prev, resguardo_files:[createImage] }));
@@ -159,50 +241,12 @@ const {
     setProject(prev => ({ ...prev, start_date: date }));
     clearErrors("start_date");
   }
+  
   const handlerEndDate = (date:string)=>{  
     setValue("end_date", date);     
     setProject(prev => ({ ...prev, end_date: date }));
     clearErrors("end_date");
   }
-
-  const [isLoading, setIsLoading] = useState(false);
-      
-  const [options, setOptions] = useState<SelectInterface[]>([]);
-  const [open, setOpen] = useState(false);
-  
-  const debouncedFilterColors = useCallback(
-          debounce(async (inputValue: string) => {
-            setIsLoading(true);
-            try {
-              const res = await getLocationList(inputValue || "Ciudad de Mexico");
-              setOptions(res);
-              setIsLoading(false);
-              return res;
-            } catch (error) {
-              console.error("Error filtering colors:", error);
-              setIsLoading(false);
-              return options;
-            }
-          }, 500), 
-          []
-        );
-    
-      const handlerFocus = (text: string) => {
-          debouncedFilterColors(text);
-          setOpen(true);
-      };
-  
-       const handlerInputChange = (text: string) => {
-          debouncedFilterColors(text);
-          setValue("location", text);
-          setProject(prev => ({ ...prev, location: text }));
-      };
- 
-    const handlerChange = (optionSelected: string) => {
-      setValue("location", optionSelected);
-      setProject(prev => ({ ...prev, location: optionSelected }));
-      setOpen(false);
-    };
 
   useEffect(()=>{
     if(projectId){
@@ -215,7 +259,6 @@ const {
         }else{
           const { name, responsible_name, start_date, end_date, estimated_duration, work_schedule, location, resguardo_files } = data;
           
-   
           const formattedStartDate = reverseChangeDateFormat(start_date);
           const formattedEndDate = reverseChangeDateFormat(end_date);
 
@@ -240,7 +283,7 @@ const {
             machinery_type: data.machinery_type || ""
           });
           setTerrainType(data.terrain_type ? data.terrain_type.split(", ").map((item:string) => item.trim()) : []);
-          setValue("resguardo_files", data.resguardo_files || []);
+          setSearchQuery(location || "");
           setValue("name", name || "");
           setValue("responsible_name", responsible_name || "");
           setValue("start_date", start_date || "");
@@ -262,7 +305,6 @@ const {
           setValue("has_reserve_space", data.has_reserve_space == false ? "No" : data.access_notes!== ""? 'Otros' : "Si");
           setValue("machinery_type", data.machinery_type || "");
           clearErrors();
-
         }
       });
     }
@@ -297,11 +339,6 @@ useEffect(() => {
               if (session.status !== "authenticated") {
                   router.push("/iniciar-session");
               }
-                // const accessToken = (session.data as (typeof session.data & { accessToken?: string }))?.accessToken;
-                // if (typeof accessToken === "string") {
-                //     getProjects(accessToken).then(data=>console.log(data));
-                // }
-                
           }
       }, [session.status,project.start_date, project.end_date]);
 
@@ -313,10 +350,6 @@ useEffect(() => {
   const onSubmit = (data:any) => {
         console.log(data);
         setSending(true);
-        //revisarmos los errores
-      
-        // project 
-        // aqui esta llegando un estado previo
 
         const newProject = data;
         newProject.site_manager =""
@@ -335,7 +368,6 @@ useEffect(() => {
         console.log(chanceDateFormat(newProject.end_date),newProject.end_date);
         console.log(newProject);
         if(projectId){
-          //edit project
           updateProject({...newProject,start_date:chanceDateFormat(newProject.start_date),end_date:chanceDateFormat(newProject.end_date),id:projectId},(session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "")
           .then(res=>{
             console.log(res);
@@ -363,14 +395,11 @@ useEffect(() => {
                 console.log(res);
                 toastSuccess(res.message);
                 
-                // AGREGADO - Nueva lógica de redirección
                 setTimeout(() => {
                     if (typeof window !== 'undefined') {
-                        // Caso 1: Si tenemos machineId y machinetype (viene de una máquina específica)
                         if (machineId && machinetype) {
                             router.push(`/${machineId}?projectId=${res.project_id}`);
                         }
-                        // Caso 2: Fallback al comportamiento original
                         else {
                             const currentPath = window.location.pathname;
                             const machineBasePath = currentPath.replace('/nuevo-proyecto', '');
@@ -379,7 +408,6 @@ useEffect(() => {
                     }
                 }, 1500);
                 
-                //limpiamos el formulario
                 setProject(initialValues);
                 setTerrainType([]);
                 setValue("resguardo_files", []);
@@ -398,28 +426,14 @@ useEffect(() => {
               }
             )
         }
-    
-
-
-        
-    
-
-
-      }
+    };
 
       const reserves_types = ['Si','No', 'Otros']
       
-
       return {
-          handlerFocus,
           register,
-          isLoading,
-          open,
-          options,
           sending,
           convertFileToBase64,
-          handlerChange,
-          handlerInputChange,
           handleSubmit,
           handlerStartDate,
           handlerEndDate,
@@ -433,6 +447,14 @@ useEffect(() => {
           setTerrainType,
           onSubmit,
           setProject,
-          isValid
+          isValid,
+          searchQuery,
+          setSearchQuery: handleSearchChange,
+          searchResults,
+          isSearching,
+          showResults,
+          setShowResults,
+          selectSearchResult,
+          selectedLocationData
       };
 }

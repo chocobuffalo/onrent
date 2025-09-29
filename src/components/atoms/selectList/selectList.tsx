@@ -13,7 +13,7 @@ export default function SelectList() {
         options={typeOptions}
         className="basic-multi-select"
         classNamePrefix="select"
-        onChange={(newValue)=>handlerChange(newValue)}
+        onChange={(newValue)=> newValue !== null && handlerChange(newValue)}
          />
     )
 }

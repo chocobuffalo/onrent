@@ -28,12 +28,8 @@ export default function MachineTable() {
     error,
     searchValue,
     columns,
-    statusField,
-    statusOptions,
-    statusColors,
     actionButtons,
     onSearch,
-    onStatusChange,
   } = useMachineTable();
   
   return (
@@ -51,12 +47,8 @@ export default function MachineTable() {
           error={error}
           searchValue={searchValue}
           columns={columns}
-          statusField={statusField}
-          statusOptions={statusOptions}
-          statusColors={statusColors}
           actionButtons={actionButtons}
           onSearch={onSearch}
-          onStatusChange={onStatusChange}
         />
       </div>
       {createModalOpen && (
