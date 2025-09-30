@@ -1,45 +1,87 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { getLocationList } from "@/services/getLocationList.adapter";
 import { setLocation } from "@/libs/redux/features/ui/filterSlicer";
 import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
-import { SelectInterface } from "@/types/iu";
 import { debounce } from "@/utils/debounce";
 import { useCallback, useEffect, useState } from "react";
-import { GroupBase, OptionsOrGroups } from "react-select";
 import { storage } from "@/utils/storage";
 
+interface SearchResult {
+  Place: {
+    Label: string;
+    Geometry: {
+      Point: [number, number];
+    };
+  };
+}
+
 export default function useAutoComplete(checkpersist?: boolean) {
-  const [options, setOptions] = useState<SelectInterface[]>([]);
   const uiSelector = useUIAppSelector((state) => state.filters);
-  const locationLabel = uiSelector.location ? uiSelector.location.label : "";
-  const [inputValue, setInputValue] = useState<string>(locationLabel || "");
+  const locationLabel = uiSelector.location?.label || "";
+  
+  const [inputValue, setInputValue] = useState<string>(locationLabel);
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  
   const dispatch = useUIAppDispatch();
+
+  const searchPlaces = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setOpen(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/get-map/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          query,
+          center: [-123.115898, 49.295868]
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.Results && data.Results.length > 0) {
+          setSearchResults(data.Results);
+          setOpen(true);
+        } else {
+          setSearchResults([]);
+          setOpen(false);
+        }
+      } else {
+        setSearchResults([]);
+        setOpen(false);
+      }
+    } catch (error) {
+      console.error('Error searching places:', error);
+      setSearchResults([]);
+      setOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const debouncedFilterColors = useCallback(
     debounce(async (inputValue: string) => {
-      setIsLoading(true);
-      try {
-        const res = await getLocationList(inputValue || "Ciudad de Mexico");
-        setOptions(res);
-        setIsLoading(false);
-        return res;
-      } catch (error) {
-        console.error("Error filtering colors:", error);
-        setIsLoading(false);
-        return options;
-      }
-    }, 500), // 500ms de delay
-    [] // Dependencias vacías ya que no usamos variables externas
+      await searchPlaces(inputValue);
+    }, 500),
+    []
   );
 
+  // Sincronizar con Redux cuando checkpersist está activo
   useEffect(() => {
-    if (checkpersist) setInputValue(uiSelector?.location?.label || "");
+    if (checkpersist) {
+      setInputValue(uiSelector?.location?.label || "");
+    }
   }, [uiSelector.location, checkpersist]);
 
+  // Limpiar al montar si no debe persistir
   useEffect(() => {
     if (!checkpersist) {
       setInputValue("");
@@ -48,88 +90,64 @@ export default function useAutoComplete(checkpersist?: boolean) {
   }, []);
 
   const handlerFocus = (text: string) => {
-    debouncedFilterColors(text);
-    setOpen(true);
+    if (text.trim()) {
+      debouncedFilterColors(text);
+      setOpen(true);
+    }
   };
 
   const handlerInputChange = (text: string) => {
-    debouncedFilterColors(text);
     setInputValue(text);
+    debouncedFilterColors(text);
   };
 
-  const loadOptions = (
-    inputValue: string,
-    callback: (
-      options: OptionsOrGroups<SelectInterface, GroupBase<SelectInterface>>
-    ) => void
-  ) => {
-    setIsLoading(true);
-    debouncedFilterColors(inputValue)
-      .then((res: any) => {
-        // setIsLoading(false)
-        callback(res);
+  const handlerChange = (resultIndex: number) => {
+    const result = searchResults[resultIndex];
+    if (!result) return;
+
+    const coords = result.Place.Geometry.Point;
+    const fullAddress = result.Place.Label;
+    const lat = coords[1];
+    const lon = coords[0];
+
+    setInputValue(fullAddress);
+
+    // Actualizar Redux (la fuente de verdad)
+    dispatch(
+      setLocation({
+        value: fullAddress,
+        label: fullAddress,
+        lat,
+        lon,
+        data: result
       })
-      .catch(() => {
-        // setIsLoading(false)
-        callback(options);
-      }).catch(() => setIsLoading(false));
-  };
-
-  //setLocation,setType
-  const handlerChange = (optionSelected: string) => {
-    // setInputValue(optionSelected.label)
-    fecthLocation(optionSelected);
+    );
+    
+    // Persistir en localStorage
+    const getStorage = storage.getItem("filters");
+    storage.setItem("filters", {
+      ...getStorage,
+      location: { 
+        value: fullAddress, 
+        label: fullAddress, 
+        lat, 
+        lon 
+      },
+    });
+    
     setOpen(false);
   };
 
-  const fecthLocation = async (placeID: string) => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/get-place?place=${placeID}`)
-      .then((res) => res.json())
-      .then((res) => {
-        const { data } = res;
-        ///console.log(data);
-        if (data.Position && data.Position.length > 0) {
-          console.log(data);
-          const [lon, lat] = data.Position;
-          dispatch(
-            setLocation({
-              value: data.PlaceId,
-              label: data.Title,
-              lat,
-              lon,
-              data
-            })
-          );
-          const getStorage = storage.getItem("filters");
-          storage.setItem("filters", {
-            ...getStorage,
-            location: { value: data.PlaceId, label: data.Title, lat, lon },
-          });
-        }else{
-          dispatch(setLocation(null));
-          const getStorage = storage.getItem("filters");
-          storage.setItem("filters", {
-            ...getStorage,
-            location: null,
-          });
-
-        }
-      }).finally(() => setIsLoading(false));
-  };
-
   return {
-    options,
-    uiSelector,
-    dispatch,
+    inputValue,
+    setInputValue,
     isLoading,
     open,
     setOpen,
-    setInputValue,
     handlerFocus,
     handlerInputChange,
-    inputValue,
-    loadOptions,
     handlerChange,
     debouncedFilterColors,
+    searchResults,
   };
 }
