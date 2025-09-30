@@ -2,45 +2,86 @@
 import { useState, useEffect, useCallback } from "react";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { ImSpinner8 } from "react-icons/im";
-import { getLocationList } from "@/services/getLocationList.adapter";
 import { debounce } from "@/utils/debounce";
-import { SelectInterface } from "@/types/iu";
 
 interface EditFilterInputProps {
   initialValue: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, coordinates?: { lat: number; lng: number }) => void;
   error?: string;
   name?: string;
   placeholder?: string;
 }
 
-// Hook simplificado para edición
+
+interface SearchResult {
+  Place: {
+    Label: string;
+    Geometry: {
+      Point: [number, number];
+    };
+  };
+}
+
+
 const useAutoCompleteEdit = (initialValue: string) => {
   const [inputValue, setInputValue] = useState(initialValue);
-  const [options, setOptions] = useState<SelectInterface[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  
 
-  // Sincronizar con valor inicial
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+
   useEffect(() => {
     if (initialValue !== inputValue) {
       setInputValue(initialValue);
     }
   }, [initialValue]);
 
-  // Función debounced para buscar ubicaciones
+
+  const searchPlaces = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setOpen(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/get-map/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          query,
+          center: [-123.115898, 49.295868]
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.Results && data.Results.length > 0) {
+          setSearchResults(data.Results);
+          setOpen(true);
+        } else {
+          setSearchResults([]);
+          setOpen(false);
+        }
+      } else {
+        setSearchResults([]);
+        setOpen(false);
+      }
+    } catch (error) {
+      console.error('Error searching places:', error);
+      setSearchResults([]);
+      setOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const searchLocations = useCallback(
     debounce(async (query: string) => {
-      setIsLoading(true);
-      try {
-        const res = await getLocationList(query || "Ciudad de Mexico");
-        setOptions(res);
-      } catch (error) {
-        console.error("Error searching locations:", error);
-        setOptions([]);
-      } finally {
-        setIsLoading(false);
-      }
+      await searchPlaces(query);
     }, 500),
     []
   );
@@ -48,24 +89,25 @@ const useAutoCompleteEdit = (initialValue: string) => {
   const handleInputChange = (text: string) => {
     setInputValue(text);
     
-    // Si está vacío, cargar ubicaciones por defecto
-    // Si hay texto, buscar ubicaciones específicas
-    const searchTerm = text.trim() === '' ? "Ciudad de Mexico" : text;
-    searchLocations(searchTerm);
+    if (text.trim()) {
+      searchLocations(text);
+    } else {
+      setSearchResults([]);
+      setOpen(false);
+    }
   };
 
   const handleFocus = (text: string) => {
-    setOpen(true);
-    
-    // Buscar ubicaciones basadas en el texto actual o cargar por defecto
-    const searchTerm = text && text.trim() !== '' ? text : "Ciudad de Mexico";
-    searchLocations(searchTerm);
+    if (text.trim()) {
+      searchLocations(text);
+      setOpen(true);
+    }
   };
 
   return {
     inputValue,
     setInputValue,
-    options,
+    searchResults,
     isLoading,
     open,
     setOpen,
@@ -84,7 +126,7 @@ const EditFilterInput = ({
   const {
     inputValue,
     setInputValue,
-    options,
+    searchResults,
     isLoading,
     open,
     setOpen,
@@ -92,22 +134,26 @@ const EditFilterInput = ({
     handleFocus
   } = useAutoCompleteEdit(initialValue);
 
-  // Manejar cambios en el input
   const handleLocalInputChange = (value: string) => {
     handleInputChange(value);
     onChange(value);
   };
 
-  // Manejar selección de opciones
-  const handleOptionSelect = (optionLabel: string) => {
-    setInputValue(optionLabel);
+  const handleOptionSelect = (result: SearchResult) => {
+    const coords = result.Place.Geometry.Point;
+    const fullAddress = result.Place.Label;
+    
+    setInputValue(fullAddress);
     setOpen(false);
-    onChange(optionLabel);
+    
+    onChange(fullAddress, {
+      lat: coords[1],
+      lng: coords[0]
+    });
   };
 
-  // Cerrar dropdown al hacer clic fuera
   const handleBlur = () => {
-    setTimeout(() => setOpen(false), 150);
+    setTimeout(() => setOpen(false), 200);
   };
 
   return (
@@ -125,32 +171,40 @@ const EditFilterInput = ({
           className="italic rounded-md p-2 w-full focus-visible:outline-none focus:border-secondary focus:ring-0"
         />
       </div>
+      
+      {error && (
+        <p className="text-red-500 text-sm mt-1">{error}</p>
+      )}
+      
       <ul
         className={`listen-items border-gray-300 absolute z-10 bg-white border rounded-md w-full max-h-60 overflow-y-auto shadow-lg mt-2 ${
           open ? "block" : "hidden"
         }`}
       >
-        {options.length > 0 ? (
-          options.map((option, index) => (
-            <li key={`${option.value}-${index}`} className="list-item">
+        {isLoading ? (
+          <li className="list-item w-full py-3.5 px-1.5 cursor-pointer duration-300 transition-colors">
+            <ImSpinner8 color="#ea6300" size={20} className="animate-spin mx-auto" />
+          </li>
+        ) : searchResults.length > 0 ? (
+          searchResults.map((result, index) => (
+            <li key={index} className="list-item">
               <button
                 type="button"
                 className="w-full py-3.5 px-1.5 cursor-pointer duration-300 transition-colors hover:bg-gray-200 text-left"
-                onClick={() => handleOptionSelect(option.label)}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleOptionSelect(result);
+                }}
               >
-                {option.label}
+                {result.Place.Label}
               </button>
             </li>
           ))
-        ) : (
+        ) : inputValue.trim() !== "" ? (
           <li className="list-item w-full py-3.5 px-1.5 cursor-pointer duration-300 transition-colors">
-            {isLoading ? (
-              <ImSpinner8 color="#ea6300" size={20} className="animate-spin mx-auto" />
-            ) : (
-              <span>No hay resultados</span>
-            )}
+            <span>No hay resultados</span>
           </li>
-        )}
+        ) : null}
       </ul>
     </div>
   );

@@ -1,36 +1,34 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-"use client";
-
 import useAutoComplete from "@/hooks/frontend/buyProcess/useAutoComplete";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { ImSpinner8 } from "react-icons/im";
 import "./filterInput.scss";
 
+interface FilterInputProps {
+  checkpersist?: boolean;
+  inputClass?: string;
+  name?: string;
+}
+
 export default function FilterInput({
   checkpersist,
   inputClass,
-  name="location",
-}: {
-  name?:string
-  checkpersist?: boolean;
-  inputClass?:string
-}) {
+  name = "location",
+}: FilterInputProps) {
   const {
     inputValue,
-    setInputValue,
     isLoading,
-    options,
-    debouncedFilterColors,
     handlerChange,
     handlerFocus,
     handlerInputChange,
     open,
     setOpen,
+    searchResults,
   } = useAutoComplete(checkpersist);
-//console.log(isLoading);
-  const inputClasses = inputClass ? `${inputClass} input-item flex items-center gap-2` : "input-item flex items-center gap-2 bg-white border border-gray-300 rounded-md px-2";
 
- 
+  const inputClasses = inputClass 
+    ? `${inputClass} input-item flex items-center gap-2` 
+    : "input-item flex items-center gap-2 bg-white border border-gray-300 rounded-md px-2";
+
   return (
     <div className="search-input relative w-full">
       <div className={inputClasses}>
@@ -40,9 +38,8 @@ export default function FilterInput({
           type="text"
           value={inputValue}
           name={name}
-          onChange={(e) => {
-            handlerInputChange(e.target.value);
-          }}
+          onChange={(e) => handlerInputChange(e.target.value)}
+          onBlur={() => setTimeout(() => setOpen(false), 200)}
           placeholder="Indica tu ubicación"
           className="italic rounded-md p-2 w-full focus-visible:outline-none focus:border-secondary focus:ring-0"
         />
@@ -52,32 +49,30 @@ export default function FilterInput({
           open ? "block" : "hidden"
         }`}
       >
-
-        {
-        options.length  > 0 ? (
-          options.map((option) => (
-            <li key={option.value} className="list-item">
+        {isLoading ? (
+          <li className="list-item w-full py-3.5 px-1.5 cursor-pointer duration-300 transition-colors">
+            <ImSpinner8 color="#ea6300" size={20} className="animate-spin mx-auto" />
+          </li>
+        ) : searchResults.length > 0 ? (
+          searchResults.map((result, index) => (
+            <li key={index} className="list-item">
               <button
                 className="w-full py-3.5 px-1.5 cursor-pointer duration-300 transition-colors hover:bg-gray-200 text-left"
-                onClick={() => {
-                  handlerChange(option.value);
-                  setInputValue(option.label);
-                  setOpen(false);
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handlerChange(index);
                 }}
               >
-                {option.label}
+                {result.Place.Label}
               </button>
             </li>
           ))
-        ) : (
-          <li className="list-item w-full py-3.5 px-1.5  cursor-pointer duration-300 transition-colors">
-            {isLoading ? (
-              <ImSpinner8 color="#ea6300" size={20} className="animate-spin mx-auto" />
-            ) : (
-              <span>No hay resultados</span>
-            )}
+        ) : inputValue.trim() !== "" ? (
+          <li className="list-item w-full py-3.5 px-1.5 cursor-pointer duration-300 transition-colors">
+            <span>No hay resultados</span>
           </li>
-        )}
+        ) : null}
       </ul>
     </div>
   );
