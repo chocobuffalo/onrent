@@ -1,7 +1,13 @@
+// src/components/organism/profile/personalForm.tsx
 import usePersonalForm from "@/hooks/backend/usePersonalForm";
 import { ImSpinner8 } from "react-icons/im";
 
-export default function PersonalForm() {
+interface PersonalFormProps {
+    showOperatorForm: boolean;
+    onOperatorFormReset: () => void;
+}
+
+export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: PersonalFormProps) {
     const {
         onSubmit,
         errors,
@@ -15,17 +21,17 @@ export default function PersonalForm() {
         selectedRegion,
         setSelectedRegion,
         hasChanges,
-    } = usePersonalForm();
+    } = usePersonalForm({ showOperatorForm, onOperatorFormReset });
     
     return (
         <div className="">
-             <h2 className="form-title mb-2">Información Personal</h2>
+            <h2 className="form-title mb-2">Información Personal</h2>
             <form onSubmit={handleSubmit(onSubmit)} className="">
                 <div className="profile-personal">
                     <div className="row">
                         <div className="col-md-12">
                             <div className="form-group">
-                                <label htmlFor="listing_title">Nombre Completo</label>
+                                <label htmlFor="fullName">Nombre Completo</label>
                                 <input
                                     {...register('fullName')}
                                     type="text"
@@ -39,7 +45,7 @@ export default function PersonalForm() {
                         </div>
                         <div className="col-md-6">
                             <div className="form-group">
-                                <label htmlFor="listing_title">Teléfono</label>
+                                <label htmlFor="telephone">Teléfono</label>
                                 <input
                                     {...register('telephone')}
                                     type="text"
@@ -53,12 +59,11 @@ export default function PersonalForm() {
                         </div>
                         <div className="col-md-6">
                             <div className="form-group">
-                                <label htmlFor="listing_title">Correo Electrónico</label>
+                                <label htmlFor="email">Correo Electrónico</label>
                                 <input
                                     disabled
                                     type="text"
                                     className="form-control disabled"
-                                    name="listing_title"
                                     placeholder="Tu correo electrónico"
                                     value={authEmail}
                                 />
@@ -97,6 +102,164 @@ export default function PersonalForm() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Campos del operador - Se muestran condicionalmente */}
+                    {showOperatorForm && (
+                        <div className="mt-4">
+                            <h2 className="form-title mb-2">Información de Operador</h2>
+                            <div className="row">
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label htmlFor="curp">CURP</label>
+                                        <input
+                                            {...register('curp')}
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="CURP (18 caracteres)"
+                                            maxLength={18}
+                                        />
+                                        {errors.curp && (
+                                            <span className="text-danger">{errors.curp.message}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label htmlFor="licenseNumber">Número de Licencia</label>
+                                        <input
+                                            {...register('licenseNumber')}
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Número de licencia"
+                                        />
+                                        {errors.licenseNumber && (
+                                            <span className="text-danger">{errors.licenseNumber.message}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label htmlFor="licenseType">Tipo de Licencia</label>
+                                        <input
+                                            {...register('licenseType')}
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Tipo de licencia (Ej: A, B, C, D, E)"
+                                        />
+                                        {errors.licenseType && (
+                                            <span className="text-danger">{errors.licenseType.message}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label htmlFor="experienceYears">Años de Experiencia</label>
+                                        <input
+                                            {...register('experienceYears')}
+                                            type="number"
+                                            className="form-control"
+                                            placeholder="Años de experiencia"
+                                            min="0"
+                                        />
+                                        {errors.experienceYears && (
+                                            <span className="text-danger">{errors.experienceYears.message}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label htmlFor="experienceLevel">Nivel de Experiencia</label>
+                                        <input
+                                            {...register('experienceLevel')}
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Nivel de experiencia (Ej: Principiante, Intermedio, Avanzado)"
+                                        />
+                                        {errors.experienceLevel && (
+                                            <span className="text-danger">{errors.experienceLevel.message}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label htmlFor="trainingStatus">Estado de Capacitación</label>
+                                        <input
+                                            {...register('trainingStatus')}
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Estado de capacitación (Ej: Sin capacitación, Capacitado)"
+                                        />
+                                        {errors.trainingStatus && (
+                                            <span className="text-danger">{errors.trainingStatus.message}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label htmlFor="availability">Disponibilidad</label>
+                                        <input
+                                            {...register('availability')}
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Disponibilidad (Ej: Disponible, No disponible)"
+                                        />
+                                        {errors.availability && (
+                                            <span className="text-danger">{errors.availability.message}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="form-group d-flex align-items-center" style={{ marginTop: '32px' }}>
+                                        <input
+                                            {...register('hasEpp')}
+                                            type="checkbox"
+                                            id="hasEpp"
+                                            style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                marginRight: '10px',
+                                                cursor: 'pointer'
+                                            }}
+                                        />
+                                        <label htmlFor="hasEpp" style={{ marginBottom: 0, cursor: 'pointer' }}>
+                                            ¿Cuenta con EPP (Equipo de Protección Personal)?
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label htmlFor="gpsLat">Latitud GPS</label>
+                                        <input
+                                            {...register('gpsLat')}
+                                            type="number"
+                                            step="any"
+                                            className="form-control"
+                                            placeholder="Ejemplo: 19.432608"
+                                        />
+                                        {errors.gpsLat && (
+                                            <span className="text-danger">{errors.gpsLat.message}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label htmlFor="gpsLng">Longitud GPS</label>
+                                        <input
+                                            {...register('gpsLng')}
+                                            type="number"
+                                            step="any"
+                                            className="form-control"
+                                            placeholder="Ejemplo: -99.133209"
+                                        />
+                                        {errors.gpsLng && (
+                                            <span className="text-danger">{errors.gpsLng.message}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="group-button-submit left mb-0">
                         <button className="pre-btn" type="submit" disabled={(!isValid && !hasChanges()) || isLoading}>
                             {isLoading ? (
