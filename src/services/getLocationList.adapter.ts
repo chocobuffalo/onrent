@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export const getLocationList = async (query: string) => {
   const response = await fetch(
     `/api/get-autocomplete?query=${encodeURIComponent(query)}`

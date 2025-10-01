@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Provider } from "react-redux";
 import { ReactNode, useRef, useEffect } from "react";

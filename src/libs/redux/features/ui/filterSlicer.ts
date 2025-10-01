@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { filterInitialState } from "@/constants/states";
 import { createSlice } from "@reduxjs/toolkit";

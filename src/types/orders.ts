@@ -167,5 +167,5 @@ export interface GetTransferDetailResult {
   error?: string;
 }
 
-export interface MarkTransferArrivedResult extends BaseApiResult {
-}
+// ✅ CORREGIDO: Cambiado de interface vacía a type alias
+export type MarkTransferArrivedResult = BaseApiResult;
