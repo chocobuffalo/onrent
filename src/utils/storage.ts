@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export const storage = {
   setItem: (key: string, value: any) => {
     try {

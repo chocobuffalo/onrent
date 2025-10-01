@@ -132,3 +132,40 @@ export interface DynamicTableProps {
   onSearch?: (value: string) => void;
   onStatusChange?: (itemId: any, newStatus: string) => void;
 }
+
+export interface Transfer {
+  transfer_id: number;
+  order_id: number;
+  name: string;
+  state: 'pending' | 'in_progress' | 'completed';
+  machine_name: string;
+  start_date: string;
+  end_date: string;
+  duration_days: number;
+}
+
+export interface TransferDetail extends Transfer {
+  location_coords: LocationCoords;
+  work_description: string;
+  project: string;
+  operator_name: string;
+  provider_name: string;
+  dynamic_rent: number;
+}
+
+export interface GetTransfersResult {
+  success: boolean;
+  data?: Transfer[];
+  message?: string;
+  error?: string;
+}
+
+export interface GetTransferDetailResult {
+  success: boolean;
+  data?: TransferDetail;
+  message?: string;
+  error?: string;
+}
+
+// ✅ CORREGIDO: Cambiado de interface vacía a type alias
+export type MarkTransferArrivedResult = BaseApiResult;

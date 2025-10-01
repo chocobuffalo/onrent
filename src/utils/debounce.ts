@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export const debounce = <F extends (...args: any[]) => Promise<any>>(
   func: F,
   wait: number

@@ -116,14 +116,12 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     icon: PencilWrite,
     roles: ["operador"], // Tareas asignadas por el proveedor
   },
-
-  /*
   {
-    link: "/dashboard/operator/guided-navigation",
+    link: "/operator-navigation",
     title: "Navegación guiada",
     icon: WrenckIcon,
     roles: ["operador"], // Sistema de navegación/GPS para operaciones
-  },*/
+  },
 
   /* ----------------------------------------------------
    * FUNCIONALIDADES FUTURAS - Comentadas temporalmente
