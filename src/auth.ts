@@ -15,7 +15,7 @@ declare module "next-auth" {
       email?: string;
       phone?: string;
       odoo_partner_id?: any;
-      image?: string;
+      image?: string | null;
     }
   }
 

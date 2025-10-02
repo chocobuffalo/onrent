@@ -7,7 +7,7 @@ import { Session } from "@auth/core/types";
 interface ExtendedUser extends AdapterUser {
   access_token?: string;
   role?: string;
-  user_id?: string;
+  user_id?: number;
   name?: string;
 }
 
@@ -27,17 +27,13 @@ interface SocialLoginResponse {
   message?: string;
   user: {
     role: string;
-    user_id: string;
+    user_id: number;
     name: string;
   };
 }
 
 export const callbacks: NextAuthConfig["callbacks"] = {
   async signIn({ user, account, profile }) {
-    // console.log('🔑 signIn callback triggered');
-    // console.log('User:', user);
-    // console.log('Account:', account);
-    // console.log('Profile:', profile);
 
     // Para login con credenciales (email/password) - ya manejado en provider
     if (account?.provider === "credentials") {
@@ -75,7 +71,7 @@ export const callbacks: NextAuthConfig["callbacks"] = {
         console.log(data,'sign callback');
         extendedUser.access_token = data.access_token;
         extendedUser.role = data?.user.role || "cliente"; // Asignar rol por defecto si no se proporciona
-        extendedUser.user_id = data?.user.user_id || ""; // Asignar user_id por defecto si no se proporciona
+        extendedUser.user_id = data?.user.user_id || undefined;  // Asignar user_id por defecto si no se proporciona
         return true;
       } catch (e) {
         console.error("Error al conectar con el backend:", e);
