@@ -24,10 +24,7 @@ interface PreorderPayload {
     lng: number;
   };
   work_image?: string | null;
-  reference_address?: string;  
-  // Add any other potentially required fields here
-  // state?: string;
-  // user_id?: number;
+  reference_address?: string;
 }
 
 export default function useBookingPreorder() {
@@ -35,12 +32,25 @@ export default function useBookingPreorder() {
   const [error, setError] = useState<string | null>(null);
   const dispatch = useUIAppDispatch();
   const [data, setData] = useState<any>(null);
-  const {data: sessionData} = useSession();
+  const {data: sessionData, status} = useSession();
   const token = sessionData?.user?.access_token;
+  
   const createPreorder = async (payload: PreorderPayload) => {
     try {
       setLoading(true);
       setError(null);
+
+      // Verificar autenticación
+      if (status !== 'authenticated' || !sessionData) {
+        throw new Error("Usuario no autenticado");
+      }
+
+      // Verificar rol - SIMPLIFICADO: solo usar role
+      const userRole = (sessionData.user?.role || '').toLowerCase();
+      
+      if (userRole === 'proveedor' || userRole === 'operador') {
+        throw new Error("ROLE_NOT_ALLOWED");
+      }
 
       const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN;
       const url = apiBase
@@ -49,9 +59,9 @@ export default function useBookingPreorder() {
 
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json",
-                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
-
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
         },
         body: JSON.stringify(payload),
       });
@@ -63,7 +73,6 @@ export default function useBookingPreorder() {
         let errorDetails;
         try {
           errorDetails = await res.json();
-
         } catch (jsonError) {
           try {
             errorDetails = await res.text();
@@ -90,15 +99,15 @@ export default function useBookingPreorder() {
       const result = await res.json();
       console.log("Successful response:", result);
       setData(result);
-      //añdir carrito
-      //añdir session_id a carrito
+      
+      // Añadir session_id al carrito
       if (result.session_id) {
         dispatch(setSessionId(result.session_id));
       }
-      //añdir order_id a carrito
+      
+      // Añadir order_id al carrito
       if (result.order_id) {
         dispatch(setOrderId(result.order_id));
-
       }
 
       return result;

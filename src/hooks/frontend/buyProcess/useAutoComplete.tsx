@@ -23,6 +23,7 @@ export default function useAutoComplete(checkpersist?: boolean) {
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   
   const dispatch = useUIAppDispatch();
 
@@ -67,6 +68,74 @@ export default function useAutoComplete(checkpersist?: boolean) {
     }
   };
 
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const response = await fetch('/api/get-map/reverse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat, lng })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const address = data.address;
+
+        setInputValue(address);
+
+        // Actualizar Redux
+        dispatch(
+          setLocation({
+            value: address,
+            label: address,
+            lat,
+            lon: lng,
+            data: null
+          })
+        );
+
+        // Persistir en localStorage
+        const getStorage = storage.getItem("filters");
+        storage.setItem("filters", {
+          ...getStorage,
+          location: { 
+            value: address, 
+            label: address, 
+            lat, 
+            lon: lng 
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error in reverse geocoding:', error);
+    }
+  };
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      console.error('Geolocalización no soportada en este navegador');
+      return;
+    }
+
+    setIsGettingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        await reverseGeocode(latitude, longitude);
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        console.error('Error obteniendo ubicación:', error);
+        setIsGettingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
   const debouncedFilterColors = useCallback(
     debounce(async (inputValue: string) => {
       await searchPlaces(inputValue);
@@ -81,11 +150,14 @@ export default function useAutoComplete(checkpersist?: boolean) {
     }
   }, [uiSelector.location, checkpersist]);
 
-  // Limpiar al montar si no debe persistir
+  // Limpiar al montar si no debe persistir Y activar geolocalización
   useEffect(() => {
     if (!checkpersist) {
       setInputValue("");
       dispatch(setLocation(null));
+      
+      // Activar geolocalización automáticamente
+      getCurrentLocation();
     }
   }, []);
 
@@ -141,7 +213,7 @@ export default function useAutoComplete(checkpersist?: boolean) {
   return {
     inputValue,
     setInputValue,
-    isLoading,
+    isLoading: isLoading || isGettingLocation,
     open,
     setOpen,
     handlerFocus,
@@ -149,5 +221,7 @@ export default function useAutoComplete(checkpersist?: boolean) {
     handlerChange,
     debouncedFilterColors,
     searchResults,
+    getCurrentLocation,
+    isGettingLocation
   };
 }

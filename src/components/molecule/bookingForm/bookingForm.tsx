@@ -7,6 +7,8 @@ import DateRentInput from "../dateRentInput/dateRentInput";
 import useAddFormItems from "@/hooks/frontend/buyProcess/useAddFormItems";
 import useBookingPreorder from "@/hooks/frontend/buyProcess/useBookingPreorder";
 import { useToast } from "@/hooks/frontend/ui/useToast";
+import { useSession } from "next-auth/react";
+import { useRouter as useNextRouter } from "next/navigation";
 
 import PricingSection from "../PricingSection/PricingSection";
 import DurationSection from "../DurationSection/DurationSection";
@@ -61,7 +63,9 @@ export const BookingForm = ({
 
     const { count, increment, decrement, disableTop, disableBottom } = useAddFormItems();
     const { createPreorder, loading, error } = useBookingPreorder();
-    const { toastSuccessAction, toastError } = useToast();
+    const { toastSuccessAction, toastError, toastWarning, toastCriticalAction } = useToast();
+    const { data: session, status } = useSession();
+    const nextRouter = useNextRouter();
 
     const unitPrice = machine?.pricing?.price_per_day || 0;
     const price = unitPrice * count;
@@ -71,32 +75,24 @@ export const BookingForm = ({
     const hasProject = Boolean(projectId && projectData);
     const isManualMode = !hasProject;
 
-    // CORRECCIÓN: Escuchar cambios en selectedLocation y projectData
     useEffect(() => {
         if (hasProject && selectedLocation && projectData) {
             setLocationLoaded(true);
             console.log('✅ Ubicación del proyecto cargada:', selectedLocation);
         } else if (!hasProject) {
-            // En modo manual, resetear el estado
             setLocationLoaded(false);
         }
     }, [hasProject, selectedLocation, projectData]);
 
-    // CORRECCIÓN: Función para obtener la dirección correcta
     const getProjectAddress = () => {
         if (!hasProject) return '';
-        
-        // Usar la misma lógica que getWorkData() del hook
         return projectData?.location || selectedLocation?.address || '';
     };
 
-    // CORRECCIÓN: Función para validar si hay ubicación disponible
     const hasValidLocation = () => {
         if (hasProject) {
-            // Para proyectos, verificar que los datos estén cargados y tenga dirección
             return locationLoaded && Boolean(getProjectAddress());
         } else {
-            // Para modo manual, usar la validación existente
             return validateLocation ? validateLocation() : false;
         }
     };
@@ -108,6 +104,39 @@ export const BookingForm = ({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // CORRECCIÓN: Validar autenticación y redirigir rápidamente
+        if (status !== 'authenticated' || !session) {
+            toastError("Para crear una reserva debes iniciar sesión");
+            
+            // Redirigir rápidamente (800ms para que alcance a leer el mensaje)
+            setTimeout(() => {
+                nextRouter.push('/iniciar-session');
+            }, 800);
+            return;
+        }
+
+        const userRole = (session.user?.role || '').toLowerCase();
+        
+        if (!userRole) {
+            toastError("No se pudo determinar tu rol de usuario");
+            return;
+        }
+        
+    
+        if (userRole === 'proveedor') {
+            toastWarning(
+                "Como Proveedor no puedes crear preórdenes. Crea un perfil de cliente para continuar."
+            );
+            return;
+        }
+        
+        if (userRole === 'operador') {
+            toastWarning(
+                "Como Operador no puedes crear preórdenes. Crea un perfil de cliente para continuar."
+            );
+            return;
+        }
 
         if (!startDate || !endDate) {
             toastError("Por favor selecciona las fechas de inicio y fin");
@@ -124,14 +153,12 @@ export const BookingForm = ({
             return;
         }
 
-        // CORRECCIÓN: Validación mejorada de ubicación
         if (!hasValidLocation()) {
             if (hasProject) {
                 toastError("Error: No se pudo cargar la ubicación del proyecto seleccionado");
             } else {
-                // Para modo manual, usar la validación original que ya maneja el toast
                 if (validateLocation) {
-                    validateLocation(); // Esto ya maneja el error internamente
+                    validateLocation();
                 }
             }
             return;
@@ -150,7 +177,7 @@ export const BookingForm = ({
                 workData = {
                     workImage: null,
                     projectName: projectData?.name || projectName || '',
-                    referenceAddress: projectData?.location || selectedLocation?.address || '', // CORRECCIÓN: Usar misma lógica que el hook
+                    referenceAddress: projectData?.location || selectedLocation?.address || '',
                     projectId: projectData?.id || 0,
                     responsibleName: projectData?.responsible_name || '',
                 };
@@ -198,7 +225,14 @@ export const BookingForm = ({
                 );
             }
         } catch (err: any) {
-            toastError("Error al crear la reserva. Por favor, inténtalo nuevamente.");
+            if (err.message === 'Usuario no autenticado') {
+                toastError("Para crear una preorden debes iniciar sesión");
+                setTimeout(() => {
+                    nextRouter.push('/iniciar-session');
+                }, 2.1);
+            } else {
+                toastError("Error al crear la reserva. Por favor, inténtalo nuevamente.");
+            }
         }
     };
 
