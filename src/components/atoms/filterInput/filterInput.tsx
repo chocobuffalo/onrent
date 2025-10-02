@@ -1,19 +1,29 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
+
 import useAutoComplete from "@/hooks/frontend/buyProcess/useAutoComplete";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { ImSpinner8 } from "react-icons/im";
 import "./filterInput.scss";
 
-interface FilterInputProps {
-  checkpersist?: boolean;
-  inputClass?: string;
-  name?: string;
+interface SearchResult {
+  Place: {
+    Label: string;
+    Geometry: {
+      Point: [number, number];
+    };
+  };
 }
 
 export default function FilterInput({
   checkpersist,
   inputClass,
   name = "location",
-}: FilterInputProps) {
+}: {
+  name?: string;
+  checkpersist?: boolean;
+  inputClass?: string;
+}) {
   const {
     inputValue,
     isLoading,
@@ -25,8 +35,8 @@ export default function FilterInput({
     searchResults,
   } = useAutoComplete(checkpersist);
 
-  const inputClasses = inputClass 
-    ? `${inputClass} input-item flex items-center gap-2` 
+  const inputClasses = inputClass
+    ? `${inputClass} input-item flex items-center gap-2`
     : "input-item flex items-center gap-2 bg-white border border-gray-300 rounded-md px-2";
 
   return (
@@ -54,7 +64,7 @@ export default function FilterInput({
             <ImSpinner8 color="#ea6300" size={20} className="animate-spin mx-auto" />
           </li>
         ) : searchResults.length > 0 ? (
-          searchResults.map((result, index) => (
+          searchResults.map((result: SearchResult, index: number) => (
             <li key={index} className="list-item">
               <button
                 className="w-full py-3.5 px-1.5 cursor-pointer duration-300 transition-colors hover:bg-gray-200 text-left"
