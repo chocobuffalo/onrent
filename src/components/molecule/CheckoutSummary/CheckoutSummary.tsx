@@ -13,7 +13,6 @@ interface MachineItem {
   name: string;
   price: number;
   quantity: number;
- 
 }
 
 export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,session_id,url }:{items?:ItemProps[],setGetCheckSummary:(checkout:any)=>void,preorder_id?:string,session_id?:string,url?:string}) {
@@ -25,11 +24,9 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
   const [tax, setTax] = useState(0);
   const [userId,setUserId] = useState<number | null>(null);
   const [totalPrice,setTotalPrice] = useState(0);
-  
-
 
   const machinesItems = items ? items?.map((item) => ({
-    id: item.product_id || Math.random().toString(36).substr(2, 9), // Generar un ID único si no existe
+    id: item.product_id || Math.random().toString(36).substr(2, 9),
     name: item.product_name,
     price: item.estimated_rent,
     quantity: item.requested_quantity,
@@ -49,30 +46,31 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
     if(items && machinesItems.length > 0){
       setMachines(machinesItems );
       setUserId(parseInt(session?.user?.id||'0') || null);
-      /// tomar el estimated_fleet y sumarlo
      
       const fleetSum = items.reduce((sum, item) => sum + (item.estimated_fleet || 0), 0);
       setFleet(fleetSum);
-      ///tomar el estimated_extras y sumarlo
+      
       const extrasSum = items.reduce((sum, item) => sum + (item.estimated_extras || 0), 0);
       setExtras(extrasSum);
-      ///tomar el estimated_rent y sumarlo
+      
       const rentsSum = items.reduce((sum, item) => sum + (item.estimated_rent || 0), 0);
       setRents(rentsSum);
-      /// tomar el estimated_tax y sumarlo
+      
       const taxSum = items.reduce((sum, item) => sum + (item.estimated_taxes || 0), 0);
       setTax(taxSum);
-      ///tomar el total_estimated y sumarlo
+      
       const totalSum = items.reduce((sum, item) => sum + (item.total_estimated || 0), 0);
       setTotalPrice(totalSum);
+      
       setGetCheckSummary((prev: Record<string, any>) => ({
         ...prev,
         amount: totalSum,
         currency: 'mxn',
-        
+        preorder_id: preorder_id || '',
+        session_id: session_id || ''
       }))
     };
-  }, []);
+  }, [items, preorder_id, session_id]);
 
   const handleIncrement = (id: number | string) => {
     setMachines((prev) =>
@@ -95,7 +93,6 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
 
   const total = rentaMaquinaria + initial.flete + initial.seguro + initial.impuestos;
 
-
   if(!items) return null;
   return (
     <div className="border border-gray-300 rounded-lg p-6 bg-white">
@@ -107,13 +104,9 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
           <div key={item.id} className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
-               
-
                 <div className="w-7 h-7 flex items-center justify-center text-sm font-medium text-gray-900">
                   {item.quantity}
                 </div>
-
-              
               </div>
               <span className="text-gray-900 text-base font-light lato-font">
                 {item.name}

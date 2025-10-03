@@ -3,7 +3,7 @@ import { AuthConfig } from "@auth/core/types";
 import { providers } from "./auth/auth.provider";
 import { callbacks } from "./auth/auth.callbacks";
 
-// Extensión de tipos de NextAuth
+
 declare module "next-auth" {
   interface Session {
     user: {
@@ -27,6 +27,7 @@ declare module "next-auth" {
     odoo_partner_id?: any;
   }
 }
+
 declare module "@auth/core/jwt" {
   interface JWT {
     user_id?: number;
