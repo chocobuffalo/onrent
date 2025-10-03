@@ -1,17 +1,45 @@
+// src/types/orders.ts
 export interface OrderResponse {
   order_id: number;
+  name: string;
   state: string;
   machine_name: string;
   start_date: string;
   end_date: string;
+  duration_days: number;
+  location_coords: LocationCoords;
+  work_description: string;
+  project: string;
+  operator_name: string;
+  provider_name: string;
+  dynamic_rent: number;
+  fleet_cost: number;
+  extra_charges: number;
+  final_price: number;
 }
-
+// Helper para verificar si una orden está confirmada
+export const isConfirmedOrder = (order: OrderResponse): boolean => {
+  const confirmedStates = ["pendiente de asignacion", "confirmada"];
+  return confirmedStates.includes(order.state.toLowerCase());
+};
+// ✅ CORREGIDO: Agregadas propiedades latitude/longitude para compatibilidad
 export interface LocationCoords {
   lat?: number;
   lng?: number;
+  latitude?: number;  // Alias para compatibilidad con AWS Location Service
+  longitude?: number; // Alias para compatibilidad con AWS Location Service
   additionalProp1?: number;
   additionalProp2?: number;
   additionalProp3?: number;
+}
+
+// ✅ NUEVO: Tipo para location cuando es un objeto completo con dirección
+export interface LocationWithAddress {
+  address: string;
+  latitude: number;
+  longitude: number;
+  lat?: number;  // Alias opcional
+  lng?: number;  // Alias opcional
 }
 
 export interface OrderItem {
@@ -28,6 +56,7 @@ export interface OrderItem {
   total_price: number;
 }
 
+// ✅ MEJORADO: location puede ser string O objeto con coordenadas
 export interface OrderDetail {
   order_id: number;
   name: string;
@@ -47,7 +76,7 @@ export interface OrderDetail {
   end_date: string;
   duration_days: number;
   location_coords: LocationCoords;
-  location: string;
+  location: string | LocationWithAddress; // ✅ Puede ser string o objeto
   work_description: string | null;
   work_image: string | null;
   items: OrderItem[];
@@ -167,5 +196,27 @@ export interface GetTransferDetailResult {
   error?: string;
 }
 
-// ✅ CORREGIDO: Cambiado de interface vacía a type alias
 export type MarkTransferArrivedResult = BaseApiResult;
+
+// ✅ NUEVAS: Funciones helper para normalizar coordenadas
+export const normalizeLocationCoords = (coords: LocationCoords): { lat: number; lng: number } | null => {
+  const lat = coords.latitude ?? coords.lat;
+  const lng = coords.longitude ?? coords.lng;
+  
+  if (typeof lat === 'number' && typeof lng === 'number' && 
+      !isNaN(lat) && !isNaN(lng)) {
+    return { lat, lng };
+  }
+  
+  return null;
+};
+
+export const isLocationWithAddress = (location: any): location is LocationWithAddress => {
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'address' in location &&
+    ('latitude' in location || 'lat' in location) &&
+    ('longitude' in location || 'lng' in location)
+  );
+};

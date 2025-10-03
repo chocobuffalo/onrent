@@ -37,6 +37,7 @@ const TrackingPage = () => {
   const [userData, setUserData] = useState<any>(null);
   const [availableDevices, setAvailableDevices] = useState<LocationData[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
+  const [selectedDeviceName, setSelectedDeviceName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
   const initialTrackingId = orderId || deviceId;
@@ -120,6 +121,12 @@ const TrackingPage = () => {
         if (!initialTrackingId && filteredDevices.length > 0) {
           const firstDevice = filteredDevices[0];
           setSelectedDeviceId(firstDevice.entity_id);
+          setSelectedDeviceName(firstDevice.name || firstDevice.entity_id);
+        } else if (initialTrackingId) {
+          const initialDevice = filteredDevices.find(d => d.entity_id === initialTrackingId);
+          if (initialDevice) {
+            setSelectedDeviceName(initialDevice.name || initialDevice.entity_id);
+          }
         }
       } catch (error) {
         console.error("Error loading available devices:", error);
@@ -133,6 +140,9 @@ const TrackingPage = () => {
 
   const handleDeviceChange = (newDeviceId: string) => {
     setSelectedDeviceId(newDeviceId);
+    
+    const selectedDevice = availableDevices.find(d => d.entity_id === newDeviceId);
+    setSelectedDeviceName(selectedDevice?.name || newDeviceId);
     
     const url = new URL(window.location.href);
     if (newDeviceId) {
@@ -222,7 +232,7 @@ const TrackingPage = () => {
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-900 mb-1">
                 {selectedDeviceId ? (
-                  <>Seguimiento: {selectedDeviceId}</>
+                  <>Seguimiento: {selectedDeviceName}</>
                 ) : (
                   "Selecciona un dispositivo para rastrear"
                 )}
@@ -268,7 +278,7 @@ const TrackingPage = () => {
                     <optgroup label="Dispositivos con GPS válido">
                       {devicesWithGPS.map(device => (
                         <option key={device.entity_id} value={device.entity_id}>
-                          {device.entity_id} ({device.entity_type}) - {device.status || 'activo'}
+                          {device.name || device.entity_id} ({device.entity_type}) - {device.status || 'activo'}
                         </option>
                       ))}
                     </optgroup>
@@ -280,7 +290,7 @@ const TrackingPage = () => {
                         .filter(device => !devicesWithGPS.some(d => d.entity_id === device.entity_id))
                         .map(device => (
                           <option key={device.entity_id} value={device.entity_id}>
-                            {device.entity_id} ({device.entity_type}) - Sin GPS
+                            {device.name || device.entity_id} ({device.entity_type}) - Sin GPS
                           </option>
                         ))}
                     </optgroup>
@@ -337,18 +347,18 @@ const TrackingPage = () => {
         </div>
       </div>
 
-      <div className="flex-1 p-4">
+      <div className="flex-1 p-2 sm:p-4">
         <div className="h-full bg-white rounded-lg shadow-sm border overflow-hidden">
           {selectedDeviceId ? (
             <VehicleMap userId={selectedDeviceId} />
           ) : (
-            <div className="h-full flex items-center justify-center bg-gray-50">
+            <div className="h-full flex items-center justify-center bg-gray-50 px-4">
               <div className="text-center">
-                <div className="text-gray-400 text-6xl mb-4">🗺️</div>
-                <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                <div className="text-4xl sm:text-6xl mb-4">🗺️</div>
+                <h4 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                   Selecciona un dispositivo para rastrear
                 </h4>
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   {devicesWithGPS.length > 0 ? 
                     `${devicesWithGPS.length} dispositivos con GPS disponibles` :
                     "Esperando dispositivos con ubicación válida"
@@ -360,26 +370,26 @@ const TrackingPage = () => {
         </div>
       </div>
 
-      <div className="bg-white border-t p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="text-center p-3 bg-blue-50 rounded-lg">
-            <div className="text-blue-600 font-semibold">Total Dispositivos</div>
-            <div className="text-lg font-bold text-blue-800">{availableDevices.length}</div>
+      <div className="bg-white border-t p-2 sm:p-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+          <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg">
+            <div className="text-blue-600 font-semibold text-xs sm:text-sm">Total Dispositivos</div>
+            <div className="text-base sm:text-lg font-bold text-blue-800">{availableDevices.length}</div>
           </div>
           
-          <div className="text-center p-3 bg-green-50 rounded-lg">
-            <div className="text-green-600 font-semibold">Con GPS Válido</div>
-            <div className="text-lg font-bold text-green-800">{devicesWithGPS.length}</div>
+          <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg">
+            <div className="text-green-600 font-semibold text-xs sm:text-sm">Con GPS Válido</div>
+            <div className="text-base sm:text-lg font-bold text-green-800">{devicesWithGPS.length}</div>
           </div>
           
-          <div className="text-center p-3 bg-orange-50 rounded-lg">
-            <div className="text-orange-600 font-semibold">Dispositivo Actual</div>
-            <div className="text-sm font-bold text-orange-800">{selectedDeviceId || 'Ninguno'}</div>
+          <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg">
+            <div className="text-orange-600 font-semibold text-xs sm:text-sm">Dispositivo Actual</div>
+            <div className="text-xs sm:text-sm font-bold text-orange-800 truncate">{selectedDeviceName || 'Ninguno'}</div>
           </div>
 
-          <div className="text-center p-3 bg-purple-50 rounded-lg">
-            <div className="text-purple-600 font-semibold">Estado</div>
-            <div className="text-sm font-bold text-purple-800">
+          <div className="text-center p-2 sm:p-3 bg-purple-50 rounded-lg">
+            <div className="text-purple-600 font-semibold text-xs sm:text-sm">Estado</div>
+            <div className="text-xs sm:text-sm font-bold text-purple-800">
               {selectedDeviceId ? 'Rastreando' : 'En espera'}
             </div>
           </div>

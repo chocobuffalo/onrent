@@ -1,10 +1,23 @@
+// src/components/organism/Catalogue/CatalogueContainer.tsx
 "use client";
 
 import { useMemo } from "react";
 import CatalogueList from "./CatalogueList";
 import useCatalog from "@/hooks/backend/useCatalogData";
 
-export default function CatalogueContainer({ slug, searchValue }: { slug?: string; searchValue?: string }) {
+interface CatalogueContainerProps {
+  slug?: string;
+  searchValue?: string;
+  selectionMode?: boolean;
+  onSelectMachine?: (machine: any) => void;
+}
+
+export default function CatalogueContainer({ 
+  slug, 
+  searchValue,
+  selectionMode = false,
+  onSelectMachine
+}: CatalogueContainerProps) {
   const { data, loading, error } = useCatalog(slug);
 
   const filteredData = useMemo(() => {
@@ -14,12 +27,11 @@ export default function CatalogueContainer({ slug, searchValue }: { slug?: strin
     const filtered = data.filter(item => 
       item.name.toLowerCase().includes(searchTerm)
     );
-
-  
+    
     return filtered.sort((a, b) => {
       const aName = a.name.toLowerCase();
       const bName = b.name.toLowerCase();
-  
+      
       if (aName === searchTerm && bName !== searchTerm) return -1;
       if (bName === searchTerm && aName !== searchTerm) return 1;
       
@@ -33,5 +45,11 @@ export default function CatalogueContainer({ slug, searchValue }: { slug?: strin
   if (loading) return <p className="text-center">Cargando catálogo...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
-  return <CatalogueList items={filteredData} />;
+  return (
+    <CatalogueList 
+      items={filteredData} 
+      selectionMode={selectionMode}
+      onSelectMachine={onSelectMachine}
+    />
+  );
 }

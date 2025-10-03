@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useOperatorNavigation } from "@/hooks/component/useOperatorNavigation";
 import { useState, useEffect } from "react";
 import { getOrderDetail } from "@/services/getOrderDetail";
+import { isLocationWithAddress, normalizeLocationCoords } from "@/types/orders";
 import { toast } from "react-toastify";
 
 interface SearchResult {
@@ -33,62 +34,6 @@ const OperatorNavigationPage = () => {
   const [orderIdInput, setOrderIdInput] = useState<string>("");
   const [loadingOrder, setLoadingOrder] = useState(false);
 
-  const handleLoadFromOrder = async () => {
-    if (!orderIdInput.trim()) {
-      toast.error("Por favor ingresa un ID de orden");
-      return;
-    }
-
-    setLoadingOrder(true);
-    try {
-      const nextAuthToken = (session as any)?.accessToken || (session as any)?.user?.accessToken;
-      const localStorageToken = typeof window !== 'undefined' ? localStorage.getItem("api_access_token") : null;
-      const token = nextAuthToken || localStorageToken;
-
-      if (!token) {
-        toast.error("No se encontró token de autenticación");
-        return;
-      }
-
-      const result = await getOrderDetail(parseInt(orderIdInput), token);
-
-      if (!result.success || !result.data) {
-        toast.error(result.message || "No se pudo cargar la orden");
-        return;
-      }
-
-      const orderData = result.data;
-
-      if (!orderData.location) {
-        toast.error("La orden no tiene dirección de destino configurada");
-        return;
-      }
-
-      // Cargar la dirección en el campo de búsqueda
-      setSearchQuery(orderData.location);
-      
-      // Buscar automáticamente la dirección
-      toast.success(`Dirección cargada desde orden #${orderIdInput}`);
-      
-      // Ejecutar la búsqueda
-      setTimeout(() => {
-        handleSearch();
-      }, 500);
-
-    } catch (error) {
-      console.error("Error cargando orden:", error);
-      toast.error("Error al cargar la orden");
-    } finally {
-      setLoadingOrder(false);
-    }
-  };
-  useEffect(() => {
-    if (session?.user) {
-      const sessionWithId = session as any;
-      setDeviceId(sessionWithId.user.id || `operator-${sessionWithId.user.email?.split('@')[0]}`);
-    }
-  }, [session]);
-
   const {
     currentLocation,
     destination,
@@ -105,8 +50,118 @@ const OperatorNavigationPage = () => {
     selectDestination,
     handleSearch,
     toggleNavigation,
-    loadDestinationFromOrder,
+    setDestinationDirectly,
   } = useOperatorNavigation(deviceId, session);
+
+  const handleLoadFromOrder = async () => {
+    if (!orderIdInput.trim()) {
+      toast.error("Por favor ingresa un ID de orden");
+      return;
+    }
+
+    setLoadingOrder(true);
+    try {
+      const nextAuthToken = (session as any)?.accessToken || (session as any)?.user?.accessToken;
+      const localStorageToken = typeof window !== 'undefined' ? localStorage.getItem("api_access_token") : null;
+      const token = nextAuthToken || localStorageToken;
+
+      if (!token) {
+        toast.error("No se encontró token de autenticación");
+        setLoadingOrder(false);
+        return;
+      }
+
+      const result = await getOrderDetail(parseInt(orderIdInput), token);
+
+      if (!result.success || !result.data) {
+        toast.error(result.message || "No se pudo cargar la orden");
+        setLoadingOrder(false);
+        return;
+      }
+
+      const orderData = result.data;
+
+      if (!orderData.location) {
+        toast.error("La orden no tiene dirección de destino configurada");
+        setLoadingOrder(false);
+        return;
+      }
+
+      // ✅ CASO 1: location es un objeto con coordenadas
+      if (isLocationWithAddress(orderData.location)) {
+        const lat = orderData.location.latitude ?? orderData.location.lat;
+        const lng = orderData.location.longitude ?? orderData.location.lng;
+        
+        if (typeof lat === 'number' && typeof lng === 'number') {
+          setDestinationDirectly(
+            { lat, lng },
+            orderData.location.address || `Orden #${orderIdInput}`
+          );
+          toast.success(`Destino cargado desde orden #${orderIdInput}`);
+        } else {
+          toast.error("Las coordenadas de la orden no son válidas");
+        }
+      } 
+      // ✅ CASO 2: location es solo texto, intentar usar location_coords
+      else if (typeof orderData.location === 'string') {
+        const coords = normalizeLocationCoords(orderData.location_coords);
+        
+        if (coords) {
+          // Si tenemos location_coords válidos, usarlos directamente
+          setDestinationDirectly(coords, orderData.location);
+          toast.success(`Destino cargado desde orden #${orderIdInput}`);
+        } else {
+          // No hay coordenadas, necesitamos geocodificar el texto
+          setSearchQuery(orderData.location);
+          toast.info(`Buscando coordenadas para: ${orderData.location}`);
+          
+          try {
+            const response = await fetch("/api/get-map/search", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                query: orderData.location,
+                center: currentLocation
+                  ? [currentLocation.lng, currentLocation.lat]
+                  : undefined,
+              }),
+            });
+            
+            const searchData = await response.json();
+            
+            if (response.ok && searchData.Results && searchData.Results.length > 0) {
+              const firstResult = searchData.Results[0];
+              selectDestination(firstResult);
+              toast.success(`Dirección geocodificada desde orden #${orderIdInput}`);
+            } else {
+              toast.error("No se encontraron coordenadas para la dirección de la orden");
+            }
+          } catch (searchError) {
+            console.error("Error geocodificando dirección:", searchError);
+            toast.error("Error al buscar las coordenadas de la dirección");
+          }
+        }
+      } else {
+        toast.error("Formato de ubicación no válido en la orden");
+      }
+
+    } catch (error) {
+      console.error("Error cargando orden:", error);
+      toast.error("Error al cargar la orden");
+    } finally {
+      setLoadingOrder(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session?.user) {
+      const sessionWithId = session as any;
+      setDeviceId(sessionWithId.user.id || `operator-${sessionWithId.user.email?.split('@')[0]}`);
+    }
+  }, [session]);
 
   const formatNavigationTime = (startTime: string | null): string => {
     if (!startTime) return "0:00";
@@ -160,23 +215,23 @@ const OperatorNavigationPage = () => {
         
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex flex-col gap-4">
-            {/* Breadcrumb de navegación */}
             <div className="flex items-center gap-2 text-sm">
               <span className="text-gray-500">Dashboard /</span>
-              <div className="flex items-center gap-2 bg-gray-50 rounded-lg shadow-sm border border-gray-200 p-1">
-                <button
-                  onClick={() => router.push('/dashboard/tracking')}
-                  className="px-3 py-1.5 rounded-md font-medium transition-all text-gray-600 hover:bg-white hover:shadow-sm"
-                >
-                  Seguimiento
-                </button>
-                <button
-                  onClick={() => router.push('/operator-navigation')}
-                  className="px-3 py-1.5 rounded-md font-medium transition-all bg-orange-500 text-white shadow-sm"
-                >
-                  Navegación
-                </button>
-              </div>
+              <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => router.push('/dashboard/tracking')}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Volver a Seguimiento
+            </button>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <span className="text-sm font-medium text-orange-700">Modo Navegación</span>
+            </div>
+          </div>
             </div>
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
@@ -374,6 +429,7 @@ const OperatorNavigationPage = () => {
                         className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm"
                         onClick={() => {
                           setSearchQuery("");
+                          setDestinationDirectly(null, "");
                         }}
                       >
                         Limpiar
@@ -536,7 +592,8 @@ const OperatorNavigationPage = () => {
             </h2>
           </div>
           
-          <div className="relative" style={{ height: "700px" }}>
+          {/* Responsive map container */}
+          <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px]">
             <OperatorMap
               currentLocation={currentLocation}
               destination={destination}

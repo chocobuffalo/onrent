@@ -3,18 +3,19 @@ import { configureStore } from "@reduxjs/toolkit";
 import filterSlicer from "./features/ui/filterSlicer";
 import authSlicer from "./features/auth/authSlicer";
 import modalSlicer from "./features/ui/modalSlicer";
-
+import bookingSessionSlice from "./features/booking/bookingSessionSlice";
 import { FilterInterface } from "@/types/filters";
 import { AuthStateInterface } from "@/types/auth";
 import { ModalStateInterface } from "@/types/iu";
 import orderSlicer from "./features/ui/orderSlicer";
 import { OrderBookingInterface } from "@/types/orderBooking";
-
+import { BookingSessionState } from "@/types/bookingSession"; 
 export interface RootInterface {
   filters: FilterInterface;
   auth: AuthStateInterface;
   modal: ModalStateInterface;
   order: OrderBookingInterface
+  bookingSession: BookingSessionState;
 }
 
 // nextjs config
@@ -25,6 +26,7 @@ export const makeStore = () => {
       auth: authSlicer,
       modal: modalSlicer,
       order: orderSlicer,
+      bookingSession: bookingSessionSlice,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({

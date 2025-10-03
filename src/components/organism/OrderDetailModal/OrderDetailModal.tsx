@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
-import { OrderDetail } from "@/types/orders";
+import { OrderDetail, LocationWithAddress } from "@/types/orders";
 import "./OrderDetailModal.scss";
 
 interface OrderDetailModalProps {
@@ -22,7 +22,6 @@ export default function OrderDetailModal({
   const pathname = usePathname();
   const isRentalsPage = pathname?.includes('/rentals') || pathname?.includes('/rentas');
 
-  // Mover el useEffect ANTES del early return
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -36,6 +35,22 @@ export default function OrderDetailModal({
   }, [isOpen]);
 
   if (!isOpen || !orderDetail) return null;
+
+  const getLocationDisplay = (location: string | LocationWithAddress | undefined): string => {
+    if (!location) return 'No especificada';
+    if (typeof location === 'string') return location;
+    
+    if (location.address) return location.address;
+    
+    const lat = location.latitude ?? location.lat;
+    const lng = location.longitude ?? location.lng;
+    
+    if (lat !== undefined && lng !== undefined) {
+      return `Lat: ${lat}, Lng: ${lng}`;
+    }
+    
+    return 'No especificada';
+  };
 
   const formatState = (state: string) => {
     const stateMap: { [key: string]: string } = {
@@ -204,7 +219,7 @@ export default function OrderDetailModal({
                     <tr>
                       <td>{orderDetail.project}</td>
                       <td>{orderDetail.responsible_name || 'No especificado'}</td>
-                      <td>{orderDetail.location || 'No especificada'}</td>
+                      <td>{getLocationDisplay(orderDetail.location)}</td>
                       <td>{orderDetail.responsible_phone || 'No especificado'}</td>
                       <td>{orderDetail.duration_days || 1} días</td>
                     </tr>
