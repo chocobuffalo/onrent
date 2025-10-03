@@ -1,3 +1,4 @@
+// src/components/molecule/bookingForm/bookingForm.tsx (actualizado)
 'use client';
 import AddFormItems from "@/components/atoms/addFormITems/addFormItems";
 import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
@@ -16,6 +17,17 @@ import LocationSection from "../LocationSection/LocationSection";
 import ExtrasSection from "@/components/atoms/ExtrasSection/ExtrasSection";
 import NotesSection from "@/components/atoms/NotesInputSection/NotesInputSection";
 import SubmitSection from "@/components/atoms/SubmitSection/SubmitSection";
+import { AddedItemsList } from "@/components/molecule/AddedItemsList/AddedItemsList";
+import { AddMoreMachinesModal } from "@/components/organism/AddMoreMachinesModal/AddMoreMachinesModal";
+
+// Redux imports
+import { useUIAppDispatch, useUIAppSelector } from '@/libs/redux/hooks';
+import { 
+  initBookingSession, 
+  addItemToBooking, 
+  removeItemFromBooking, 
+  clearBookingSession 
+} from '@/libs/redux/features/booking/bookingSessionSlice';
 
 interface BookingFormProps {
   machine: any;
@@ -60,10 +72,16 @@ export const BookingForm = ({
     const [open, setOpen] = useState(false);
     const [clientNotes, setClientNotes] = useState("");
     const [locationLoaded, setLocationLoaded] = useState(false);
+    const [showCatalogModal, setShowCatalogModal] = useState(false);
+
+    // Redux
+    const dispatch = useUIAppDispatch();
+    const bookingSession = useUIAppSelector(state => state.bookingSession);
+    const bookingItems = bookingSession.items;
 
     const { count, increment, decrement, disableTop, disableBottom } = useAddFormItems();
     const { createPreorder, loading, error } = useBookingPreorder();
-    const { toastSuccessAction, toastError, toastWarning, toastCriticalAction } = useToast();
+    const { toastSuccessAction, toastError, toastWarning } = useToast();
     const { data: session, status } = useSession();
     const nextRouter = useNextRouter();
 
@@ -78,7 +96,6 @@ export const BookingForm = ({
     useEffect(() => {
         if (hasProject && selectedLocation && projectData) {
             setLocationLoaded(true);
-            console.log('✅ Ubicación del proyecto cargada:', selectedLocation);
         } else if (!hasProject) {
             setLocationLoaded(false);
         }
@@ -102,14 +119,86 @@ export const BookingForm = ({
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     };
 
+    const handleAddItem = () => {
+        if (!startDate || !endDate) {
+            toastError("Por favor selecciona las fechas de inicio y fin");
+            return;
+        }
+
+        if (count <= 0) {
+            toastError("Por favor selecciona al menos una máquina");
+            return;
+        }
+
+        // Inicializar sesión si es el primer item
+        if (bookingItems.length === 0) {
+            dispatch(initBookingSession({
+                startDate,
+                endDate,
+                location: selectedLocation || null,
+                extras: extras || { operador: false, certificado: false, combustible: false },
+                projectId,
+                projectData
+            }));
+        }
+
+        const newItem = {
+            id: `${Date.now()}-${Math.random()}`,
+            machineId: machine.id,
+            machineName: machine.name,
+            quantity: count,
+            unitPrice: unitPrice,
+            startDate: startDate,
+            endDate: endDate,
+            dayLength: dayLength,
+            totalPrice: totalPrice,
+            requires_operator: extras?.operador || false,
+            requires_fuel: extras?.combustible || false,
+            certification_level: extras?.certificado ? "OnRentX" : "standard",
+        };
+
+        console.log("Item agregado:", newItem);
+        dispatch(addItemToBooking(newItem));
+        toastSuccessAction("Item agregado correctamente", () => {});
+    };
+
+    const handleAddMachineFromCatalog = (selectedMachine: any) => {
+    // Obtener el precio - manejar ambos formatos
+    const unitPrice = selectedMachine.pricing?.price_per_day 
+        || parseFloat(selectedMachine.price) 
+        || 0;
+    
+    const dayLength = countDays(bookingSession.startDate!, bookingSession.endDate!) + 1;
+    const totalPrice = unitPrice * dayLength;
+    
+    const newItem = {
+        id: `${Date.now()}-${Math.random()}`,
+        machineId: selectedMachine.id,
+        machineName: selectedMachine.name,
+        quantity: 1,
+        unitPrice: unitPrice,
+        startDate: bookingSession.startDate!,
+        endDate: bookingSession.endDate!,
+        dayLength: dayLength,
+        totalPrice: totalPrice,
+        requires_operator: bookingSession.extras.operador,
+        requires_fuel: bookingSession.extras.combustible,
+        certification_level: bookingSession.extras.certificado ? "OnRentX" : "standard",
+    };
+
+    console.log("Máquina seleccionada desde modal:", selectedMachine);
+    console.log("Item creado:", newItem);
+    
+    dispatch(addItemToBooking(newItem));
+    toastSuccessAction(`${selectedMachine.name} agregado`, () => {});
+    setShowCatalogModal(false);
+};
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // CORRECCIÓN: Validar autenticación y redirigir rápidamente
         if (status !== 'authenticated' || !session) {
             toastError("Para crear una reserva debes iniciar sesión");
-            
-            // Redirigir rápidamente (800ms para que alcance a leer el mensaje)
             setTimeout(() => {
                 nextRouter.push('/iniciar-session');
             }, 800);
@@ -123,44 +212,13 @@ export const BookingForm = ({
             return;
         }
         
-    
-        if (userRole === 'proveedor') {
-            toastWarning(
-                "Como Proveedor no puedes crear preórdenes. Crea un perfil de cliente para continuar."
-            );
-            return;
-        }
-        
-        if (userRole === 'operador') {
-            toastWarning(
-                "Como Operador no puedes crear preórdenes. Crea un perfil de cliente para continuar."
-            );
+        if (userRole === 'proveedor' || userRole === 'operador') {
+            toastWarning("Como Proveedor u Operador no puedes crear preórdenes. Crea un perfil de cliente para continuar.");
             return;
         }
 
-        if (!startDate || !endDate) {
-            toastError("Por favor selecciona las fechas de inicio y fin");
-            return;
-        }
-
-        if (!machine?.id) {
-            toastError("Error: No se pudo identificar la máquina");
-            return;
-        }
-
-        if (count <= 0) {
-            toastError("Por favor selecciona al menos una máquina");
-            return;
-        }
-
-        if (!hasValidLocation()) {
-            if (hasProject) {
-                toastError("Error: No se pudo cargar la ubicación del proyecto seleccionado");
-            } else {
-                if (validateLocation) {
-                    validateLocation();
-                }
-            }
+        if (bookingItems.length === 0) {
+            toastError("Por favor agrega al menos un item antes de reservar");
             return;
         }
 
@@ -193,6 +251,16 @@ export const BookingForm = ({
                 };
             }
 
+            const itemsPayload = bookingItems.map(item => ({
+                product_id: item.machineId,
+                start_date: formatDateForBackend(item.startDate),
+                end_date: formatDateForBackend(item.endDate),
+                quantity: item.quantity,
+                requires_operator: item.requires_operator,
+                requires_fuel: item.requires_fuel,
+                certification_level: item.certification_level,
+            }));
+
             const preorderPayload = {
                 project_id: projectData?.id || 0,
                 location: locationData || { lat: 0, lng: 0 },
@@ -201,22 +269,21 @@ export const BookingForm = ({
                 reference_address: workData?.referenceAddress || "",
                 project_name: workData?.projectName || "",
                 responsible_name: workData?.responsibleName || "",
-                items: [
-                    {
-                        product_id: machine.id,
-                        start_date: formatDateForBackend(startDate),
-                        end_date: formatDateForBackend(endDate),
-                        quantity: count,
-                        requires_operator: extras?.operador || false,
-                        requires_fuel: extras?.combustible || false,
-                        certification_level: extras?.certificado ? "OnRentX" : "standard",
-                    },
-                ],
+                items: itemsPayload,
             };
+
+            console.log("Enviando al endpoint /api/orders/preorder:", preorderPayload);
 
             const preorder = await createPreorder(preorderPayload);
 
             if (preorder?.order_id) {
+                console.log("Preorden creada exitosamente:", preorder);
+                dispatch(clearBookingSession());
+                // Asegurar que localStorage esté limpio
+            if (typeof window !== "undefined") {
+                localStorage.removeItem("booking_session");
+                localStorage.removeItem("booking_items");
+            }
                 toastSuccessAction(
                     "¡Preorden creada exitosamente! Redirigiendo...",
                     () => {
@@ -225,6 +292,7 @@ export const BookingForm = ({
                 );
             }
         } catch (err: any) {
+            console.error("Error al crear preorden:", err);
             if (err.message === 'Usuario no autenticado') {
                 toastError("Para crear una preorden debes iniciar sesión");
                 setTimeout(() => {
@@ -236,92 +304,126 @@ export const BookingForm = ({
         }
     };
 
+    const canAddItem = startDate && endDate && count > 0;
+
     return (
-        <form onSubmit={handleSubmit} className="border rounded-lg p-5 bg-white space-y-3">
-            <h4 className="font-medium text-sm mb-2">Detalles del precio</h4>
+      <form
+        onSubmit={handleSubmit}
+        className="border rounded-lg p-5 bg-white space-y-3"
+      >
+        <h4 className="font-medium text-sm mb-2">Detalles del precio</h4>
 
-            <div className="flex items-center space-x-2 mb-2">
-                <AddFormItems
-                    name="quantity"
-                    increment={increment}
-                    count={count}
-                    decrement={decrement}
-                    disableTop={disableTop}
-                    disableBottom={disableBottom}
-                />
-                <span className="text-sm font-semibold ml-2">{machine?.name}</span>
-            </div>
-
-            <PricingSection
-                unitPrice={unitPrice}
-                price={price}
-                count={count}
-                totalPrice={totalPrice}
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="flex items-center space-x-2">
+            <AddFormItems
+              name="quantity"
+              increment={increment}
+              count={count}
+              decrement={decrement}
+              disableTop={disableTop}
+              disableBottom={disableBottom}
             />
+            <span className="text-sm font-semibold ml-2">{machine?.name}</span>
+          </div>
 
-            <DurationSection
-                dayLength={dayLength}
-                startDate={startDate}
-                endDate={endDate}
-                open={open}
-                onToggleOpen={() => setOpen(!open)}
-                DateRentInput={<DateRentInput grid={true} />}
-            />
+          <button
+            type="button"
+            onClick={handleAddItem}
+            disabled={!canAddItem}
+            className="px-6 py-2 bg-white border-2 border-secondary text-secondary rounded-sm font-semibold hover:bg-secondary hover:text-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            agregar
+          </button>
+        </div>
 
-            {hasProject && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                        <span className="font-semibold text-green-800">Proyecto vinculado</span>
-                        {!locationLoaded && (
-                            <div className="ml-2 text-xs text-gray-500">Cargando datos...</div>
-                        )}
-                    </div>
-                    <p className="text-sm text-green-700">
-                        <strong>Nombre:</strong> {projectData?.name || projectName || 'Cargando...'}
-                    </p>
-                    {projectData?.responsible_name && (
-                        <p className="text-sm text-green-700">
-                            <strong>Responsable:</strong> {projectData.responsible_name}
-                        </p>
-                    )}
-                    {locationLoaded && getProjectAddress() && (
-                        <div className="mt-2 p-2 bg-white bg-opacity-50 rounded">
-                            <p className="text-sm text-green-700">
-                                <strong>Ubicación confirmada:</strong> {getProjectAddress()}
-                            </p>
-                        </div>
-                    )}
-                    {locationLoaded && !getProjectAddress() && (
-                        <p className="text-sm text-red-600">
-                            <strong>Ubicación:</strong> No se pudo cargar la dirección del proyecto
-                        </p>
-                    )}
-                    {!locationLoaded && (
-                        <div className="mt-2 p-2 bg-yellow-50 rounded">
-                            <p className="text-sm text-yellow-700">
-                                <strong>Cargando ubicación del proyecto...</strong>
-                            </p>
-                        </div>
-                    )}
+        <PricingSection
+          unitPrice={unitPrice}
+          price={price}
+          count={count}
+          totalPrice={totalPrice}
+        />
+
+        <DurationSection
+          dayLength={dayLength}
+          startDate={startDate}
+          endDate={endDate}
+          open={open}
+          onToggleOpen={() => setOpen(!open)}
+          DateRentInput={<DateRentInput grid={true} />}
+        />
+
+        {hasProject && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+              <span className="font-semibold text-green-800">
+                Proyecto vinculado
+              </span>
+              {!locationLoaded && (
+                <div className="ml-2 text-xs text-gray-500">
+                  Cargando datos...
                 </div>
+              )}
+            </div>
+            <p className="text-sm text-green-700">
+              <strong>Nombre:</strong>{" "}
+              {projectData?.name || projectName || "Cargando..."}
+            </p>
+            {projectData?.responsible_name && (
+              <p className="text-sm text-green-700">
+                <strong>Responsable:</strong> {projectData.responsible_name}
+              </p>
             )}
-
-            {isManualMode && getLocationForBooking && (
-                <LocationSection getLocationForBooking={getLocationForBooking} />
+            {locationLoaded && getProjectAddress() && (
+              <div className="mt-2 p-2 bg-white bg-opacity-50 rounded">
+                <p className="text-sm text-green-700">
+                  <strong>Ubicación confirmada:</strong> {getProjectAddress()}
+                </p>
+              </div>
             )}
+          </div>
+        )}
 
-            {extras && <ExtrasSection extras={extras} />}
+        {isManualMode && getLocationForBooking && (
+          <LocationSection getLocationForBooking={getLocationForBooking} />
+        )}
 
-            <NotesSection
-                clientNotes={clientNotes}
-                onNotesChange={setClientNotes}
-            />
+        {extras && <ExtrasSection extras={extras} />}
 
-            <SubmitSection
-                loading={loading}
-                error={error}
-            />
+        <NotesSection
+            clientNotes={clientNotes}
+            onNotesChange={setClientNotes}
+        />
+
+        <AddedItemsList
+            items={bookingItems}
+            onRemove={(id) => dispatch(removeItemFromBooking(id))}
+        />
+
+        {bookingItems.length > 0 && (
+        <div className="flex justify-center">
+        <button
+            type="button"
+            onClick={() => setShowCatalogModal(true)}
+            className="px-6 py-3 border-2 border-secondary text-secondary rounded-lg hover:bg-orange-50 transition font-semibold flex items-center justify-center gap-2"
+        >
+            <span className="text-xl">+</span>
+            Agregar más máquinas a esta reserva
+        </button>
+    </div>
+)}
+
+        <SubmitSection
+            loading={loading}
+            error={error}
+            hasItems={bookingItems.length > 0}
+        />
+
+        <AddMoreMachinesModal
+            isOpen={showCatalogModal}
+            onClose={() => setShowCatalogModal(false)}
+            onSelectMachine={handleAddMachineFromCatalog}
+        />
         </form>
     );
 };

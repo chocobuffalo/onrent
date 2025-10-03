@@ -7,7 +7,6 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { getAvailableDevices } from "@/services/locationService";
 
-// Importación dinámica del mapa para evitar errores de SSR
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
@@ -232,17 +231,17 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <div className="border-gray-300 h-8 w-8 animate-spin rounded-full border-4 border-t-blue-600 mb-3"></div>
-        <p className="text-gray-500">Inicializando mapa...</p>
+        <p className="text-gray-500 text-sm md:text-base">Inicializando mapa...</p>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
+      <div className="flex flex-col items-center justify-center h-full px-4">
         <div className="border-gray-300 h-8 w-8 animate-spin rounded-full border-4 border-t-blue-600 mb-3"></div>
-        <p className="text-gray-500">Cargando mapa de seguimiento...</p>
-        <p className="text-sm text-gray-500">Dispositivo: {userId}</p>
+        <p className="text-gray-500 text-sm md:text-base">Cargando mapa de seguimiento...</p>
+        <p className="text-xs md:text-sm text-gray-500 mt-1">Dispositivo: {userId}</p>
       </div>
     );
   }
@@ -252,24 +251,25 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
 
   return (
     <div className="w-full h-full relative">
-      <div className="absolute top-0 left-0 m-3 bg-white rounded shadow-sm p-3 z-50 min-w-80 max-w-96">
+      {/* Info panel - Responsive */}
+      <div className="absolute top-2 left-2 md:top-3 md:left-3 bg-white rounded shadow-sm p-2 md:p-3 z-50 max-w-[90%] sm:max-w-xs md:max-w-sm lg:min-w-80 lg:max-w-96">
         <div className="flex justify-between items-center mb-2">
-          <h6 className="mb-0 font-bold">Información de Seguimiento</h6>
-          <small className="text-gray-500">
-            {lastUpdate && `Actualizado: ${lastUpdate.toLocaleTimeString()}`}
+          <h6 className="mb-0 font-bold text-xs md:text-sm lg:text-base">Información de Seguimiento</h6>
+          <small className="text-gray-500 text-[10px] md:text-xs">
+            {lastUpdate && `${lastUpdate.toLocaleTimeString()}`}
           </small>
         </div>
         
         {deviceLocation && (
-          <div className="mb-3">
+          <div className="mb-2 md:mb-3">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-lg">
+              <span className="text-base md:text-lg">
                 {deviceLocation.entity_type === 'operador' ? '🔧' : 
                  deviceLocation.entity_type === 'maquinaria' ? '🏗️' : '🚛'}
               </span>
-              <strong>Dispositivo: {deviceLocation.entity_id}</strong>
+              <strong className="text-xs md:text-sm lg:text-base truncate">{deviceLocation.entity_id}</strong>
               {deviceLocation.status && (
-                <span className={`px-2 py-1 text-xs rounded ${
+                <span className={`px-1.5 md:px-2 py-0.5 md:py-1 text-[10px] md:text-xs rounded ${
                   deviceLocation.status === 'navigating' ? 'bg-yellow-100 text-yellow-800' : 
                   deviceLocation.status === 'available' ? 'bg-green-100 text-green-800' :
                   'bg-blue-100 text-blue-800'
@@ -280,18 +280,18 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
             </div>
             
             {deviceLocation.name && (
-              <div className="mb-1">
+              <div className="mb-1 text-xs md:text-sm">
                 <strong>Nombre:</strong> {deviceLocation.name}
               </div>
             )}
             
             {deviceLocation.brand && deviceLocation.model && (
-              <div className="mb-1">
+              <div className="mb-1 text-xs md:text-sm">
                 <strong>Equipo:</strong> {deviceLocation.brand} {deviceLocation.model}
               </div>
             )}
             
-            <small className="text-gray-500 block">
+            <small className="text-gray-500 block text-[10px] md:text-xs">
               Tipo: {deviceLocation.entity_type}
               {deviceLocation.machine_type && ` (${deviceLocation.machine_type})`}
               <br />
@@ -313,10 +313,17 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
         )}
 
         {error && !hasValidDevice && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-0">
-            <small><strong>Aviso:</strong> {error}</small>
+          <div className="bg-yellow-50 border border-yellow-200 rounded p-1.5 md:p-2 mb-0">
+            <small className="text-[10px] md:text-xs"><strong>Aviso:</strong> {error}</small>
           </div>
         )}
+      </div>
+
+      {/* Status indicator - Responsive */}
+      <div className="absolute top-2 right-2 md:top-3 md:right-3 z-40">
+        <div className={`px-1.5 md:px-2 py-0.5 md:py-1 text-[10px] md:text-xs rounded text-white ${error ? 'bg-red-500' : 'bg-green-500'}`}>
+          {error ? 'Error' : 'Conectado'}
+        </div>
       </div>
 
       {hasValidDevice && icons.deviceIcon ? (
@@ -325,6 +332,7 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
           zoom={15}
           style={{ height: "100%", width: "100%" }}
           className="rounded shadow-sm"
+          zoomControl={true}
         >
           <TileLayer 
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -336,7 +344,7 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
             icon={getLocationIcon(deviceLocation!)!}
           >
             <Popup>
-              <div className="text-center">
+              <div className="text-center text-xs md:text-sm">
                 <strong className="text-blue-600">
                   {deviceLocation!.entity_type === 'maquinaria' ? 'MAQUINARIA' : 
                    deviceLocation!.entity_type === 'operador' ? 'OPERADOR' : 'DISPOSITIVO'}
@@ -358,15 +366,15 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
           </Marker>
         </MapContainer>
       ) : (
-        <div className="h-full bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
-          <div className="text-center text-gray-500 p-4">
-            <div className="mb-3 text-5xl">📍</div>
-            <h4 className="text-xl font-semibold mb-2">Sin ubicación disponible</h4>
-            <p className="mb-3">No se pudieron obtener coordenadas GPS válidas para mostrar el mapa</p>
+        <div className="h-full bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center p-4">
+          <div className="text-center text-gray-500">
+            <div className="mb-3 text-3xl md:text-5xl">📍</div>
+            <h4 className="text-base md:text-xl font-semibold mb-2">Sin ubicación disponible</h4>
+            <p className="mb-3 text-xs md:text-sm">No se pudieron obtener coordenadas GPS válidas para mostrar el mapa</p>
             
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded p-3 text-left mb-3">
-                <small><strong>Error:</strong> {error}</small>
+              <div className="bg-red-50 border border-red-200 rounded p-2 md:p-3 text-left mb-3">
+                <small className="text-[10px] md:text-xs"><strong>Error:</strong> {error}</small>
               </div>
             )}
             
@@ -375,12 +383,12 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
                 setLoading(true);
                 fetchDeviceLocation();
               }}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+              className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
               disabled={loading}
             >
               {loading ? (
                 <>
-                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                  <span className="inline-block w-3 h-3 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
                   Reintentando...
                 </>
               ) : (
@@ -390,12 +398,6 @@ const VehicleMap = ({ userId }: VehicleMapProps) => {
           </div>
         </div>
       )}
-
-      <div className="absolute top-0 right-0 m-3 z-40">
-        <div className={`px-2 py-1 text-xs rounded text-white ${error ? 'bg-red-500' : 'bg-green-500'}`}>
-          {error ? 'Error' : 'Conectado'}
-        </div>
-      </div>
     </div>
   );
 };

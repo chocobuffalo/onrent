@@ -6,7 +6,7 @@ import { makeStore, UIAppStore } from "./redux/uistore";
 import AuthSync from "@/components/organism/syncs/authSync";
 import FilterSync from "@/components/organism/syncs/FilterSync";
 import ProfileSync from "@/components/organism/syncs/profileSync";
-
+import BookingSessionSync from "@/components/organism/syncs/bookingSessionSync";
 // Extender Window de forma segura
 declare global {
   interface Window {
@@ -41,6 +41,7 @@ const Providers = ({
         <AuthSync />
         <FilterSync />
         <ProfileSync />
+        <BookingSessionSync />
         {children}
       </Provider>
     </SessionProvider>
