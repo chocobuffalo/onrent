@@ -11,14 +11,15 @@ import { useSession } from 'next-auth/react';
 import { Elements } from '@stripe/react-stripe-js';
 import { useToast } from '@/hooks/frontend/ui/useToast';
 
+
 export interface CheckoutSummaryProps {
    amount: number;
-        currency: string;
-        session_id: string;
-        preorder_id: string;
-        user_id: number | null;
-        method: 'card',
-        url:string
+   currency: string;
+   session_id: string;
+   preorder_id: string;
+   user_id: number | null;
+   method: 'card' | 'bank_transfer';
+   url: string;
 }
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -38,22 +39,19 @@ export default function Checkout({
   
   console.log(order,'order in checkout')
   const {project_name, project_responsible, project_location, client_notes,items,preorder_id,session_id, ui_notice} = order || {};
-    const {data:session} = useSession(); 
-    console.log(session?.user)
- const fleetSum = items?.reduce((sum, item) => sum + (item.estimated_fleet || 0), 0);
-      const rentsSum = items?.reduce((sum, item) => sum + (item.estimated_rent || 0), 0);
-      const totalSum = items?.reduce((sum, item) => sum + (item.total_estimated || 0), 0);
+  const {data:session} = useSession(); 
+  console.log(session?.user)
+  const fleetSum = items?.reduce((sum, item) => sum + (item.estimated_fleet || 0), 0);
+  const rentsSum = items?.reduce((sum, item) => sum + (item.estimated_rent || 0), 0);
+  const totalSum = items?.reduce((sum, item) => sum + (item.total_estimated || 0), 0);
     
-      const machinesItems = items ? items?.map((item) => ({
-        id: item.product_id || Math.random().toString(36).substr(2, 9), // Generar un ID único si no existe
-        name: item.product_name,
-        price: item.estimated_rent,
-        quantity: item.requested_quantity,
-      })): [];
+  const machinesItems = items ? items?.map((item) => ({
+    id: item.product_id || Math.random().toString(36).substr(2, 9),
+    name: item.product_name,
+    price: item.estimated_rent,
+    quantity: item.requested_quantity,
+  })): [];
       
-    
-   
-    
   const [getCheckSummary, setGetCheckSummary] = useState<CheckoutSummaryProps>({
     amount: totalSum || 0,
     currency: 'mxn',
@@ -61,8 +59,7 @@ export default function Checkout({
     preorder_id: preorder_id || '',
     session_id: session_id || '',
     method: 'card',
-    url:process.env.NEXT_PUBLIC_SITE_URL || ''
-    
+    url: process.env.NEXT_PUBLIC_SITE_URL || ''
   });
   
   const [clientSecret, setClientSecret] = useState('');
@@ -74,67 +71,65 @@ export default function Checkout({
     }
   }, [ui_notice]);
  
+  const fetchClientSecret = async () => {
+    try {
+      console.log(getCheckSummary, 'fetchClientSecret called');
 
-const fetchClientSecret = async () => {
-  try {
-    console.log(getCheckSummary, 'fetchClientSecret called');
-
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/stripe/create-intent`, {
-      method: 'POST',
-      body: JSON.stringify(getCheckSummary),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session?.user?.access_token}`
-      }
-    });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/stripe/create-intent`, {
+        method: 'POST',
+        body: JSON.stringify(getCheckSummary),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.user?.access_token}`
+        }
+      });
     
-    const json = await response.json();
+      const json = await response.json();
 
-    
-    // Verificar si hay error de región/ubicación
-    if (!response.ok) {
-      const errorMessage = json.error || json.message || json.detail || '';
+      // Verificar si hay error de región/ubicación
+      if (!response.ok) {
+        const errorMessage = json.error || json.message || json.detail || '';
       
-      if (errorMessage.includes('región') || 
-          errorMessage.includes('region') || 
-          errorMessage.includes('ubicacion') || 
-          errorMessage.includes('ubicación') ||
-          errorMessage.includes('cobertura') ||
-          errorMessage.includes('coverage') ||
-          errorMessage.includes('determinar') ||
-          errorMessage.includes('calcular precios') ||
-          response.status === 422) {
-        toastError("La región está fuera de cobertura. Por favor, intente con otra ubicación.");
+        if (errorMessage.includes('región') || 
+            errorMessage.includes('region') || 
+            errorMessage.includes('ubicacion') || 
+            errorMessage.includes('ubicación') ||
+            errorMessage.includes('cobertura') ||
+            errorMessage.includes('coverage') ||
+            errorMessage.includes('determinar') ||
+            errorMessage.includes('calcular precios') ||
+            response.status === 422) {
+          toastError("La región está fuera de cobertura. Por favor, intente con otra ubicación.");
+          return;
+        }
+        // Otros errores
+        toastError(`Error al procesar la solicitud: ${errorMessage}`);
         return;
       }
-      // Otros errores
-      toastError(`Error al procesar la solicitud: ${errorMessage}`);
-      return;
-    }
     
-    setClientSecret(json.client_secret);
-    return json.client_secret;
-  } catch (error) {
-    console.error('Error in fetchClientSecret:', error);
-  }
-};
+      setClientSecret(json.client_secret);
+      return json.client_secret;
+    } catch (error) {
+      console.error('Error in fetchClientSecret:', error);
+    }
+  };
 
-useEffect(() => {
-  console.log('useEffect triggered');
-  console.log('session?.user?.access_token:', session?.user?.access_token);
-  console.log('getCheckSummary.amount:', getCheckSummary.amount);
-  console.log('session:', session);
-  console.log('getCheckSummary:', getCheckSummary);
+  useEffect(() => {
+    console.log('useEffect triggered');
+    console.log('session?.user?.access_token:', session?.user?.access_token);
+    console.log('getCheckSummary.amount:', getCheckSummary.amount);
+    console.log('session:', session);
+    console.log('getCheckSummary:', getCheckSummary);
   
-  // Ejecutar si hay access_token, independientemente del amount
-  // porque el backend puede devolver error de región incluso con amount 0
-  if (session?.user?.access_token) {
-    console.log('Conditions met, calling fetchClientSecret');
-    fetchClientSecret()
-  } else {
-    console.log('Conditions NOT met for fetchClientSecret - no access_token');
-  }
-},[getCheckSummary, session]) 
+    // Ejecutar si hay access_token, independientemente del amount
+    // porque el backend puede devolver error de región incluso con amount 0
+    if (session?.user?.access_token) {
+      console.log('Conditions met, calling fetchClientSecret');
+      fetchClientSecret()
+    } else {
+      console.log('Conditions NOT met for fetchClientSecret - no access_token');
+    }
+  },[getCheckSummary, session]) 
 
   // Opciones para Elements
   const options = {
