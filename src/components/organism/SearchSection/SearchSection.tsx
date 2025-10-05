@@ -25,14 +25,35 @@ export default function SearchSection({
   mapLoaded,
   onSelectResult
 }: SearchSectionProps) {
+  
+  const handleEnter = () => {
+    // Seleccionar el primer resultado cuando se presiona Enter
+    if (searchResults.length > 0) {
+      onSelectResult(searchResults[0]);
+      setShowResults(false);
+    }
+  };
+
   return (
     <div className="relative mt-4">
       <SearchInput
         placeholder={placeholder}
         value={searchQuery}
-        onChange={setSearchQuery}
-        onFocus={() => setShowResults(searchResults.length > 0)}
-        onBlur={() => setTimeout(() => setShowResults(false), 150)}
+        onChange={(value) => {
+          setSearchQuery(value);
+          // Mostrar resultados solo si está escribiendo
+          if (value.trim().length > 0 && searchResults.length > 0) {
+            setShowResults(true);
+          }
+        }}
+        onFocus={() => {
+          // Solo abrir si hay query actual y resultados disponibles
+          if (searchQuery.trim().length > 2 && searchResults.length > 0) {
+            setShowResults(true);
+          }
+        }}
+        onBlur={() => setTimeout(() => setShowResults(false), 200)}
+        onEnter={handleEnter}
         isLoading={isSearching}
         disabled={!mapLoaded}
       />
@@ -40,7 +61,10 @@ export default function SearchSection({
       {showResults && (
         <SearchResults
           results={searchResults}
-          onSelectResult={onSelectResult}
+          onSelectResult={(result) => {
+            onSelectResult(result);
+            setShowResults(false);
+          }}
         />
       )}
     </div>

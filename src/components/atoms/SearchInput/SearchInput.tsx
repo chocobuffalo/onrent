@@ -4,6 +4,7 @@ interface SearchInputProps {
   onChange: (value: string) => void;
   onFocus: () => void;
   onBlur: () => void;
+  onEnter?: () => void;
   isLoading: boolean;
   disabled: boolean;
 }
@@ -14,9 +15,17 @@ export default function SearchInput({
   onChange,
   onFocus,
   onBlur,
+  onEnter,
   isLoading,
   disabled
 }: SearchInputProps) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && onEnter) {
+      e.preventDefault();
+      onEnter();
+    }
+  };
+
   return (
     <div className="relative">
       <input
@@ -26,6 +35,7 @@ export default function SearchInput({
         onChange={(e) => onChange(e.target.value)}
         onFocus={onFocus}
         onBlur={onBlur}
+        onKeyDown={handleKeyDown}
         className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
         disabled={disabled}
       />

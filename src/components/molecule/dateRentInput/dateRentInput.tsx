@@ -67,10 +67,6 @@ export default function DateRentInput({
 
             {needProject && (
                 <div className="w-full flex flex-col gap-3.5">
-                    <p className="date-info text-secondary block w-full m-0 text-sm">
-                        * La fecha de arrendamiento es mayor a un día, por este motivo debe crear un proyecto
-                    </p>
-                    
                     <div className={`w-full gap-3 flex ${grid ? "flex-col lg:flex-row" : "flex-col"}`}>
                         {/* Input de nombre del proyecto */}
                         <div className="flex-1">

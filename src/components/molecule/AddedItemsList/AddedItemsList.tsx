@@ -15,9 +15,16 @@ interface AddedItem {
 interface AddedItemsListProps {
   items: AddedItem[];
   onRemove: (id: string) => void;
+  onIncrement: (id: string) => void;
+  onDecrement: (id: string) => void;
 }
 
-export const AddedItemsList = ({ items, onRemove }: AddedItemsListProps) => {
+export const AddedItemsList = ({ 
+  items, 
+  onRemove, 
+  onIncrement, 
+  onDecrement 
+}: AddedItemsListProps) => {
   if (items.length === 0) return null;
 
   const grandTotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -38,10 +45,45 @@ export const AddedItemsList = ({ items, onRemove }: AddedItemsListProps) => {
               <p className="font-semibold text-sm text-gray-900">
                 {item.machineName}
               </p>
-              <p className="text-xs text-gray-600 mt-1">
-                Cantidad: <span className="font-medium">{item.quantity}</span> • 
-                Duración: <span className="font-medium">{item.dayLength} días</span>
-              </p>
+              
+              {/* Controles de cantidad */}
+              <div className="flex items-center gap-3 mt-2">
+                <div className="flex items-center border border-gray-300 rounded-md">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onDecrement(item.id);
+                    }}
+                    disabled={item.quantity <= 1}
+                    className="px-3 py-1 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Disminuir cantidad"
+                  >
+                    −
+                  </button>
+                  <span className="px-3 py-1 text-sm font-semibold border-x border-gray-300 min-w-[40px] text-center">
+                    {item.quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onIncrement(item.id);
+                    }}
+                    className="px-3 py-1 text-gray-600 hover:bg-gray-100 transition-colors"
+                    title="Aumentar cantidad"
+                  >
+                    +
+                  </button>
+                </div>
+                
+                <p className="text-xs text-gray-600">
+                  Duración: <span className="font-medium">{item.dayLength} días</span>
+                </p>
+              </div>
+
               <p className="text-xs text-gray-500 mt-1">
                 {item.startDate} al {item.endDate}
               </p>
@@ -55,7 +97,7 @@ export const AddedItemsList = ({ items, onRemove }: AddedItemsListProps) => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("Eliminando item con ID:", item.id); // Debug
+                console.log("Eliminando item con ID:", item.id);
                 onRemove(item.id);
               }}
               className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1.5 transition-colors"

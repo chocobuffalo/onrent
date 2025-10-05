@@ -1,4 +1,4 @@
-// src/components/molecule/bookingForm/bookingForm.tsx (actualizado)
+// src/components/molecule/bookingForm/bookingForm.tsx
 'use client';
 import AddFormItems from "@/components/atoms/addFormITems/addFormItems";
 import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
@@ -25,6 +25,9 @@ import { useUIAppDispatch, useUIAppSelector } from '@/libs/redux/hooks';
 import { 
   initBookingSession, 
   addItemToBooking, 
+  incrementItemQuantity,
+  incrementItemQuantityById,
+  decrementItemQuantity,
   removeItemFromBooking, 
   clearBookingSession 
 } from '@/libs/redux/features/booking/bookingSessionSlice';
@@ -163,36 +166,54 @@ export const BookingForm = ({
     };
 
     const handleAddMachineFromCatalog = (selectedMachine: any) => {
-    // Obtener el precio - manejar ambos formatos
-    const unitPrice = selectedMachine.pricing?.price_per_day 
-        || parseFloat(selectedMachine.price) 
-        || 0;
-    
-    const dayLength = countDays(bookingSession.startDate!, bookingSession.endDate!) + 1;
-    const totalPrice = unitPrice * dayLength;
-    
-    const newItem = {
-        id: `${Date.now()}-${Math.random()}`,
-        machineId: selectedMachine.id,
-        machineName: selectedMachine.name,
-        quantity: 1,
-        unitPrice: unitPrice,
-        startDate: bookingSession.startDate!,
-        endDate: bookingSession.endDate!,
-        dayLength: dayLength,
-        totalPrice: totalPrice,
-        requires_operator: bookingSession.extras.operador,
-        requires_fuel: bookingSession.extras.combustible,
-        certification_level: bookingSession.extras.certificado ? "OnRentX" : "standard",
-    };
+        // Obtener el precio - manejar ambos formatos
+        const unitPrice = selectedMachine.pricing?.price_per_day 
+            || parseFloat(selectedMachine.price) 
+            || 0;
+        
+        const dayLength = countDays(bookingSession.startDate!, bookingSession.endDate!) + 1;
+        
+        // Verificar si ya existe un item con la misma máquina y fechas
+        const existingItem = bookingItems.find(
+            item => item.machineId === selectedMachine.id && 
+                    item.startDate === bookingSession.startDate && 
+                    item.endDate === bookingSession.endDate
+        );
 
-    console.log("Máquina seleccionada desde modal:", selectedMachine);
-    console.log("Item creado:", newItem);
-    
-    dispatch(addItemToBooking(newItem));
-    toastSuccessAction(`${selectedMachine.name} agregado`, () => {});
-    setShowCatalogModal(false);
-};
+        if (existingItem) {
+            // Si existe, incrementar la cantidad
+            console.log("✅ Item existente encontrado, incrementando cantidad:", existingItem.machineName);
+            dispatch(incrementItemQuantity({
+                machineId: selectedMachine.id,
+                quantityToAdd: 1
+            }));
+            toastSuccessAction(`Cantidad de ${selectedMachine.name} incrementada`, () => {});
+        } else {
+            // Si no existe, crear nuevo item
+            const totalPrice = unitPrice * dayLength;
+            
+            const newItem = {
+                id: `${Date.now()}-${Math.random()}`,
+                machineId: selectedMachine.id,
+                machineName: selectedMachine.name,
+                quantity: 1,
+                unitPrice: unitPrice,
+                startDate: bookingSession.startDate!,
+                endDate: bookingSession.endDate!,
+                dayLength: dayLength,
+                totalPrice: totalPrice,
+                requires_operator: bookingSession.extras.operador,
+                requires_fuel: bookingSession.extras.combustible,
+                certification_level: bookingSession.extras.certificado ? "OnRentX" : "standard",
+            };
+
+            console.log("🆕 Creando nuevo item:", newItem);
+            dispatch(addItemToBooking(newItem));
+            toastSuccessAction(`${selectedMachine.name} agregado`, () => {});
+        }
+        
+        setShowCatalogModal(false);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -280,10 +301,10 @@ export const BookingForm = ({
                 console.log("Preorden creada exitosamente:", preorder);
                 dispatch(clearBookingSession());
                 // Asegurar que localStorage esté limpio
-            if (typeof window !== "undefined") {
-                localStorage.removeItem("booking_session");
-                localStorage.removeItem("booking_items");
-            }
+                if (typeof window !== "undefined") {
+                    localStorage.removeItem("booking_session");
+                    localStorage.removeItem("booking_items");
+                }
                 toastSuccessAction(
                     "¡Preorden creada exitosamente! Redirigiendo...",
                     () => {
@@ -326,14 +347,27 @@ export const BookingForm = ({
             <span className="text-sm font-semibold ml-2">{machine?.name}</span>
           </div>
 
-          <button
-            type="button"
-            onClick={handleAddItem}
-            disabled={!canAddItem}
-            className="px-6 py-2 bg-white border-2 border-secondary text-secondary rounded-sm font-semibold hover:bg-secondary hover:text-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-          >
-            agregar
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleAddItem}
+              disabled={!canAddItem}
+              className="px-6 py-2 bg-white border-2 border-secondary text-secondary rounded-sm font-semibold hover:bg-secondary hover:text-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              agregar
+            </button>
+
+            {bookingItems.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowCatalogModal(true)}
+                className="px-4 py-2 bg-white border-2 border-orange-500 text-orange-500 rounded-sm font-semibold hover:bg-orange-500 hover:text-white transition-colors duration-300 text-sm flex items-center gap-1"
+              >
+                <span className="text-lg">+</span>
+                Agregar desde catálogo
+              </button>
+            )}
+          </div>
         </div>
 
         <PricingSection
@@ -396,22 +430,11 @@ export const BookingForm = ({
         />
 
         <AddedItemsList
-            items={bookingItems}
-            onRemove={(id) => dispatch(removeItemFromBooking(id))}
+          items={bookingItems}
+          onRemove={(id) => dispatch(removeItemFromBooking(id))}
+          onIncrement={(id) => dispatch(incrementItemQuantityById(id))}
+          onDecrement={(id) => dispatch(decrementItemQuantity(id))}
         />
-
-        {bookingItems.length > 0 && (
-        <div className="flex justify-center">
-        <button
-            type="button"
-            onClick={() => setShowCatalogModal(true)}
-            className="px-6 py-3 border-2 border-secondary text-secondary rounded-lg hover:bg-orange-50 transition font-semibold flex items-center justify-center gap-2"
-        >
-            <span className="text-xl">+</span>
-            Agregar más máquinas a esta reserva
-        </button>
-    </div>
-)}
 
         <SubmitSection
             loading={loading}
@@ -424,6 +447,6 @@ export const BookingForm = ({
             onClose={() => setShowCatalogModal(false)}
             onSelectMachine={handleAddMachineFromCatalog}
         />
-        </form>
+      </form>
     );
 };
