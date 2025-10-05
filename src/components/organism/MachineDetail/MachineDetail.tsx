@@ -207,7 +207,8 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
           <div className="mt-6 space-y-4">
             <p className="font-semibold">Complementos para tu renta</p>
 
-            {/* Operador */}
+            {/* OPERADOR - SECCIÓN COMENTADA */}
+            {/* 
             <div className="flex items-center justify-between border-[#B2B2B2] border-b pb-3">
               <div className="flex items-center gap-3">
                 <Image
@@ -233,6 +234,7 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                 onChange={() => toggleExtra("operador")}
               />
             </div>
+            */}
 
             {/* Certificado */}
             <div className="flex items-center justify-between border-[#B2B2B2] border-b pb-3">
@@ -267,8 +269,11 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                 />
                 <div>
                   <p className="text-sm font-semibold">Combustible incluido</p>
+                  <p className="text-xs text-gray-600 italic mt-1">
+                    La máquina se entrega con el tanque lleno. Debe devolverse en las mismas condiciones.
+                  </p>
                   {currentMachine.pricing?.no_fuel_discount && (
-                    <p className="text-xs italic text-green-600">
+                    <p className="text-xs italic text-green-600 mt-1">
                       -{currentMachine.pricing.no_fuel_discount}% si no incluye combustible
                     </p>
                   )}
@@ -333,10 +338,6 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                         <p className="text-sm text-green-700 mb-1">
                           <strong>Dirección:</strong> {selectedLocation.address || "Ubicación personalizada"}
                         </p>
-                        <div className="flex flex-col sm:flex-row sm:gap-4 text-xs text-green-600">
-                          <span><strong>Latitud:</strong> {selectedLocation.lat.toFixed(6)}</span>
-                          <span><strong>Longitud:</strong> {selectedLocation.lng.toFixed(6)}</span>
-                        </div>
                         <p className="text-xs text-green-600 mt-2 italic">
                           Esta ubicación se usará para calcular el costo de flete y programar la entrega
                         </p>
@@ -392,7 +393,7 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                 </div>
               )}
 
-              {/* Nombre del proyecto - Solo mostrar si NO hay needProject (ya que se muestra en DateRentInput cuando needProject es true) */}
+              {/* Nombre del proyecto - Solo mostrar si NO hay needProject */}
               {!needProject && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -464,68 +465,6 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                   Persona responsable de la obra o proyecto.
                 </p>
               </div>
-
-              {/* SECCIÓN OCULTA - Imagen de la obra */}
-              {/* NOTA: Esta sección está comentada temporalmente. 
-                  Para reactivarla en el futuro, descomenta el bloque completo */}
-              {/*
-              {!hasProject && (
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    Imagen de la obra
-                  </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-300 transition-colors">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChangeLocal}
-                      className="hidden"
-                      id="work-image"
-                    />
-
-                    {workImagePreview ? (
-                      <div className="relative">
-                        <Image
-                          src={workImagePreview}
-                          alt="Preview de la obra"
-                          width={200}
-                          height={150}
-                          className="mx-auto rounded-lg object-cover"
-                        />
-                        <button
-                          onClick={clearImage}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                        >
-                          ×
-                        </button>
-                        <p className="text-sm text-gray-600 mt-2">
-                          Haz clic en la X para cambiar la imagen
-                        </p>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="work-image"
-                        className="cursor-pointer flex flex-col items-center gap-2"
-                      >
-                        <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        <span className="text-sm text-gray-600">
-                          Haz clic para seleccionar una imagen
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          JPG, PNG o WebP • Máximo 5MB
-                        </span>
-                      </label>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Esto nos ayuda a validar el terreno, determinar la accesibilidad y asignar la maquinaria más compatible con las condiciones del sitio.
-                  </p>
-                </div>
-              )}
-              */}
-              {/* FIN SECCIÓN OCULTA */}
             </div>
           </div>
 

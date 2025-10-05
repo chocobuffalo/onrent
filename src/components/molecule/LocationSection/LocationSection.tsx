@@ -60,16 +60,6 @@ export default function LocationSection({
               <p className="text-sm text-green-700 break-words">
                 <strong>Dirección:</strong> {location.address || "Ubicación personalizada"}
               </p>
-
-              <div className="flex flex-col sm:flex-row sm:gap-4 text-xs text-green-600">
-                <span>
-                  <strong>Lat:</strong> {location.lat.toFixed(6)}
-                </span>
-                <span>
-                  <strong>Lng:</strong> {location.lng.toFixed(6)}
-                </span>
-              </div>
-
               {showFullDetails && (
                 <div className="mt-2 pt-2 border-t border-green-200">
                   <p className="text-xs text-green-600 italic">

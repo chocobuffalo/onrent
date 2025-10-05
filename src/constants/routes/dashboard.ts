@@ -110,12 +110,12 @@ export const dashboardRoutes: SidebarMenuProps[] = [
    * SECCIÓN OPERADORES - Funcionalidades específicas para operadores
    * Los operadores son creados por proveedores y tienen un conjunto específico de funcionalidades
    * -------------------------------------------------- */
-  {
-    link: "/dashboard/operator/assigned-tasks",
-    title: "Tareas asignadas",
-    icon: PencilWrite,
-    roles: ["operador"], // Tareas asignadas por el proveedor
-  },
+  // {
+  //   link: "/dashboard/operator/assigned-tasks",
+  //   title: "Tareas asignadas",
+  //   icon: PencilWrite,
+  //   roles: ["operador"], // Tareas asignadas por el proveedor
+  // },
   {
     link: "/operator-navigation",
     title: "Navegación guiada",

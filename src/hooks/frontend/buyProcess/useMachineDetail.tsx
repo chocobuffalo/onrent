@@ -14,7 +14,7 @@ interface LocationData {
 export default function useMachineDetail(machineId: number,  project_Id?: string) {
   const [extras, setExtras] = useState({
     operador: true,
-    certificado: true,
+    certificado: false,
     combustible: true,
   });
 
