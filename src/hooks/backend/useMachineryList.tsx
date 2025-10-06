@@ -92,7 +92,7 @@ export default function useMachineryList(props?: UseMachineryListProps) {
       ),
     },
     {
-      key: 'machine_category',
+      key: 'machine_category_label',
       label: 'Categoría',
       render: (value: any) => (
         <div className="text-sm font-medium capitalize text-gray-700">
@@ -101,7 +101,7 @@ export default function useMachineryList(props?: UseMachineryListProps) {
       ),
     },
     {
-      key: 'status',
+      key: 'status_label',
       label: 'Estado',
       render: (value: any) => (
         <div className="text-sm font-medium capitalize text-gray-700">

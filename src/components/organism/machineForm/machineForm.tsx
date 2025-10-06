@@ -184,6 +184,8 @@ const MachineForm = ({ onCreated }: MachineFormProps) => {
               errors={errors}
             />
           </div>
+          {/* se comenta este código porque en el momento, no se necesita ingresar imagen, se deja para que a futuro si se necesita, solo es descomentar */}
+          {/* 
           <div className="col-12">
             <FileInput
               register={register}
@@ -192,6 +194,7 @@ const MachineForm = ({ onCreated }: MachineFormProps) => {
               placeHolder="Subir imagen"
             />
           </div>
+          */}
         </div>
       </div>
       <div className="group-button-submit modal-footer left">

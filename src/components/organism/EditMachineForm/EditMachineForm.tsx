@@ -195,6 +195,7 @@ const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
               errors={errors}
             />
           </div>
+          {/* 
           <div className="col-12">
             <FileInput
               register={register}
@@ -203,6 +204,7 @@ const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
               placeHolder="Subir imagen"
             />
           </div>
+           */}
         </div>
       </div>
       <div className="group-button-submit modal-footer left mb-0">

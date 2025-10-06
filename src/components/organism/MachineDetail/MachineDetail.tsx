@@ -27,6 +27,9 @@ interface LocationData {
 }
 
 export default function MachineDetail({ machine, projectId  }: MachineDetailProps) {
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   
   const {
     extras,
@@ -55,6 +58,8 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
     setProjectId
 
   } = useMachineDetail(machine.id, projectId);
+
+
 
   const [workImagePreview, setWorkImagePreview] = useState<string | null>(null);
   const [isManualMode, setIsManualMode] = useState(false);
