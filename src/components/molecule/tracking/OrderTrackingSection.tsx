@@ -4,9 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useParams, useRouter } from "next/navigation";
 import { getOrderDetail } from "@/services/getOrderDetail";
 import { getAvailableDevices } from "@/services/locationService";
 import { OrderDetail, normalizeLocationCoords, isLocationWithAddress } from "@/types/orders";
@@ -58,21 +55,20 @@ interface RouteStep {
   lng: number;
 }
 
-const ClientTrackingPage = () => {
-  const { id } = useParams(); // Order ID from URL
-  const orderId = id as string;
-  const router = useRouter();
+interface OrderTrackingSectionProps {
+  orderId: number;
+  onBack?: () => void;
+}
+
+const OrderTrackingSection = ({ orderId, onBack }: OrderTrackingSectionProps) => {
   const { data: session } = useSession();
 
-  // Estados del componente original
   const [machinePosition, setMachinePosition] = useState<LatLng | null>(null);
   const [destinationPosition, setDestinationPosition] = useState<LatLng | null>(null);
   const [route, setRoute] = useState<RouteStep[]>([]);
   const [status, setStatus] = useState<string>("Cargando orden...");
   const [eta, setEta] = useState<string>("--");
   const [mounted, setMounted] = useState(false);
-  
-  // Estados nuevos para datos de orden
   const [orderData, setOrderData] = useState<OrderDetail | null>(null);
   const [loadingOrder, setLoadingOrder] = useState(true);
   const [distance, setDistance] = useState<string>("--");
@@ -83,59 +79,42 @@ const ClientTrackingPage = () => {
     setMounted(true);
   }, []);
 
-  // 🆕 PASO 1: Obtener datos de la orden
   const fetchOrderData = useCallback(async () => {
-    if (!orderId) {
-      toast.error("No se proporcionó ID de orden");
-      router.push("/dashboard");
-      return;
-    }
-
     const token = (session as any)?.accessToken || 
                   (session as any)?.user?.accessToken || 
                   localStorage.getItem("api_access_token");
 
-    if (!token) {
-      toast.error("Sesión no válida");
-      router.push("/login");
-      return;
-    }
+    if (!token) return;
 
     try {
       setLoadingOrder(true);
-      const result = await getOrderDetail(parseInt(orderId), token);
+      const result = await getOrderDetail(orderId, token);
 
       if (!result.success || !result.data) {
-        toast.error(result.message || "No se pudo cargar la orden");
-        router.push("/dashboard");
+        setStatus("Error al cargar la orden");
         return;
       }
 
       setOrderData(result.data);
       setStatus("Orden cargada - Buscando máquina...");
 
-      // 🆕 Extraer destino de la orden
       extractDestinationFromOrder(result.data);
 
     } catch (error) {
       console.error("Error cargando orden:", error);
-      toast.error("Error al cargar la orden");
-      router.push("/dashboard");
+      setStatus("Error al cargar la orden");
     } finally {
       setLoadingOrder(false);
     }
-  }, [orderId, session, router]);
+  }, [orderId, session]);
 
-  // 🆕 PASO 2: Extraer coordenadas del destino desde la orden
   const extractDestinationFromOrder = useCallback((order: OrderDetail) => {
-    // Intento 1: Desde location_coords
     const coords = normalizeLocationCoords(order.location_coords);
     if (coords) {
       setDestinationPosition(coords);
       return;
     }
 
-    // Intento 2: Si location es un objeto con coordenadas
     if (isLocationWithAddress(order.location)) {
       const lat = order.location.latitude ?? order.location.lat;
       const lng = order.location.longitude ?? order.location.lng;
@@ -146,12 +125,9 @@ const ClientTrackingPage = () => {
       }
     }
 
-    // Sin coordenadas válidas
-    toast.warning("La orden no tiene coordenadas de destino");
     setDestinationPosition(null);
   }, []);
 
-  // 🆕 PASO 3: Buscar ubicación de la máquina (REEMPLAZA fetch a API inexistente)
   const fetchMachineLocation = useCallback(async () => {
     if (!orderData?.machine_name) {
       setStatus("Orden sin máquina asignada");
@@ -166,11 +142,19 @@ const ClientTrackingPage = () => {
       const data = await getAvailableDevices(token);
       const allDevices = data.locations || [];
 
-      // Buscar la máquina por nombre
-      const machine = allDevices.find((device: any) => 
-        device.name === orderData.machine_name || 
-        device.entity_id.includes(orderData.machine_name)
-      );
+      // Búsqueda flexible de la máquina (case-insensitive y por coincidencia parcial)
+      const machineNameLower = orderData.machine_name.toLowerCase();
+      const machine = allDevices.find((device: any) => {
+        const deviceNameLower = device.name?.toLowerCase() || '';
+        const deviceIdLower = device.entity_id?.toLowerCase() || '';
+        
+        // Coincidencia exacta o parcial en nombre o entity_id
+        return deviceNameLower.includes(machineNameLower) || 
+               machineNameLower.includes(deviceNameLower) ||
+               deviceIdLower.includes(machineNameLower) ||
+               device.name === orderData.machine_name ||
+               device.entity_id === orderData.machine_name;
+      });
 
       if (machine) {
         const lat = machine.location?.latitude ?? machine.latitude ?? 0;
@@ -194,7 +178,6 @@ const ClientTrackingPage = () => {
     }
   }, [orderData, session]);
 
-  // PASO 4: Calcular ruta (MANTIENE LA LÓGICA ORIGINAL)
   const calculateRoute = useCallback(async () => {
     if (!machinePosition || !destinationPosition) {
       setRoute([]);
@@ -225,14 +208,12 @@ const ClientTrackingPage = () => {
       if (response.ok && data.Legs && data.Legs.length > 0) {
         const leg = data.Legs[0];
         
-        // Convertir ruta
         const newRoute: RouteStep[] = leg.Geometry.LineString.map((point: [number, number]) => ({
           lng: point[0],
           lat: point[1],
         }));
         setRoute(newRoute);
 
-        // 🆕 Calcular distancia y ETA reales
         const distanceKm = (leg.Distance / 1000).toFixed(1);
         setDistance(`${distanceKm} km`);
 
@@ -245,17 +226,15 @@ const ClientTrackingPage = () => {
         setRoute([]);
         setDistance("--");
         setEta("--");
-        console.error(data.error || "Error al calcular la ruta");
       }
     } catch (error) {
-      console.error("Route API error:", error);
+      console.error("Error calculando ruta:", error);
       setRoute([]);
       setDistance("--");
       setEta("--");
     }
   }, [machinePosition, destinationPosition, session]);
 
-  // Efectos
   useEffect(() => {
     fetchOrderData();
   }, [fetchOrderData]);
@@ -264,7 +243,6 @@ const ClientTrackingPage = () => {
     if (orderData && !loadingOrder) {
       fetchMachineLocation();
       
-      // Actualizar cada 15 segundos
       trackingIntervalRef.current = setInterval(fetchMachineLocation, 15000);
       
       return () => {
@@ -281,10 +259,9 @@ const ClientTrackingPage = () => {
     }
   }, [machinePosition, destinationPosition, calculateRoute]);
 
-  // Estados de carga
   if (loadingOrder) {
     return (
-      <div className="container mx-auto p-4 flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-600">Cargando información de la orden...</p>
@@ -295,17 +272,19 @@ const ClientTrackingPage = () => {
 
   if (!orderData) {
     return (
-      <div className="container mx-auto p-4 flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Orden No Encontrada</h2>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Orden No Encontrada</h3>
           <p className="text-gray-600 mb-4">No se pudo cargar la información de esta orden.</p>
-          <button 
-            onClick={() => router.push("/dashboard")}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Volver al Dashboard
-          </button>
+          {onBack && (
+            <button 
+              onClick={onBack}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Volver
+            </button>
+          )}
         </div>
       </div>
     );
@@ -314,72 +293,71 @@ const ClientTrackingPage = () => {
   const mapCenter = machinePosition || destinationPosition || { lat: 19.4326, lng: -99.1332 };
 
   return (
-    <div className="container mx-auto p-4">
-      {/* Header con información de la orden */}
-      <div className="mb-6">
+    <div className="space-y-4">
+      {/* Información de la orden */}
+      <div className="bg-white rounded-lg shadow p-4">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">
-            Seguimiento de Orden #{orderData.order_id}
-          </h1>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-          >
-            Volver
-          </button>
+          <h2 className="text-xl font-bold">
+            Orden #{orderData.order_id}
+          </h2>
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+            >
+              Volver a lista
+            </button>
+          )}
         </div>
 
-        {/* Información de la orden */}
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">Máquina</p>
-              <p className="font-semibold text-gray-900">
-                {orderData.machine_name || "Sin asignar"}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Proyecto</p>
-              <p className="font-semibold text-gray-900">
-                {orderData.project || "N/A"}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Estado</p>
-              <p className="font-semibold text-gray-900 capitalize">
-                {orderData.state}
-              </p>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <p className="text-sm text-gray-600">Máquina</p>
+            <p className="font-semibold text-gray-900">
+              {orderData.machine_name || "Sin asignar"}
+            </p>
           </div>
-        </div>
-
-        {/* Panel de estado */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-blue-600">Estado</p>
-              <p className="font-semibold text-blue-900">{status}</p>
-            </div>
-            <div>
-              <p className="text-sm text-blue-600">Distancia</p>
-              <p className="font-semibold text-blue-900">{distance}</p>
-            </div>
-            <div>
-              <p className="text-sm text-blue-600">Tiempo estimado</p>
-              <p className="font-semibold text-blue-900">{eta}</p>
-            </div>
-            <div>
-              <p className="text-sm text-blue-600">GPS</p>
-              <p className="font-semibold text-blue-900">
-                {machinePosition ? "Activo" : "Sin señal"}
-              </p>
-            </div>
+          <div>
+            <p className="text-sm text-gray-600">Proyecto</p>
+            <p className="font-semibold text-gray-900">
+              {orderData.project || "N/A"}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Estado</p>
+            <p className="font-semibold text-gray-900 capitalize">
+              {orderData.state}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Mapa (MANTIENE ESTRUCTURA ORIGINAL) */}
-      <div style={{ height: "600px", width: "100%", borderRadius: "0.5rem" }}>
+      {/* Panel de estado */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <p className="text-sm text-blue-600">Estado</p>
+            <p className="font-semibold text-blue-900">{status}</p>
+          </div>
+          <div>
+            <p className="text-sm text-blue-600">Distancia</p>
+            <p className="font-semibold text-blue-900">{distance}</p>
+          </div>
+          <div>
+            <p className="text-sm text-blue-600">Tiempo estimado</p>
+            <p className="font-semibold text-blue-900">{eta}</p>
+          </div>
+          <div>
+            <p className="text-sm text-blue-600">GPS</p>
+            <p className="font-semibold text-blue-900">
+              {machinePosition ? "Activo" : "Sin señal"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Mapa */}
+      <div className="bg-white rounded-lg shadow overflow-hidden" style={{ minHeight: "600px", height: "70vh" }}>
         {mounted && mapCenter ? (
           <MapContainer
             center={[mapCenter.lat, mapCenter.lng]}
@@ -411,6 +389,7 @@ const ClientTrackingPage = () => {
               <Polyline
                 positions={route.map((step) => [step.lat, step.lng])}
                 color="red"
+                weight={3}
               />
             )}
           </MapContainer>
@@ -421,9 +400,9 @@ const ClientTrackingPage = () => {
         )}
       </div>
 
-      {/* Información adicional */}
+      {/* Alertas */}
       {!machinePosition && orderData.machine_name && (
-        <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-yellow-800">
             ⚠️ La máquina aún no está enviando señal GPS. El seguimiento se activará cuando la máquina esté en movimiento.
           </p>
@@ -431,7 +410,7 @@ const ClientTrackingPage = () => {
       )}
 
       {!orderData.machine_name && (
-        <div className="mt-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           <p className="text-gray-700">
             ℹ️ Esta orden aún no tiene una máquina asignada. El seguimiento estará disponible una vez que se asigne el equipo.
           </p>
@@ -441,4 +420,4 @@ const ClientTrackingPage = () => {
   );
 };
 
-export default ClientTrackingPage;
+export default OrderTrackingSection;
