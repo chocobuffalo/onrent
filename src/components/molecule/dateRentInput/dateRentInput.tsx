@@ -35,6 +35,9 @@ export default function DateRentInput({
     const router = useRouter();
     const params = useParams();
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const handleCreateProject = () => {
         const machineId = params.id;
         const machinetype = 'maquinaria';
@@ -43,6 +46,18 @@ export default function DateRentInput({
     };
 
     const {startDate, endDate, handleStartDateChange, handleEndDateChange, needProject} = useDateRange();
+
+    const fixedStartDate = typeof fixDate(startDate) === "object" ? fixDate(startDate) : undefined;
+    
+    let minDateForEnd: Date = today;
+    if (fixedStartDate && typeof fixedStartDate === "object") {
+        minDateForEnd = new Date(
+            fixedStartDate.year,
+            fixedStartDate.month - 1,
+            fixedStartDate.day
+        );
+        minDateForEnd.setHours(0, 0, 0, 0);
+    }
 
     return (
         <div className="date-container w-full flex flex-col gap-3.5 items-end">
@@ -53,14 +68,15 @@ export default function DateRentInput({
                     placeholder="Inicio" 
                     action={handleStartDateChange} 
                     value={startDate}
-                    endDate={typeof fixDate(endDate) === "object" ? fixDate(endDate) : undefined} 
+                    minDate={today}
                 />
                 
                 <DateInput 
                     placeholder="Fin" 
-                    startDate={typeof fixDate(startDate) === "object" ? fixDate(startDate) : undefined} 
+                    startDate={fixedStartDate} 
                     value={endDate} 
                     action={handleEndDateChange}
+                    minDate={minDateForEnd}
                 />
             
             </div>
