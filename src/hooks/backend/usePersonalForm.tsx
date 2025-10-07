@@ -82,6 +82,7 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
   const [isLoadingRegions, setIsLoadingRegions] = useState(false);
   const [regions, setRegions] = useState<Region[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<number | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [initialValues, setInitialValues] = useState({
     fullName: "",
     telephone: "",
@@ -113,6 +114,45 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     mode: "onBlur",
     context: { showOperator: showOperatorForm }
   });
+
+  // 🆕 Obtener ubicación automáticamente cuando se muestra el formulario de operador
+  useEffect(() => {
+    if (showOperatorForm && 'geolocation' in navigator) {
+      setLocationStatus('loading');
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          setValue('gpsLat', lat);
+          setValue('gpsLng', lng);
+          setLocationStatus('success');
+          
+          console.log('📍 Ubicación obtenida:', { lat, lng });
+          toast.success('Ubicación obtenida correctamente');
+        },
+        (error) => {
+          console.error('❌ Error obteniendo ubicación:', error);
+          setLocationStatus('error');
+          
+          // Valores por defecto en caso de error
+          setValue('gpsLat', 0);
+          setValue('gpsLng', 0);
+          
+          toast.error('No se pudo obtener la ubicación. Por favor, permite el acceso a tu ubicación.');
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    } else if (showOperatorForm && !('geolocation' in navigator)) {
+      setLocationStatus('error');
+      toast.error('Tu navegador no soporta geolocalización');
+    }
+  }, [showOperatorForm, setValue]);
 
   // Función para sincronizar datos del perfil con el formulario
   const syncProfileToForm = (profileData: any) => {
@@ -257,6 +297,7 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
         setValue("availability", "");
         setValue("gpsLat", 0);
         setValue("gpsLng", 0);
+        setLocationStatus('idle');
         
         // Desmarcar el checkbox
         onOperatorFormReset();
@@ -304,5 +345,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     selectedRegion,
     setSelectedRegion,
     hasChanges,
+    locationStatus, // 🆕 Exportar el estado de la ubicación
   };
 }
