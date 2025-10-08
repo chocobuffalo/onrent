@@ -1,4 +1,3 @@
-// src/components/molecule/bookingForm/bookingForm.tsx
 'use client';
 import AddFormItems from "@/components/atoms/addFormITems/addFormItems";
 import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
@@ -20,7 +19,6 @@ import SubmitSection from "@/components/atoms/SubmitSection/SubmitSection";
 import { AddedItemsList } from "@/components/molecule/AddedItemsList/AddedItemsList";
 import { AddMoreMachinesModal } from "@/components/organism/AddMoreMachinesModal/AddMoreMachinesModal";
 
-// Redux imports
 import { useUIAppDispatch, useUIAppSelector } from '@/libs/redux/hooks';
 import { 
   initBookingSession, 
@@ -77,6 +75,11 @@ export const BookingForm = ({
     const [locationLoaded, setLocationLoaded] = useState(false);
     const [showCatalogModal, setShowCatalogModal] = useState(false);
 
+    // ✅ SOLUCIÓN: Estados para valores calculados
+    const [dayLength, setDayLength] = useState(0);
+    const [price, setPrice] = useState(0);
+    const [totalPrice, setTotalPrice] = useState(0);
+
     // Redux
     const dispatch = useUIAppDispatch();
     const bookingSession = useUIAppSelector(state => state.bookingSession);
@@ -89,12 +92,26 @@ export const BookingForm = ({
     const nextRouter = useNextRouter();
 
     const unitPrice = machine?.pricing?.price_per_day || 0;
-    const price = unitPrice * count;
-    const dayLength = startDate && endDate ? countDays(startDate, endDate) + 1 : 0;
-    const totalPrice = price * dayLength;
 
     const hasProject = Boolean(projectId && projectData);
     const isManualMode = !hasProject;
+
+    useEffect(() => {
+        console.log("🔄 Fechas o cantidad cambiaron:", { startDate, endDate, count });
+        
+        if (startDate && endDate) {
+            const calculatedDays = countDays(startDate, endDate) + 1;
+            const calculatedPrice = unitPrice * count;
+            const calculatedTotal = calculatedPrice * calculatedDays;
+            setDayLength(calculatedDays);
+            setPrice(calculatedPrice);
+            setTotalPrice(calculatedTotal);
+        } else {
+            setDayLength(0);
+            setPrice(unitPrice * count);
+            setTotalPrice(0);
+        }
+    }, [startDate, endDate, count, unitPrice]);
 
     useEffect(() => {
         if (hasProject && selectedLocation && projectData) {
@@ -166,14 +183,12 @@ export const BookingForm = ({
     };
 
     const handleAddMachineFromCatalog = (selectedMachine: any) => {
-        // Obtener el precio - manejar ambos formatos
         const unitPrice = selectedMachine.pricing?.price_per_day 
             || parseFloat(selectedMachine.price) 
             || 0;
         
         const dayLength = countDays(bookingSession.startDate!, bookingSession.endDate!) + 1;
         
-        // Verificar si ya existe un item con la misma máquina y fechas
         const existingItem = bookingItems.find(
             item => item.machineId === selectedMachine.id && 
                     item.startDate === bookingSession.startDate && 
@@ -181,7 +196,6 @@ export const BookingForm = ({
         );
 
         if (existingItem) {
-            // Si existe, incrementar la cantidad
             console.log("✅ Item existente encontrado, incrementando cantidad:", existingItem.machineName);
             dispatch(incrementItemQuantity({
                 machineId: selectedMachine.id,
@@ -189,7 +203,6 @@ export const BookingForm = ({
             }));
             toastSuccessAction(`Cantidad de ${selectedMachine.name} incrementada`, () => {});
         } else {
-            // Si no existe, crear nuevo item
             const totalPrice = unitPrice * dayLength;
             
             const newItem = {
@@ -300,7 +313,6 @@ export const BookingForm = ({
             if (preorder?.order_id) {
                 console.log("Preorden creada exitosamente:", preorder);
                 dispatch(clearBookingSession());
-                // Asegurar que localStorage esté limpio
                 if (typeof window !== "undefined") {
                     localStorage.removeItem("booking_session");
                     localStorage.removeItem("booking_items");

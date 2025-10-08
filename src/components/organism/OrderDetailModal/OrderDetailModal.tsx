@@ -174,7 +174,7 @@ export default function OrderDetailModal({
               <table>
                 <thead>
                   <tr>
-                    {orderDetail.project && <th>Producto</th>}
+                    <th>Nombre de Maquinaria</th>
                     <th>Cantidad</th>
                     <th>Fecha Inicio</th>
                     <th>Fecha Fin</th>
@@ -184,7 +184,7 @@ export default function OrderDetailModal({
                   {orderDetail.items && orderDetail.items.length > 0 ? (
                     orderDetail.items.map((item, index) => (
                       <tr key={item.line_id || index}>
-                        {orderDetail.project && <td>{item.product}</td>}
+                        <td>{item.product}</td>
                         <td>{item.quantity}</td>
                         <td>{new Date(item.start_date).toLocaleDateString('es-ES')}</td>
                         <td>{new Date(item.end_date).toLocaleDateString('es-ES')}</td>
@@ -192,7 +192,7 @@ export default function OrderDetailModal({
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={orderDetail.project ? 4 : 3}>No hay productos disponibles</td>
+                      <td colSpan={4}>No hay productos disponibles</td>
                     </tr>
                   )}
                 </tbody>
