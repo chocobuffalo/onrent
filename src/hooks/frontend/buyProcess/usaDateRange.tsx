@@ -8,7 +8,6 @@ import {
 import { storage } from "@/utils/storage";
 import { compareDate } from "@/utils/compareDate";
 
-
 export default function useDateRange() {
   const dispatch = useUIAppDispatch();
   const startDateSelector = useUIAppSelector(
@@ -18,32 +17,43 @@ export default function useDateRange() {
   const filters = useUIAppSelector((state) => state.filters);
   const needProject = useUIAppSelector((state) => state.filters.needProject);
 
-  // Función para obtener la fecha de hoy sin tiempo
   const getTodayWithoutTime = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return today;
   };
 
-  // Función para validar si una fecha es pasada
   const isPastDate = (dateString: string) => {
     if (!dateString) return false;
     
-    const selectedDate = new Date(dateString);
-    selectedDate.setHours(0, 0, 0, 0);
+    const parts = dateString.split('-');
+    let year, month, day;
     
+    if (parts.length === 3 && parts[0].length === 4) {
+      year = parseInt(parts[0]);
+      month = parseInt(parts[1]) - 1;
+      day = parseInt(parts[2]);
+    } else if (parts.length === 3 && parts[2].length === 4) {
+      day = parseInt(parts[0]);
+      month = parseInt(parts[1]) - 1;
+      year = parseInt(parts[2]);
+    } else {
+      const selectedDate = new Date(dateString);
+      selectedDate.setHours(0, 0, 0, 0);
+      const today = getTodayWithoutTime();
+      return selectedDate < today;
+    }
+    
+    const selectedDate = new Date(year, month, day);
     const today = getTodayWithoutTime();
-    
     return selectedDate < today;
   };
 
   const handleStartDateChange = (date: string) => {
-    // Validar que la fecha no sea pasada
     if (isPastDate(date)) {
-      console.warn('No se pueden seleccionar fechas pasadas');
+      console.warn('❌ No se pueden seleccionar fechas pasadas');
       return;
     }
-    
     dispatch(setStartDate(date));
     dispatch(setNeedProject(compareDate(date || "", endDateSelector || "")));
     storage.setItem("filters", { 
@@ -54,9 +64,7 @@ export default function useDateRange() {
   };
 
   const handleEndDateChange = (date: string) => {
-    // Validar que la fecha no sea pasada
     if (isPastDate(date)) {
-      console.warn('No se pueden seleccionar fechas pasadas');
       return;
     }
     
