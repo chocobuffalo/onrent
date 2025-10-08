@@ -1,6 +1,7 @@
 // src/components/organism/profile/personalForm.tsx
 import usePersonalForm from "@/hooks/backend/usePersonalForm";
 import { ImSpinner8 } from "react-icons/im";
+import { FaMapMarkerAlt, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 
 interface PersonalFormProps {
     showOperatorForm: boolean;
@@ -21,6 +22,7 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
         selectedRegion,
         setSelectedRegion,
         hasChanges,
+        locationStatus,
     } = usePersonalForm({ showOperatorForm, onOperatorFormReset });
     
     return (
@@ -107,6 +109,29 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                     {showOperatorForm && (
                         <div className="mt-4">
                             <h2 className="form-title mb-2">Información de Operador</h2>
+                            
+                            {/* 🆕 Indicador de ubicación GPS */}
+                            <div className="mb-4">
+                                {locationStatus === 'loading' && (
+                                    <div className="alert alert-info d-flex align-items-center" style={{ borderRadius: '0.5rem' }}>
+                                        <ImSpinner8 size={20} className="animate-spin me-2" />
+                                        <span>Obteniendo tu ubicación...</span>
+                                    </div>
+                                )}
+                                {locationStatus === 'success' && (
+                                    <div className="alert alert-success d-flex align-items-center" style={{ borderRadius: '0.5rem' }}>
+                                        <FaCheckCircle size={20} className="me-2" />
+                                        <span>✓ Ubicación obtenida correctamente</span>
+                                    </div>
+                                )}
+                                {locationStatus === 'error' && (
+                                    <div className="alert alert-warning d-flex align-items-center" style={{ borderRadius: '0.5rem' }}>
+                                        <FaExclamationTriangle size={20} className="me-2" />
+                                        <span>No se pudo obtener la ubicación. Por favor, permite el acceso a tu ubicación en el navegador.</span>
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="row">
                                 <div className="col-md-6">
                                     <div className="form-group">
@@ -226,36 +251,10 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                                         </label>
                                     </div>
                                 </div>
-                                <div className="col-md-6">
-                                    <div className="form-group">
-                                        <label htmlFor="gpsLat">Latitud GPS</label>
-                                        <input
-                                            {...register('gpsLat')}
-                                            type="number"
-                                            step="any"
-                                            className="form-control"
-                                            placeholder="Ejemplo: 19.432608"
-                                        />
-                                        {errors.gpsLat && (
-                                            <span className="text-danger">{errors.gpsLat.message}</span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="col-md-6">
-                                    <div className="form-group">
-                                        <label htmlFor="gpsLng">Longitud GPS</label>
-                                        <input
-                                            {...register('gpsLng')}
-                                            type="number"
-                                            step="any"
-                                            className="form-control"
-                                            placeholder="Ejemplo: -99.133209"
-                                        />
-                                        {errors.gpsLng && (
-                                            <span className="text-danger">{errors.gpsLng.message}</span>
-                                        )}
-                                    </div>
-                                </div>
+                                
+                                {/* 🆕 Campos GPS ocultos pero registrados */}
+                                <input {...register('gpsLat')} type="hidden" />
+                                <input {...register('gpsLng')} type="hidden" />
                             </div>
                         </div>
                     )}
