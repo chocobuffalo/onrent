@@ -2,6 +2,7 @@ import { SearchResult } from '@/components/organism/AmazonLocationService/map';
 import SearchInput from '@/components/atoms/SearchInput/SearchInput';
 import SearchResults from '@/components/molecule/SearchResults/SearchResults';
 
+
 interface SearchSectionProps {
   placeholder: string;
   searchQuery: string;
@@ -12,7 +13,9 @@ interface SearchSectionProps {
   setShowResults: (show: boolean) => void;
   mapLoaded: boolean;
   onSelectResult: (result: SearchResult) => void;
+  setIsUserTyping: (isTyping: boolean) => void;
 }
+
 
 export default function SearchSection({
   placeholder,
@@ -23,16 +26,18 @@ export default function SearchSection({
   showResults,
   setShowResults,
   mapLoaded,
-  onSelectResult
+  onSelectResult,
+  setIsUserTyping
 }: SearchSectionProps) {
   
   const handleEnter = () => {
-    // Seleccionar el primer resultado cuando se presiona Enter
     if (searchResults.length > 0) {
       onSelectResult(searchResults[0]);
       setShowResults(false);
+      setIsUserTyping(false);
     }
   };
+
 
   return (
     <div className="relative mt-4">
@@ -41,22 +46,28 @@ export default function SearchSection({
         value={searchQuery}
         onChange={(value) => {
           setSearchQuery(value);
-          // Mostrar resultados solo si está escribiendo
+          setIsUserTyping(true);
           if (value.trim().length > 0 && searchResults.length > 0) {
             setShowResults(true);
           }
         }}
         onFocus={() => {
-          // Solo abrir si hay query actual y resultados disponibles
+          setIsUserTyping(true);
           if (searchQuery.trim().length > 2 && searchResults.length > 0) {
             setShowResults(true);
           }
         }}
-        onBlur={() => setTimeout(() => setShowResults(false), 200)}
+        onBlur={() => {
+          setTimeout(() => {
+            setShowResults(false);
+            setIsUserTyping(false);
+          }, 200);
+        }}
         onEnter={handleEnter}
         isLoading={isSearching}
         disabled={!mapLoaded}
       />
+
 
       {showResults && (
         <SearchResults
@@ -64,6 +75,7 @@ export default function SearchSection({
           onSelectResult={(result) => {
             onSelectResult(result);
             setShowResults(false);
+            setIsUserTyping(false);
           }}
         />
       )}

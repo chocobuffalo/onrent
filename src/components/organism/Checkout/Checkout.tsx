@@ -110,6 +110,7 @@ export default function Checkout({
       setClientSecret(json.client_secret);
       return json.client_secret;
     } catch (error) {
+      
       console.error('Error in fetchClientSecret:', error);
     }
   };

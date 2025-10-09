@@ -5,6 +5,7 @@ import LocationInfo from '@/components/atoms/LocationInfo/LocationInfo';
 import MapLoading from '@/components/atoms/MapLoading/MapLoading';
 import SearchSection from '../SearchSection/SearchSection';
 
+
 export default function AmazonLocationMap({
   center = [-123.115898, 49.295868],
   zoom = 11,
@@ -28,7 +29,8 @@ export default function AmazonLocationMap({
     setShowResults,
     mapLoaded,
     selectSearchResult,
-    clearLocation
+    clearLocation,
+    setIsUserTyping
   } = useAmazonLocationMap({
     center,
     zoom,
@@ -36,9 +38,9 @@ export default function AmazonLocationMap({
     onLocationSelect
   });
 
+
   return (
     <div className="relative">
-      {/* Información de ubicación seleccionada */}
       {selectedLocation && showLocationInfo && (
         <LocationInfo
           location={selectedLocation}
@@ -46,7 +48,7 @@ export default function AmazonLocationMap({
         />
       )}
 
-      {/* Mapa */}
+
       <div
         ref={mapContainer}
         style={{ height, width }}
@@ -55,7 +57,7 @@ export default function AmazonLocationMap({
         {!mapLoaded && <MapLoading />}
       </div>
 
-      {/* Barra de búsqueda */}
+
       {showSearchField && (
         <SearchSection
           placeholder={searchPlaceholder}
@@ -67,11 +69,9 @@ export default function AmazonLocationMap({
           setShowResults={setShowResults}
           mapLoaded={mapLoaded}
           onSelectResult={selectSearchResult}
+          setIsUserTyping={setIsUserTyping}
         />
       )}
-
-      {/* Input oculto para exponer searchQuery */}
-      <input type="hidden" value={searchQuery} />
     </div>
   );
 }

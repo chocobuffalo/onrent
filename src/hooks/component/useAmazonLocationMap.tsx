@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { LocationData, SearchResult } from '@/components/organism/AmazonLocationService/map';
 
+
 interface UseAmazonLocationMapProps {
   center: [number, number];
   zoom: number;
   initialLocation: LocationData | null;
   onLocationSelect?: (coordinates: LocationData) => void;
 }
+
 
 export function useAmazonLocationMap({
   center,
@@ -18,17 +20,21 @@ export function useAmazonLocationMap({
   const map = useRef<any>(null);
   const marker = useRef<any>(null);
 
+
   // Estados para la búsqueda
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [suppressNextSearch, setSuppressNextSearch] = useState(false);
+  const [isUserTyping, setIsUserTyping] = useState(false);
+
 
   // Estados para la ubicación
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(initialLocation);
   const [isDragging, setIsDragging] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+
 
   // Cargar MapLibre GL
   const loadMapLibre = useCallback(() => {
@@ -38,10 +44,12 @@ export function useAmazonLocationMap({
         return;
       }
 
+
       const cssLink = document.createElement('link');
       cssLink.href = 'https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.css';
       cssLink.rel = 'stylesheet';
       document.head.appendChild(cssLink);
+
 
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.js';
@@ -51,6 +59,7 @@ export function useAmazonLocationMap({
       document.head.appendChild(script);
     });
   }, []);
+
 
   // Geocodificación inversa usando API route
   const reverseGeocode = useCallback(async (lat: number, lng: number): Promise<string> => {
@@ -62,6 +71,7 @@ export function useAmazonLocationMap({
     });
 
 
+
       if (response.ok) {
         const data = await response.json();
         return data.address || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
@@ -70,8 +80,10 @@ export function useAmazonLocationMap({
       console.error('Error in reverse geocoding:', error);
     }
 
+
     return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
   }, []);
+
 
   // Actualizar ubicación seleccionada
   const updateSelectedLocation = useCallback(async (lat: number, lng: number, address?: string) => {
@@ -80,22 +92,29 @@ export function useAmazonLocationMap({
       finalAddress = await reverseGeocode(lat, lng);
     }
 
+
     const locationData: LocationData = { lat, lng, address: finalAddress };
     setSelectedLocation(locationData);
 
+
     setSuppressNextSearch(true);
     setSearchQuery(finalAddress || '');
+    setIsUserTyping(false);
+
 
     setShowResults(false);
     setSearchResults([]);
 
+
     onLocationSelect?.(locationData);
   }, [reverseGeocode, onLocationSelect]);
+
 
   // Actualizar marcador
   const updateMarker = useCallback((lat: number, lng: number) => {
     if (!map.current || !window.maplibregl) return;
     if (marker.current) marker.current.remove();
+
 
     marker.current = new window.maplibregl.Marker({
       color: '#FF6B35',
@@ -104,6 +123,7 @@ export function useAmazonLocationMap({
       .setLngLat([lng, lat])
       .addTo(map.current);
 
+
     marker.current.on('dragstart', () => setIsDragging(true));
     marker.current.on('dragend', async () => {
       setIsDragging(false);
@@ -111,8 +131,10 @@ export function useAmazonLocationMap({
       await updateSelectedLocation(newCoords.lat, newCoords.lng);
     });
 
+
     map.current.flyTo({ center: [lng, lat], zoom: Math.max(map.current.getZoom(), 15), duration: 1000 });
   }, [updateSelectedLocation]);
+
 
   // Clic en el mapa
   const handleMapClick = useCallback(async (e: any) => {
@@ -121,6 +143,7 @@ export function useAmazonLocationMap({
     updateMarker(lat, lng);
     await updateSelectedLocation(lat, lng);
   }, [isDragging, updateMarker, updateSelectedLocation]);
+
 
   // Buscar lugares usando API route
   const searchPlaces = useCallback(async (query: string) => {
@@ -131,6 +154,7 @@ export function useAmazonLocationMap({
     }
     setIsSearching(true);
 
+
    try {
     const response = await fetch('/api/get-map/search', {
       method: 'POST',
@@ -138,10 +162,13 @@ export function useAmazonLocationMap({
       body: JSON.stringify({ query, center })
     });
 
+
       if (response.ok) {
         const data = await response.json();
         setSearchResults(data.Results || []);
-        setShowResults((data.Results || []).length > 0);
+        if (isUserTyping) {
+          setShowResults((data.Results || []).length > 0);
+        }
       } else {
         setSearchResults([]);
         setShowResults(false);
@@ -153,7 +180,8 @@ export function useAmazonLocationMap({
     } finally {
       setIsSearching(false);
     }
-  }, [center]);
+  }, [center, isUserTyping]);
+
 
   // Seleccionar resultado
   const selectSearchResult = useCallback(async (result: SearchResult) => {
@@ -162,13 +190,17 @@ export function useAmazonLocationMap({
     const lng = coords[0];
     const address = result.Place.Label;
 
+
     updateMarker(lat, lng);
     await updateSelectedLocation(lat, lng, address);
+
 
     setShowResults(false);
     setSearchResults([]);
     setSuppressNextSearch(true);
+    setIsUserTyping(false);
   }, [updateMarker, updateSelectedLocation]);
+
 
   // Limpiar ubicación
   const clearLocation = useCallback(() => {
@@ -177,12 +209,14 @@ export function useAmazonLocationMap({
     setShowResults(false);
     setSearchResults([]);
     setSuppressNextSearch(true);
+    setIsUserTyping(false);
     if (marker.current) {
       marker.current.remove();
       marker.current = null;
     }
     onLocationSelect?.({ lat: 0, lng: 0 });
   }, [onLocationSelect]);
+
 
   // Inicializar mapa
   useEffect(() => {
@@ -191,13 +225,16 @@ export function useAmazonLocationMap({
         await loadMapLibre();
         if (map.current || !mapContainer.current) return;
 
+
         // Obtener configuración del mapa desde API route
         const response = await fetch('/api/get-map/config/route');
         if (!response.ok) {
           throw new Error(`Failed to fetch map config: ${response.status}`);
         }
 
+
         const config = await response.json();
+
 
         map.current = new window.maplibregl.Map({
           container: mapContainer.current,
@@ -206,8 +243,10 @@ export function useAmazonLocationMap({
           zoom: initialLocation ? 15 : zoom,
         });
 
+
         map.current.addControl(new window.maplibregl.NavigationControl(), "top-left");
         map.current.on('click', handleMapClick);
+
 
         map.current.on('load', () => {
           setMapLoaded(true);
@@ -215,12 +254,14 @@ export function useAmazonLocationMap({
             updateMarker(initialLocation.lat, initialLocation.lng);
             setSuppressNextSearch(true);
             setSearchQuery(initialLocation.address || '');
+            setIsUserTyping(false);
           }
         });
       } catch (error) {
         console.error('Error initializing Amazon Location Service map:', error);
       }
     };
+
 
     initializeMap();
     return () => {
@@ -232,12 +273,19 @@ export function useAmazonLocationMap({
     };
   }, [center, zoom, initialLocation, handleMapClick, updateMarker, loadMapLibre]);
 
-  // Debounce de búsqueda
+
+  // Debounce de búsqueda - CORREGIDO
   useEffect(() => {
     if (suppressNextSearch) {
       setSuppressNextSearch(false);
       return;
     }
+
+    // CAMBIO CRÍTICO: Solo ejecutar búsqueda si el usuario está escribiendo activamente
+    if (!isUserTyping) {
+      return;
+    }
+
 
     const timeoutId = setTimeout(() => {
       if (searchQuery) {
@@ -248,8 +296,10 @@ export function useAmazonLocationMap({
       }
     }, 500);
 
+
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, searchPlaces, suppressNextSearch]);
+  }, [searchQuery, searchPlaces, suppressNextSearch, isUserTyping]);
+
 
   return {
     mapContainer,
@@ -262,6 +312,7 @@ export function useAmazonLocationMap({
     setShowResults,
     mapLoaded,
     selectSearchResult,
-    clearLocation
+    clearLocation,
+    setIsUserTyping
   };
 }

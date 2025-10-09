@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 import { CatalogueItem } from "../Catalogue/types";
 import ToggleButton from "@/components/atoms/toggleButton/toggleButton";
@@ -59,22 +59,17 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
 
   } = useMachineDetail(machine.id, projectId);
 
-
-
   const [workImagePreview, setWorkImagePreview] = useState<string | null>(null);
   const [isManualMode, setIsManualMode] = useState(false);
   
-
   const { needProject } = useDateRange();
   
- 
   const hasProject = Boolean(
     (projectId && (projectData || projectName)) || 
     (projectData && projectName)
   );
   
   const {project, projects, loadingProject, openProjects,setLoadingProject, setOpenProjects,setSelectedProject} = useGetProject({projectName});
-
 
   const currentMachine = machineData || machine;
 
@@ -113,12 +108,26 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
     setSelectedProject(value);
   }
 
-  
   useEffect(()=>{
     if(project){
       setProjectId(project.id.toString());
     }
   },[project]);
+
+  // NUEVO: Memoizar el mapa para evitar re-renders innecesarios
+  const memoizedMap = useMemo(() => (
+    <AmazonLocationMap
+      center={[-123.115898, 49.295868]}
+      zoom={11}
+      height="320px"
+      onLocationSelect={onMapLocationSelect}
+      initialLocation={selectedLocation}
+      showLocationInfo={false}
+      showSearchField={true}
+      searchPlaceholder="Buscar dirección de entrega, ciudad o punto de referencia..."
+      className="shadow-sm border-gray-200"
+    />
+  ), [selectedLocation]);
 
   if (loading) {
     return (
@@ -212,35 +221,6 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
           <div className="mt-6 space-y-4">
             <p className="font-semibold">Complementos para tu renta</p>
 
-            {/* OPERADOR - SECCIÓN COMENTADA */}
-            {/* 
-            <div className="flex items-center justify-between border-[#B2B2B2] border-b pb-3">
-              <div className="flex items-center gap-3">
-                <Image
-                  src="/icons/user.svg"
-                  alt="Operator"
-                  width={35}
-                  height={35}
-                />
-                <div>
-                  <p className="text-sm font-semibold">Operador</p>
-                  <p className="text-xs text-gray-500 italic">
-                    Incluye un operador certificado
-                  </p>
-                  {currentMachine.pricing?.no_operator_discount && (
-                    <p className="text-xs italic text-green-600">
-                      -{currentMachine.pricing.no_operator_discount}% si no incluye operador
-                    </p>
-                  )}
-                </div>
-              </div>
-              <ToggleButton
-                isChecked={extras.operador}
-                onChange={() => toggleExtra("operador")}
-              />
-            </div>
-            */}
-
             {/* Certificado */}
             <div className="flex items-center justify-between border-[#B2B2B2] border-b pb-3">
               <div className="flex items-center gap-3">
@@ -312,18 +292,8 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                   Dirección de entrega
                 </label>
 
-                {/* Mapa */}
-                <AmazonLocationMap
-                  center={[-123.115898, 49.295868]}
-                  zoom={11}
-                  height="320px"
-                  onLocationSelect={onMapLocationSelect}
-                  initialLocation={selectedLocation}
-                  showLocationInfo={false}
-                  showSearchField={true}
-                  searchPlaceholder="Buscar dirección de entrega, ciudad o punto de referencia..."
-                  className="shadow-sm border-gray-200"
-                />
+                {/* Mapa memoizado */}
+                {memoizedMap}
               </div> 
 
               {/* Estado de la ubicación */}
@@ -434,7 +404,6 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                       }
                     />
                     
-                    {/* Solo mostrar dropdown si NO está en modo manual y NO hay projectId */}
                     {!isManualMode && !projectId && (
                       <DropdownList 
                         open={openProjects} 
