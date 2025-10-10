@@ -11,7 +11,6 @@ import { useSession } from 'next-auth/react';
 import { Elements } from '@stripe/react-stripe-js';
 import { useToast } from '@/hooks/frontend/ui/useToast';
 
-
 export interface CheckoutSummaryProps {
    amount: number;
    currency: string;
@@ -38,9 +37,12 @@ export default function Checkout({
   const { toastError, toastSuccess } = useToast();
   
   console.log(order,'order in checkout')
+  console.log('order.contract_total:', order?.contract_total);
+  
   const {project_name, project_responsible, project_location, client_notes,items,preorder_id,session_id, ui_notice} = order || {};
   const {data:session} = useSession(); 
   console.log(session?.user)
+  
   const fleetSum = items?.reduce((sum, item) => sum + (item.estimated_fleet || 0), 0);
   const rentsSum = items?.reduce((sum, item) => sum + (item.estimated_rent || 0), 0);
   const totalSum = items?.reduce((sum, item) => sum + (item.total_estimated || 0), 0);
@@ -64,12 +66,20 @@ export default function Checkout({
   
   const [clientSecret, setClientSecret] = useState('');
 
-  // useEffect para mostrar notificación de descuento
+  // Determinar si es mensual
+  const isMonthly = items && items.length > 0 && (items[0].duration_days || 0) >= 30;
+
   useEffect(() => {
     if (ui_notice && ui_notice !== null) {
-      toastSuccess("Se aplicó automáticamente una tarifa con descuento por duración ¡Te ahorras 6,300 MXN!");
+      if (isMonthly) {
+        // Toast para rentas mensuales (>= 30 días)
+        toastSuccess(ui_notice); // Muestra: "Solo se cobrará el primer mes ahora. Los meses siguientes se cobrarán mes a mes."
+      } else {
+        // Toast para rentas cortas (< 30 días)
+        toastSuccess("Se aplicó automáticamente una tarifa con descuento por duración ¡Te ahorras 6,300 MXN!");
+      }
     }
-  }, [ui_notice]);
+  }, [ui_notice, isMonthly]);
  
   const fetchClientSecret = async () => {
     try {
@@ -110,7 +120,6 @@ export default function Checkout({
       setClientSecret(json.client_secret);
       return json.client_secret;
     } catch (error) {
-      
       console.error('Error in fetchClientSecret:', error);
     }
   };
@@ -122,8 +131,6 @@ export default function Checkout({
     console.log('session:', session);
     console.log('getCheckSummary:', getCheckSummary);
   
-    // Ejecutar si hay access_token, independientemente del amount
-    // porque el backend puede devolver error de región incluso con amount 0
     if (session?.user?.access_token) {
       console.log('Conditions met, calling fetchClientSecret');
       fetchClientSecret()
@@ -171,9 +178,20 @@ export default function Checkout({
 
         <div >
           <div className="space-y-6">
-            <ProjectInfoTable project_name={project_name} responsible_name={project_responsible} project_location={project_location} />
+            <ProjectInfoTable 
+              project_name={project_name} 
+              responsible_name={project_responsible} 
+              project_location={project_location} 
+            />
            
-            <CheckoutSummary items={items} setGetCheckSummary={setGetCheckSummary} preorder_id={preorder_id} url={getCheckSummary.url} session_id={session_id} />
+            <CheckoutSummary 
+              items={items} 
+              order={order}
+              setGetCheckSummary={setGetCheckSummary} 
+              preorder_id={preorder_id} 
+              url={getCheckSummary.url} 
+              session_id={session_id} 
+            />
             
             {/*stripe here - Solo mostrar si tenemos clientSecret*/ }
             {clientSecret ? (
