@@ -87,7 +87,7 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     roles: ["proveedor", "cliente_proveedor"], // CRUD de maquinaria disponible
   },
   {
-    link: "/dashboard/operators",
+    link: "/dashboard/operator",
     title: "Gestionar operadores",
     icon: WrenckIcon,
     roles: ["proveedor", "cliente_proveedor"], // Gestión de operadores asignados

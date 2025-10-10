@@ -1,7 +1,6 @@
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
-
 export interface CheckoutFormData {
   cardNumber: string;
   cardholderName: string;
@@ -9,13 +8,11 @@ export interface CheckoutFormData {
   securityCode: string;
 }
 
-
 export interface ProjectInfo {
   responsibleName: string;
   projectName: string;
   workLocation: string;
 }
-
 
 export interface Machine {
   id: number | string;
@@ -43,29 +40,26 @@ export interface PaymentFormProps {
   errors: FieldErrors<CheckoutFormData>;
 }
 
-
-export  interface ItemProps{
+export interface ItemProps {
   total_estimated: number;
-  duration_days:number;
-  end_date:number
-  estimated_taxes:number;
-  estimated_extras:number;
-  estimated_fleet:number
-  estimated_rent:number;
-  location: {lat: number, lng: number};
-  //{lat: 22.1393405, lng: -101.013567}
-  product_id:number|string|null;
-  product_name:string;
-  requested_quantity:number;
-  session_id:string;
-  start_date:string
-
+  monthly_payment: number;
+  duration_days: number;
+  end_date: number;
+  estimated_taxes: number;
+  estimated_extras: number;
+  estimated_fleet: number;
+  estimated_rent: number;
+  location: { lat: number; lng: number };
+  product_id: number | string | null;
+  product_name: string;
+  requested_quantity: number;
+  session_id: string;
+  start_date: string;
 }
-
 
 export interface OrderProp {
   id: number | string | null;
-  preorder_id: string ;
+  preorder_id: string;
   session_id: string;
   project_id: number;
   project_name: string;
@@ -74,7 +68,7 @@ export interface OrderProp {
   client_notes: string;
   status: string;
   ui_notice?: string | null;
-  items:  ItemProps[];
+  items: ItemProps[];
 }
 
 export interface CheckoutProps {
@@ -111,7 +105,7 @@ export interface UseCheckoutFormReturn {
 }
 
 export interface PriceFormatted {
-  rental: string; 
+  rental: string;
   freight: string;
   insurance: string;
   taxes: string;
