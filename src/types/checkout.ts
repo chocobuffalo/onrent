@@ -43,6 +43,7 @@ export interface PaymentFormProps {
 export interface ItemProps {
   total_estimated: number;
   monthly_payment: number;
+  contract_total: number;
   duration_days: number;
   end_date: number;
   estimated_taxes: number;
@@ -69,6 +70,7 @@ export interface OrderProp {
   status: string;
   ui_notice?: string | null;
   items: ItemProps[];
+  contract_total?: number; 
 }
 
 export interface CheckoutProps {
