@@ -59,7 +59,21 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
       const taxSum = items.reduce((sum, item) => sum + (item.estimated_taxes || 0), 0);
       setTax(taxSum);
       
-      const totalSum = items.reduce((sum, item) => sum + (item.total_estimated || 0), 0);
+      let totalSum = 0;
+      
+      items.forEach((item) => {
+        const durationDays = item.duration_days || 0;
+        
+        if (durationDays < 30) {
+          const itemTotal = (item.estimated_fleet || 0) + 
+                           (item.estimated_rent || 0) + 
+                           (item.estimated_taxes || 0)
+          totalSum += itemTotal;
+        } else {
+          totalSum += (item.monthly_payment || 0);
+        }
+      });
+      
       setTotalPrice(totalSum);
       
       setGetCheckSummary((prev: Record<string, any>) => ({
@@ -113,7 +127,7 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
               </span>
             </div>
             <span className="text-gray-900 text-base  font-medium lato-font">
-              {(item.price).toLocaleString('es-ES')}$/MXN
+              {(item.price).toLocaleString('es-MX')}$/MXN
             </span>
           </div>
         ))}
@@ -123,35 +137,33 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
         <div className="flex justify-between items-center">
           <span className="text-gray-600 text-base lato-font">Renta de Maquinaria:</span>
           <span className="text-gray-900 text-base font-light lato-font">
-            {rents.toLocaleString('es-ES')}$MXN
+            {rents.toLocaleString('es-MX')}$MXN
           </span>
         </div>
 
         <div className="flex justify-between items-center">
           <span className="text-gray-600 text-base  lato-font">Flete:</span>
           <span className="text-gray-900 text-base  font-medium lato-font">
-            {fleet.toLocaleString('es-ES')}$/MXN
+            {fleet.toLocaleString('es-MX')}$/MXN
           </span>
         </div>
 
         <div className="flex justify-between items-center">
           <span className="text-gray-600 text-base  lato-font">Extras:</span>
           <span className="text-gray-900 text-base  font-medium lato-font">
-            {extras.toLocaleString('es-ES')}$/MXN
+            {extras.toLocaleString('es-MX')}$/MXN
           </span>
         </div>
 
         <div className="flex justify-between items-center">
           <span className="text-gray-600 text-base  lato-font">Impuestos:</span>
           <span className="text-gray-900 text-base  font-medium lato-font">
-            {tax.toLocaleString('es-ES')}$/MXN
+            {tax.toLocaleString('es-MX')}$/MXN
           </span>
         </div>
       </div>
       <hr className="border-gray-300 my-4" />
 
-      {/* Total */}
-      {/* Enviando los campos de manera oculta*/ }
       <input type="hidden" name="user_id" value={userId || ''} />
       <input type="hidden" name="currency" value="mxn" />
       <input type="hidden" name="amount" value={totalPrice || 0} />
@@ -160,7 +172,7 @@ export default function CheckoutSummary({ items,setGetCheckSummary,preorder_id,s
       <div className="flex justify-between items-center">
         <span className="text-gray-600 text-base font-extralight lato-font">TOTAL</span>
         <span className="text-gray-900 text-base font-bold lato-font">
-          {totalPrice.toLocaleString('es-ES')}$/MXN
+          {totalPrice.toLocaleString('es-MX')}$/MXN
         </span>
       </div>
     </div>
