@@ -43,19 +43,8 @@ export default function Checkout({
   const {data:session} = useSession(); 
   console.log(session?.user)
   
-  const fleetSum = items?.reduce((sum, item) => sum + (item.estimated_fleet || 0), 0);
-  const rentsSum = items?.reduce((sum, item) => sum + (item.estimated_rent || 0), 0);
-  const totalSum = items?.reduce((sum, item) => sum + (item.total_estimated || 0), 0);
-    
-  const machinesItems = items ? items?.map((item) => ({
-    id: item.product_id || Math.random().toString(36).substr(2, 9),
-    name: item.product_name,
-    price: item.estimated_rent,
-    quantity: item.requested_quantity,
-  })): [];
-      
   const [getCheckSummary, setGetCheckSummary] = useState<CheckoutSummaryProps>({
-    amount: totalSum || 0,
+    amount: 0,
     currency: 'mxn',
     user_id: (session?.user && 'user_id' in session.user) ? parseInt((session.user as any).user_id) : null,
     preorder_id: preorder_id || '',
