@@ -71,6 +71,7 @@ export interface OrderProp {
   ui_notice?: string | null;
   items: ItemProps[];
   contract_total?: number; 
+  estimated_rent: number;
 }
 
 export interface CheckoutProps {

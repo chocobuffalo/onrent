@@ -101,7 +101,7 @@ export default function CheckoutSummary({
         <div className="flex justify-between items-center">
           <span className="text-gray-600 text-base lato-font">Renta de Maquinaria:</span>
           <span className="text-gray-900 text-base font-light lato-font">
-            {(item.estimated_rent || 0).toLocaleString('es-MX')}$MXN
+            {(order?.estimated_rent || 0).toLocaleString('es-MX')}$MXN
           </span>
         </div>
 
