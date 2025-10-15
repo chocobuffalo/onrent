@@ -346,8 +346,10 @@ export const BookingForm = ({
       >
         <h4 className="font-medium text-sm mb-2">Detalles del precio</h4>
 
-        <div className="flex items-center justify-between gap-3 mb-2">
-          <div className="flex items-center space-x-2">
+        {/* Sección mejorada para responsive */}
+        <div className="space-y-3 mb-2">
+          {/* Fila 1: Contador y nombre de máquina */}
+          <div className="flex items-center gap-2">
             <AddFormItems
               name="quantity"
               increment={increment}
@@ -356,15 +358,16 @@ export const BookingForm = ({
               disableTop={disableTop}
               disableBottom={disableBottom}
             />
-            <span className="text-sm font-semibold ml-2">{machine?.name}</span>
+            <span className="text-sm font-semibold flex-1 truncate">{machine?.name}</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Fila 2: Botones - responsive */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
             <button
               type="button"
               onClick={handleAddItem}
               disabled={!canAddItem}
-              className="px-6 py-2 bg-white border-2 border-secondary text-secondary rounded-sm font-semibold hover:bg-secondary hover:text-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="w-full sm:w-auto sm:flex-1 px-4 py-2.5 bg-white border-2 border-secondary text-secondary rounded-sm font-semibold hover:bg-secondary hover:text-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               agregar
             </button>
@@ -373,10 +376,11 @@ export const BookingForm = ({
               <button
                 type="button"
                 onClick={() => setShowCatalogModal(true)}
-                className="px-4 py-2 bg-white border-2 border-orange-500 text-orange-500 rounded-sm font-semibold hover:bg-orange-500 hover:text-white transition-colors duration-300 text-sm flex items-center gap-1"
+                className="w-full sm:w-auto sm:flex-1 px-4 py-2.5 bg-white border-2 border-orange-500 text-orange-500 rounded-sm font-semibold hover:bg-orange-500 hover:text-white transition-colors duration-300 text-sm flex items-center justify-center gap-1 whitespace-nowrap"
               >
                 <span className="text-lg">+</span>
-                Agregar desde catálogo
+                <span className="hidden sm:inline">Agregar desde catálogo</span>
+                <span className="sm:hidden">Agregar desde catálogo</span>
               </button>
             )}
           </div>

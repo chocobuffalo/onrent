@@ -39,9 +39,37 @@ export const AddedItemsList = ({
         {items.map((item) => (
           <div 
             key={item.id} 
-            className="bg-white border border-gray-200 rounded-lg p-3 flex items-start justify-between gap-3"
+            className="relative bg-white border border-gray-200 rounded-lg p-3"
           >
-            <div className="flex-1">
+            {/* Botón de eliminar - POSICIÓN CORREGIDA */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Eliminando item con ID:", item.id);
+                onRemove(item.id);
+              }}
+              className="absolute top-2 right-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1.5 transition-colors z-10"
+              title="Eliminar item"
+            >
+              <svg 
+                className="w-5 h-5" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth="2" 
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            {/* Contenido con padding-right para evitar overlap con la X */}
+            <div className="pr-10">
               <p className="font-semibold text-sm text-gray-900">
                 {item.machineName}
               </p>
@@ -91,32 +119,6 @@ export const AddedItemsList = ({
                 {item.totalPrice.toLocaleString('es-ES')} {currency.code}
               </p>
             </div>
-            
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log("Eliminando item con ID:", item.id);
-                onRemove(item.id);
-              }}
-              className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1.5 transition-colors"
-              title="Eliminar item"
-            >
-              <svg 
-                className="w-5 h-5" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth="2" 
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
           </div>
         ))}
       </div>
