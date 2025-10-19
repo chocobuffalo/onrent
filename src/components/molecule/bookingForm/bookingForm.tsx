@@ -87,7 +87,8 @@ export const BookingForm = ({
 
     const { count, increment, decrement, disableTop, disableBottom } = useAddFormItems();
     const { createPreorder, loading, error } = useBookingPreorder();
-    const { toastSuccessAction, toastError, toastWarning } = useToast();
+    // ✅ AGREGADO: toastSuccess para notificaciones simples
+    const { toastSuccess, toastSuccessAction, toastError, toastWarning } = useToast();
     const { data: session, status } = useSession();
     const nextRouter = useNextRouter();
 
@@ -100,7 +101,7 @@ export const BookingForm = ({
         console.log("🔄 Fechas o cantidad cambiaron:", { startDate, endDate, count });
         
         if (startDate && endDate) {
-            const calculatedDays = countDays(startDate, endDate) + 1;
+            const calculatedDays = countDays(startDate, endDate);
             const calculatedPrice = unitPrice * count;
             const calculatedTotal = calculatedPrice * calculatedDays;
             setDayLength(calculatedDays);
@@ -179,7 +180,8 @@ export const BookingForm = ({
 
         console.log("Item agregado:", newItem);
         dispatch(addItemToBooking(newItem));
-        toastSuccessAction("Item agregado correctamente", () => {});
+        // ✅ CAMBIO: Usar toastSuccess en lugar de toastSuccessAction
+        toastSuccess("Item agregado correctamente");
     };
 
     const handleAddMachineFromCatalog = (selectedMachine: any) => {
@@ -187,7 +189,7 @@ export const BookingForm = ({
             || parseFloat(selectedMachine.price) 
             || 0;
         
-        const dayLength = countDays(bookingSession.startDate!, bookingSession.endDate!) + 1;
+        const dayLength = countDays(bookingSession.startDate!, bookingSession.endDate!);
         
         const existingItem = bookingItems.find(
             item => item.machineId === selectedMachine.id && 
@@ -201,7 +203,8 @@ export const BookingForm = ({
                 machineId: selectedMachine.id,
                 quantityToAdd: 1
             }));
-            toastSuccessAction(`Cantidad de ${selectedMachine.name} incrementada`, () => {});
+            // ✅ CAMBIO: Usar toastSuccess en lugar de toastSuccessAction
+            toastSuccess(`Cantidad de ${selectedMachine.name} incrementada`);
         } else {
             const totalPrice = unitPrice * dayLength;
             
@@ -222,7 +225,8 @@ export const BookingForm = ({
 
             console.log("🆕 Creando nuevo item:", newItem);
             dispatch(addItemToBooking(newItem));
-            toastSuccessAction(`${selectedMachine.name} agregado`, () => {});
+            // ✅ CAMBIO: Usar toastSuccess en lugar de toastSuccessAction
+            toastSuccess(`${selectedMachine.name} agregado`);
         }
         
         setShowCatalogModal(false);
@@ -317,6 +321,7 @@ export const BookingForm = ({
                     localStorage.removeItem("booking_session");
                     localStorage.removeItem("booking_items");
                 }
+                // ✅ MANTENER toastSuccessAction aquí porque necesita redirigir
                 toastSuccessAction(
                     "¡Preorden creada exitosamente! Redirigiendo...",
                     () => {

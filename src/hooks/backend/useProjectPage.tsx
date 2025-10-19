@@ -20,52 +20,41 @@ export default function useProjectPage(){
     const [projects, setProjects] = useState([]);
     const [error, setError] = useState<string | null>(null);
     const [searchValue, setSearchValue] = useState('');
-
-
-
      
-      const getProjectList = useCallback(()=>{
-          setIsLoading(true);
-          getProjects(session?.user?.access_token || "").then((data)=>{
-             console.log(data)
-             //añadir a cada objeto un campo actions con los botones de editar y eliminar
-             data.forEach((item:any)=>{
-                item.actions = (
-                    <div>
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="text-blue-500 hover:underline mr-2 p-2"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => confirmAndDelete(item)}
-                        className="text-red-500 hover:underline p-2"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  )
-             })
-              setProjects(data || []);
-              setIsLoading(false);
-          })
-      },[session])
-
+    const getProjectList = useCallback(()=>{
+        setIsLoading(true);
+        getProjects(session?.user?.access_token || "").then((data)=>{
+           console.log(data)
+           //añadir a cada objeto un campo actions con el botón de editar
+           data.forEach((item:any)=>{
+              item.actions = (
+                  <div>
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="text-blue-500 hover:underline mr-2 p-2"
+                    >
+                      Editar
+                    </button>
+                  </div>
+                )
+           })
+            setProjects(data || []);
+            setIsLoading(false);
+        })
+    },[session])
 
     useEffect(()=>{
         getProjectList();
-       
     },[session]);
-
 
     // Estado para detectar cuando se acaba de crear exitosamente
     const [wasCreatedSuccessfully, setWasCreatedSuccessfully] = useState(false);
+    
     const handleCloseCreateModal = () => {
         setOpenModal(false);
     };
       
-      // Función para editar
+    // Función para editar
     const handleEdit = (item: any): void => {
         if (active) {
           dispatch(toggleModal());
@@ -84,10 +73,6 @@ export default function useProjectPage(){
         //aqui procedemos a recargar la lista de proyectos
         getProjectList();
     }
-
-    const confirmAndDelete = (item:any)=>{}
-
-    
 
     const handleAddProject = () => {
         setShowEditModal(false);
@@ -108,25 +93,17 @@ export default function useProjectPage(){
               >
                 Editar
               </button>
-              <button
-                onClick={() => confirmAndDelete(row.original)}
-                className="text-red-500 hover:underline"
-              >
-                Eliminar
-              </button>
             </div>
           )}
     ];
-
-
-
 
     return{
     createModalOpen: openModal,
     projects,
     handleAddProject,
     columns,
-    projectID, setProjectID,
+    projectID, 
+    setProjectID,
     isLoading,
     closeProjectForm,
     handleCloseCreateModal

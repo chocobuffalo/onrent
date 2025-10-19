@@ -70,7 +70,8 @@ const FilterComponent = forwardRef<FilterComponentHandle, Props>(({ initialSearc
         <h3 className="Arrendamiento text-[16px] font-bold text-center">
           Tiempo de Arrendamiento
         </h3>
-        <DateRentInput />
+    {/* AGREGAR showProjectSection={false} --Se crea porque se pidio que desde la página de catalogo no se debe ver el componente de crear proyecto*/}
+     <DateRentInput showProjectSection={false} />
       </div>
     </form>
   );

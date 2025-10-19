@@ -3,6 +3,7 @@ import useDateRange from "@/hooks/frontend/buyProcess/usaDateRange";
 import { useRouter, useParams } from "next/navigation";
 import { fixDate } from "@/utils/compareDate";
 
+
 interface DateRentInputProps {
     grid?: boolean;
     projectName?: string;
@@ -16,7 +17,9 @@ interface DateRentInputProps {
     onProjectSelect?: (value: any) => void;
     loadingProject?: boolean;
     DropdownComponent?: React.ComponentType<any>;
+    showProjectSection?: boolean; // ✅ NUEVA PROP
 }
+
 
 export default function DateRentInput({
     grid,
@@ -30,13 +33,16 @@ export default function DateRentInput({
     projects,
     onProjectSelect,
     loadingProject = false,
-    DropdownComponent
+    DropdownComponent,
+    showProjectSection = true, // ✅ Por defecto TRUE para mantener comportamiento existente
 }: DateRentInputProps) {
     const router = useRouter();
     const params = useParams();
 
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
 
     const handleCreateProject = () => {
         const machineId = params.id;
@@ -45,7 +51,9 @@ export default function DateRentInput({
         router.push(`/nuevo-proyecto?machineId=${machineId}&machinetype=${machinetype}`);
     };
 
+
     const {startDate, endDate, handleStartDateChange, handleEndDateChange, needProject} = useDateRange();
+
 
     const fixedStartDate = typeof fixDate(startDate) === "object" ? fixDate(startDate) : undefined;
     
@@ -58,6 +66,7 @@ export default function DateRentInput({
         );
         minDateForEnd.setHours(0, 0, 0, 0);
     }
+
 
     return (
         <div className="date-container w-full flex flex-col gap-3.5 items-end">
@@ -81,7 +90,8 @@ export default function DateRentInput({
             
             </div>
 
-            {needProject && (
+            {/* ✅ MODIFICACIÓN: Agregada condición showProjectSection */}
+            {needProject && showProjectSection && (
                 <div className="w-full flex flex-col gap-3.5">
                     <div className={`w-full gap-3 flex ${grid ? "flex-col lg:flex-row" : "flex-col"}`}>
                         {/* Input de nombre del proyecto */}

@@ -47,8 +47,9 @@ export default function SpecsDetail({specsMachinary}:{specsMachinary:SpecsInterf
                     <p>Ancho: {width_m} Metros</p>
                 </div>
             }
+            {/* ✅ Convertir seats a número y validar si es mayor a 0 */}
             {
-                seats && 
+                (seats != null && Number(seats) > 0) && 
                 <div className="py-3 flex items-center justify-start gap-3 ">
                     <Image src="/icons/specs/seat.svg" alt="Asientos" width={30} height={30} className="w-[44px]"/>  
                     <p>Asientos: {seats}</p>
