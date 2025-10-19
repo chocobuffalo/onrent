@@ -21,7 +21,7 @@ export default function SubmitSection({
       
       {!hasItems && (
         <p className="text-xs text-gray-500 text-center mt-2">
-          Haz clic en 'agregar' para comenzar tu reserva
+          Haz clic en &quot;agregar&quot; para comenzar tu reserva
         </p>
       )}
 

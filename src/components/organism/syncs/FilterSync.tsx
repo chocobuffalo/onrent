@@ -21,7 +21,7 @@ export default function FilterSync() {
     if (typeof window !== "undefined") {
       const storageFilters = localStorage.getItem("filters");
       if (storageFilters) {
-        const { location, userID, type, startDate, endDate, rangePrice , needProject} =
+        const { location, userID, type, startDate, endDate, rangePrice, needProject } =
           JSON.parse(storageFilters);
         if (location) dispatch(setLocation(location));
         if (userID) dispatch(setUserID(userID));
