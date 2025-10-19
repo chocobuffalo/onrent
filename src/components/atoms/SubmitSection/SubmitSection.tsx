@@ -1,5 +1,3 @@
-// src/components/atoms/SubmitSection/SubmitSection.tsx
-
 interface SubmitSectionProps {
   loading: boolean;
   error: string | null;
@@ -23,7 +21,7 @@ export default function SubmitSection({
       
       {!hasItems && (
         <p className="text-xs text-gray-500 text-center mt-2">
-          Agrega al menos un item para poder reservar
+          Haz clic en &quot;agregar&quot; para comenzar tu reserva
         </p>
       )}
 

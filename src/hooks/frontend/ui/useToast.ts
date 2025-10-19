@@ -1,14 +1,13 @@
-// src/hooks/frontend/ui/useToast.ts
 import { toast } from "react-toastify";
 
 export function useToast() {
   const toastSuccess = (message: string) => {
     toast.success(message, {
       position: "top-right",
-      autoClose: 5000,
+      autoClose: 2000, // ✅ CAMBIO: De 5000 a 2000 (2 segundos)
       hideProgressBar: false,
       closeOnClick: true,
-      pauseOnHover: true,
+      pauseOnHover: false, // ✅ CAMBIO: De true a false para que se cierre automático
       draggable: true,
       toastId: "success-toast",
     });
@@ -49,20 +48,20 @@ export function useToast() {
       toastId: "warning-toast",
     });
   };
+  
   const toastSuccessAction = (message:string,action:()=>void)=>{
     toast.success(message, {
       position: "top-right",
-      autoClose: 5000,
+      autoClose: 3000, // ✅ CAMBIO: De 5000 a 3000 (3 segundos antes de redirigir)
       hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
+      closeOnClick: false, // ✅ CAMBIO: No permitir cerrar con click para que complete la redirección
+      pauseOnHover: false, // ✅ CAMBIO: De true a false
+      draggable: false, // ✅ CAMBIO: De true a false
       toastId: "success-action-toast",
       onClose: action
     });
   }
 
-  // Toast específico para notificaciones críticas como expiración de sesión
   const toastCritical = (message: string) => {
     toast.warning(message, {
       position: "top-center",
@@ -80,6 +79,7 @@ export function useToast() {
       }
     });
   };
+  
   const toastCriticalAction = (message: string,action:()=>void) => {
     toast.warning(message, {
       position: "top-right",

@@ -1,10 +1,9 @@
-// src/components/organism/AddMoreMachinesModal/AddMoreMachinesModal.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useUIAppSelector } from '@/libs/redux/hooks';
-import { FiX, FiSearch, FiCalendar, FiMapPin } from 'react-icons/fi';
+import { FiX, FiSearch, FiMapPin } from 'react-icons/fi';
 import Catalogue from '@/components/organism/Catalogue/CatalogueContainer';
 
 interface AddMoreMachinesModalProps {
@@ -34,22 +33,13 @@ export const AddMoreMachinesModal = ({
 
     if (!isOpen) return null;
 
-    const formatDate = (dateStr: string | null) => {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('es-ES', { 
-            day: '2-digit', 
-            month: 'short', 
-            year: 'numeric' 
-        });
-    };
-
     const modalContent = (
         <div className="fixed inset-0 z-50 flex items-start lg:items-center justify-center bg-black bg-opacity-50 pt-16 lg:pt-0 overflow-x-hidden overflow-y-auto">
-            <div className="bg-white w-full max-w-full lg:max-w-6xl h-auto lg:rounded-lg lg:max-h-[90vh] flex flex-col shadow-xl mx-0 lg:mx-4">
+            {/* ✅ Contenedor con margin-top en móviles para bajar todo el contenido */}
+            <div className="bg-white w-full max-w-full lg:max-w-6xl h-auto lg:rounded-lg lg:max-h-[90vh] flex flex-col shadow-xl mx-0 lg:mx-4 mt-4 sm:mt-0">
                 
-                {/* Header - Completo y visible */}
-                <div className="flex-shrink-0 p-4 lg:p-6 border-b bg-white lg:rounded-t-lg">
+                {/* Header */}
+                <div className="flex-shrink-0 p-4 lg:p-6 lg:mt-8 border-b bg-white lg:rounded-t-lg">
                     <div className="flex justify-between items-start gap-3">
                         <div className="flex-1 min-w-0">
                             <h2 className="text-xs sm:text-sm lg:text-xl xl:text-2xl font-bold text-gray-900 mb-2 pt-2 lg:pt-0 leading-tight">
@@ -59,15 +49,7 @@ export const AddMoreMachinesModal = ({
                                 Selecciona otra máquina para agregar a tu reserva con las mismas condiciones
                             </p>
                             
-                            {/* Info de la sesión - Horizontal en tablet, Vertical en desktop */}
                             <div className="flex flex-col md:flex-row md:flex-wrap lg:flex-col gap-2 md:gap-x-4 md:gap-y-2 lg:gap-2 text-[10px] sm:text-xs md:text-sm lg:text-sm">
-                                <div className="flex items-center gap-2 text-gray-700">
-                                    <FiCalendar className="text-orange-500 flex-shrink-0" size={16} />
-                                    <span className="font-medium truncate">
-                                        {formatDate(bookingSession.startDate)} - {formatDate(bookingSession.endDate)}
-                                    </span>
-                                </div>
-                                
                                 {bookingSession.location?.address && (
                                     <div className="flex items-center gap-2 text-gray-700 min-w-0">
                                         <FiMapPin className="text-orange-500 flex-shrink-0" size={16} />
@@ -111,8 +93,8 @@ export const AddMoreMachinesModal = ({
                     </div>
                 </div>
 
-                {/* Catalogue Grid - Solo esta área hace scroll */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-6">
+                {/* Catalogue Grid - Con overflow-y-scroll */}
+                <div className="flex-1 overflow-y-scroll overflow-x-hidden p-4 lg:p-6">
                     <Catalogue 
                         searchValue={search}
                         selectionMode={true}

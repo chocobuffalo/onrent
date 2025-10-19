@@ -3,7 +3,6 @@ import DynamicTable from "@/components/atoms/DynamicTable/DynamicTable";
 import AddEnginery from "@/components/atoms/AddEnginery/AddEnginery";
 import MachineForm from "@/components/organism/machineForm/machineForm";
 import EditMachineForm from "@/components/organism/EditMachineForm/EditMachineForm";
-import ConfirmationModal from '@/components/organism/ConfirmationModal/ConfirmationModal';
 import useMachineTable from "@/hooks/frontend/ui/useMachineTable";
 
 export default function MachineTable() {
@@ -18,9 +17,6 @@ export default function MachineTable() {
     handleCloseCreateModal,
     handleCloseEditModal,
     handleEditFormSuccess,
-    
-    // Props del modal de confirmación
-    modalProps,
     
     // Datos y configuración de la tabla
     items,
@@ -86,9 +82,6 @@ export default function MachineTable() {
           </div>
         </div>
       )}
-      
-      {/* Modal de confirmación */}
-      <ConfirmationModal {...modalProps} />
     </div>
   );
 }

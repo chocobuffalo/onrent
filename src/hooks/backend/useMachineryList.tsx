@@ -11,7 +11,6 @@ import { useSession } from "next-auth/react";
 
 interface UseMachineryListProps {
   onEdit?: (item: MachineryResponse) => void;
-  onDelete?: (item: MachineryResponse) => void;
   onCreate?: (item: MachineryResponse) => void;
 }
 
@@ -65,10 +64,6 @@ export default function useMachineryList(props?: UseMachineryListProps) {
     props?.onCreate?.(newItem);
   }, [props?.onCreate]);
 
-  const removeFromLocalState = useCallback((item: MachineryResponse) => {
-    setMachineries(prev => prev.filter(machinery => machinery.id !== item.id));
-  }, []);
-
   const refreshList = useCallback(() => fetchMachineries(), [fetchMachineries]);
 
   const filteredMachineries = useMemo(() => {
@@ -119,13 +114,6 @@ export default function useMachineryList(props?: UseMachineryListProps) {
         if (props?.onEdit && item) props.onEdit(item);
       },
     },
-    {
-      label: "Eliminar",
-      className: "px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition-colors",
-      onClick: (item?: MachineryResponse) => {
-        if (item && props?.onDelete) props.onDelete(item);
-      },
-    },
   ];
 
   return {
@@ -138,7 +126,6 @@ export default function useMachineryList(props?: UseMachineryListProps) {
     onSearch: handleSearch,
     onAction: () => {},
     refreshList,
-    removeFromLocalState,
     handleCreate,
     totalMachineries: machineries.length,
     hasData: machineries.length > 0,

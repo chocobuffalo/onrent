@@ -35,39 +35,38 @@ export default function AuthSync() {
   const dispatch = useUIAppDispatch();
   const isLogin = useUIAppSelector((state) => state.auth.isLogin);
   const { data: session, status } = useSession();
-  const getMe = async (token:string)=>{
-    const user = await getUserMe(token)
-   // console.log(user," user en getMe AuthSync");
+  
+  const getMe = async (token: string) => {
+    const user = await getUserMe(token);
+    // console.log(user, " user en getMe AuthSync");
     dispatch(setLogin(true));
     dispatch(setName(user?.name || ""));
     dispatch(setEmail(user?.email || ""));
     dispatch(setAvatar(user?.image || "/user-circle.svg"));
     dispatch(setRole(user?.role || "cliente"));
     dispatch(setUserID(user?.user_id || ""));
-  }
+  };
+
   useEffect(() => {
-    //// console.log(session, "AuthSync session");
+    // console.log(session, "AuthSync session");
     if (session?.user && !isLogin) {
-     // console.log(session, "AuthSync session");
+      // console.log(session, "AuthSync session");
       const extendedSession = session as ExtendedSession;
       const user = extendedSession.user;
 
-
-      
       // CRÍTICO: Agregar sincronización del token
       const token = user?.token || extendedSession.accessToken || extendedSession.access_token || "";
-      //console.log(token," AuthSync token");
+      // console.log(token, " AuthSync token");
       
       if (token) {
         getMe(token);
-       //console.log(user,' user en AuthSync');
-       
+        // console.log(user, " user en AuthSync");
       }
       
       // console.log("AuthSync: Token sincronizado correctamente", {
       //   hasToken: !!token,
       //   userId: user?.user_id,
-      //   tokenSource: user?.token ? 'user.token' : extendedSession.accessToken ? 'accessToken' : 'access_token'
+      //   tokenSource: user?.token ? "user.token" : extendedSession.accessToken ? "accessToken" : "access_token"
       // });
     }
   }, [isLogin, status, session]);

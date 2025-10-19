@@ -257,11 +257,6 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                   <p className="text-xs text-gray-600 italic mt-1">
                     La máquina se entrega con el tanque lleno. Debe devolverse en las mismas condiciones.
                   </p>
-                  {currentMachine.pricing?.no_fuel_discount && (
-                    <p className="text-xs italic text-green-600 mt-1">
-                      -{currentMachine.pricing.no_fuel_discount}% si no incluye combustible
-                    </p>
-                  )}
                 </div>
               </div>
               <ToggleButton

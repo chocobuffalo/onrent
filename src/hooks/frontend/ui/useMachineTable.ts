@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useUIAppDispatch, useUIAppSelector } from "@/libs/redux/hooks";
 import { toggleModal } from "@/libs/redux/features/ui/modalSlicer";
 import useMachineryList from "@/hooks/backend/useMachineryList";
-import useDeleteMachinery from "@/hooks/frontend/ui/useDeleteMachinery";
 import { MachineryResponse } from "@/types/machinary";
 
 export default function useMachineTable() {
@@ -24,15 +23,8 @@ export default function useMachineTable() {
     setShowEditModal(true);
   };
   
-  const { confirmAndDelete, modalProps } = useDeleteMachinery({
-    onSuccess: async (deletedItem) => {
-      machineryData.removeFromLocalState(deletedItem);
-    }
-  });
-  
   const machineryData = useMachineryList({
-    onEdit: handleEdit,
-    onDelete: confirmAndDelete
+    onEdit: handleEdit
   });
 
   useEffect(() => {
@@ -95,8 +87,6 @@ export default function useMachineTable() {
     handleCloseCreateModal,
     handleCloseEditModal,
     handleEditFormSuccess,
-    
-    modalProps,
     
     items: machineryData.items,
     isLoading: machineryData.isLoading,

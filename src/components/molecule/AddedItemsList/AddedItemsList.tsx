@@ -1,4 +1,3 @@
-// src/components/molecule/AddedItemsList/AddedItemsList.tsx
 import { currency } from "@/constants";
 
 interface AddedItem {
