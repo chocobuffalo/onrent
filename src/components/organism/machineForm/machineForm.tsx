@@ -1,5 +1,4 @@
 "use client";
-import FileInput from "@/components/atoms/FileInput/FileInput";
 import Input from "@/components/atoms/Input/Input";
 import SelectInput from "@/components/atoms/selectInput/selectInput";
 import FilterInput from "@/components/atoms/filterInput/filterInput";
@@ -17,15 +16,26 @@ interface MachineFormProps {
 }
 
 const MachineForm = ({ onCreated }: MachineFormProps) => {
-
   const {
     register,
     handleSubmit,
     submit,
     errors,
     isLoading,
-    isValid,
+    locationError,
+    setLocationError,
+    watch,
   } = useMachineFormUI({ onCreated });
+
+  // Función que valida ubicación cuando se hace clic en el botón
+  const handleButtonClick = () => {
+    const locationValue = watch("location_info");
+    if (!locationValue || locationValue.trim() === '') {
+      setLocationError(true);
+    } else {
+      setLocationError(false);
+    }
+  };
 
   return (
     <form className="container" onSubmit={handleSubmit(submit)} noValidate>
@@ -95,16 +105,17 @@ const MachineForm = ({ onCreated }: MachineFormProps) => {
             <div className="form-group">
               <label className="form-label">Información de ubicación</label>
               <FilterInput checkpersist={false} name="location_info" />
-              {errors.location_info && (
-                <div className="invalid-feedback d-block">
-                  {errors.location_info?.message as string}
-                </div>
+              
+              <input type="hidden" {...register("location_info")} />
+              <input type="hidden" {...register("gps_lat")} />
+              <input type="hidden" {...register("gps_lng")} />
+              
+              {locationError && (
+                <span className="text-danger d-block mt-1">
+                  La información de ubicación es obligatoria
+                </span>
               )}
             </div>
-            
-            {/* Campos ocultos para GPS */}
-            <input type="hidden" {...register("gps_lat")} />
-            <input type="hidden" {...register("gps_lng")} />
           </div>
           <div className="col-md-6 col-lg-4">
             <SelectInput
@@ -184,24 +195,14 @@ const MachineForm = ({ onCreated }: MachineFormProps) => {
               errors={errors}
             />
           </div>
-          {/* se comenta este código porque en el momento, no se necesita ingresar imagen, se deja para que a futuro si se necesita, solo es descomentar */}
-          {/* 
-          <div className="col-12">
-            <FileInput
-              register={register}
-              name="image"
-              label="Imagen del equipo"
-              placeHolder="Subir imagen"
-            />
-          </div>
-          */}
         </div>
       </div>
       <div className="group-button-submit modal-footer left">
         <button
           className="pre-btn"
           type="submit"
-          disabled={!isValid || isLoading}
+          disabled={isLoading}
+          onClick={handleButtonClick}
         >
           {isLoading ? (
             <ImSpinner8

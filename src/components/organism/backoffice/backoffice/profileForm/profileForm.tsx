@@ -1,4 +1,3 @@
-// src/components/organism/profile/profileForm.tsx
 'use client';
 import { useState, useRef } from "react";
 import PersonalForm from "./personalForm";
@@ -169,59 +168,6 @@ export default function ProfileForm() {
                     </label>
                 </div>
             </div>
-            
-            {/* Checkbox para rentar maquinaria */}
-            <div style={{ paddingTop: '20px', paddingBottom: '20px', paddingLeft: '25px', marginBottom: '12px' }}>
-                <div className="flex items-center relative">
-                    <input
-                        type="checkbox"
-                        id="rentMachinery"
-                        checked={showRoleForm}
-                        onChange={handleCheckboxChange}
-                        style={{
-                            appearance: 'none',
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '4px',
-                            border: '2px solid #ff6b35',
-                            backgroundColor: showRoleForm ? '#ff6b35' : 'transparent',
-                            marginRight: '32px',
-                            cursor: 'pointer',
-                            flexShrink: 0
-                        }}
-                    />
-                    {showRoleForm && (
-                        <div style={{
-                            position: 'absolute',
-                            left: '6px',
-                            top: '2px',
-                            color: 'white',
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            pointerEvents: 'none'
-                        }}>
-                            ✓
-                        </div>
-                    )}
-                    <label 
-                        htmlFor="rentMachinery"
-                        style={{
-                            fontSize: '18px',
-                            fontWeight: '500',
-                            color: '#374151',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        ¿Te gustaría rentar tu maquinaria?
-                    </label>
-                </div>
-            </div>
-
-            {showRoleForm && (
-                <div className="tfcl-add-listing" ref={roleFormRef}>
-                    <RoleForm />
-                </div>
-            )}
         </div>
     );
 }

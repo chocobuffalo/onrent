@@ -1,7 +1,7 @@
-// src/components/organism/profile/personalForm.tsx
 import usePersonalForm from "@/hooks/backend/usePersonalForm";
 import { ImSpinner8 } from "react-icons/im";
-import { FaMapMarkerAlt, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
+import { FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 interface PersonalFormProps {
     showOperatorForm: boolean;
@@ -23,12 +23,58 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
         setSelectedRegion,
         hasChanges,
         locationStatus,
+        cityError,
+        setCityError,
     } = usePersonalForm({ showOperatorForm, onOperatorFormReset });
     
     return (
         <div className="">
             <h2 className="form-title mb-2">Información Personal</h2>
-            <form onSubmit={handleSubmit(onSubmit)} className="">
+            <form 
+                onSubmit={handleSubmit(
+                    (data) => {
+                        // Si llegó aquí, la validación de Yup pasó
+                        // Ahora validar ciudad manualmente
+                        if (!selectedRegion) {
+                            setCityError(true);
+                            toast.error('El campo ciudad es obligatorio');
+                            return;
+                        }
+                        setCityError(false);
+                        onSubmit(data);
+                    }, 
+                    (validationErrors) => {
+                        // Esta función se ejecuta cuando la validación de Yup falla
+                        const missingFields: string[] = [];
+                        
+                        if (validationErrors.fullName) {
+                            missingFields.push('nombre completo');
+                        }
+                        
+                        if (validationErrors.telephone) {
+                            missingFields.push('teléfono');
+                        }
+                        
+                        if (!selectedRegion) {
+                            setCityError(true);
+                            missingFields.push('ciudad');
+                        }
+                        
+                        if (missingFields.length > 0) {
+                            let errorMessage = '';
+                            if (missingFields.length === 1) {
+                                errorMessage = `El campo ${missingFields[0]} es obligatorio`;
+                            } else if (missingFields.length === 2) {
+                                errorMessage = `Los campos ${missingFields[0]} y ${missingFields[1]} son obligatorios`;
+                            } else {
+                                errorMessage = `Los campos ${missingFields[0]}, ${missingFields[1]} y ${missingFields[2]} son obligatorios`;
+                            }
+                            toast.error(errorMessage);
+                        }
+                    }
+                )} 
+                className=""
+            >
                 <div className="profile-personal">
                     <div className="row">
                         <div className="col-md-12">
@@ -80,37 +126,43 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                                         <span>Cargando regiones...</span>
                                     </div>
                                 ) : (
-                                    <select
-                                        className="form-control placeholder:text-gray-400"
-                                        value={selectedRegion || ""}
-                                        onChange={(e) => setSelectedRegion(e.target.value ? Number(e.target.value) : null)}
-                                        style={{ 
-                                            fontSize: '14px', 
-                                            color: selectedRegion ? '#212529' : '#6c757d',
-                                            borderRadius: '1rem',
-                                            padding: '0.75rem 0.90rem',
-                                            height: 'auto',
-                                            minHeight: '55px'
-                                        }}
-                                    >
-                                        <option value="" disabled style={{ color: '#6c757d' }}>Selecciona tu región</option>
-                                        {regions.map((region) => (
-                                            <option key={region.id} value={region.id} className="text-gray-900">
-                                                {region.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <>
+                                        <select
+                                            className="form-control placeholder:text-gray-400"
+                                            value={selectedRegion || ""}
+                                            onChange={(e) => {
+                                                setSelectedRegion(e.target.value ? Number(e.target.value) : null);
+                                                setCityError(false);
+                                            }}
+                                            style={{ 
+                                                fontSize: '14px', 
+                                                color: selectedRegion ? '#212529' : '#6c757d',
+                                                borderRadius: '1rem',
+                                                padding: '0.75rem 0.90rem',
+                                                height: 'auto',
+                                                minHeight: '55px'
+                                            }}
+                                        >
+                                            <option value="" disabled style={{ color: '#6c757d' }}>Selecciona tu región</option>
+                                            {regions.map((region) => (
+                                                <option key={region.id} value={region.id} className="text-gray-900">
+                                                    {region.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {cityError && (
+                                            <span className="text-danger">La ciudad es obligatoria</span>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Campos del operador - Se muestran condicionalmente */}
                     {showOperatorForm && (
                         <div className="mt-4">
                             <h2 className="form-title mb-2">Información de Operador</h2>
                             
-                            {/* 🆕 Indicador de ubicación GPS */}
                             <div className="mb-4">
                                 {locationStatus === 'loading' && (
                                     <div className="alert alert-info d-flex align-items-center" style={{ borderRadius: '0.5rem' }}>
@@ -252,7 +304,6 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                                     </div>
                                 </div>
                                 
-                                {/* 🆕 Campos GPS ocultos pero registrados */}
                                 <input {...register('gpsLat')} type="hidden" />
                                 <input {...register('gpsLng')} type="hidden" />
                             </div>
@@ -260,7 +311,7 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                     )}
 
                     <div className="group-button-submit left mb-0">
-                        <button className="pre-btn" type="submit" disabled={(!isValid && !hasChanges()) || isLoading}>
+                        <button className="pre-btn" type="submit" disabled={isLoading}>
                             {isLoading ? (
                                 <ImSpinner8 color="#ffffff" size={20} className="animate-spin mx-auto" />
                             ) : (
