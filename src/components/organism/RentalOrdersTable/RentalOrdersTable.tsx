@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import RentalTable from "@/components/atoms/RentalTable/RentalTable";
 import OrderDetailModal from "@/components/organism/OrderDetailModal/OrderDetailModal";
 import ConfirmationModal from "@/components/organism/ConfirmationModal/ConfirmationModal";
@@ -28,6 +29,42 @@ const RentalOrdersTable = () => {
     handleCancelAction,
   } = useOrdersTable();
 
+  // Estado para rastrear órdenes confirmadas
+  const [confirmedOrders, setConfirmedOrders] = useState<Set<number | string>>(new Set());
+  const [currentAction, setCurrentAction] = useState<string | null>(null);
+  const [currentOrderId, setCurrentOrderId] = useState<number | string | null>(null);
+
+  // Interceptar los clics en los botones para guardar el tipo de acción
+  const enhancedActionButtons = actionButtons.map(button => ({
+    ...button,
+    onClick: (item: any) => {
+      setCurrentAction(button.label);
+      setCurrentOrderId(item.order_id || item.id);
+      button.onClick(item);
+    }
+  }));
+
+  // Manejar confirmación con lógica adicional
+  const handleEnhancedConfirmAction = async () => {
+    await handleConfirmAction();
+    
+    // Solo agregar a confirmedOrders si la acción era "Confirmar"
+    if (currentAction === 'Confirmar' && currentOrderId) {
+      setConfirmedOrders(prev => new Set(prev).add(currentOrderId));
+    }
+    
+    // Resetear el estado
+    setCurrentAction(null);
+    setCurrentOrderId(null);
+  };
+
+  // Manejar cancelación
+  const handleEnhancedCancelAction = () => {
+    handleCancelAction();
+    setCurrentAction(null);
+    setCurrentOrderId(null);
+  };
+
   return (
     <div className="orders-table-container p-6">
       <div className="orders-table-content">
@@ -41,9 +78,10 @@ const RentalOrdersTable = () => {
           statusField={statusField}
           statusOptions={statusOptions}
           statusColors={statusColors}
-          actionButtons={actionButtons}
+          actionButtons={enhancedActionButtons}
           onSearch={onSearch}
           onStatusChange={onStatusChange}
+          confirmedOrders={confirmedOrders}
         />
       </div>
 
@@ -65,8 +103,8 @@ const RentalOrdersTable = () => {
           cancelText="CANCELAR"
           variant={modalConfig.variant}
           loading={actionLoading}
-          onConfirm={handleConfirmAction}
-          onCancel={handleCancelAction}
+          onConfirm={handleEnhancedConfirmAction}
+          onCancel={handleEnhancedCancelAction}
         />
       )}
     </div>

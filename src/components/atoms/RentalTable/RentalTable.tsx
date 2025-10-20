@@ -20,6 +20,7 @@ const RentalTable: React.FC<DynamicTableProps> = ({
   actionButtons = [],
   onSearch,
   onStatusChange,
+  confirmedOrders = new Set(),
 }) => {
  
   const showEmptyState = error || (items.length === 0 && !isLoading);
@@ -35,6 +36,20 @@ const RentalTable: React.FC<DynamicTableProps> = ({
       return XCircle;
     }
     return Eye;
+  };
+
+  // Función para filtrar botones según si la orden fue confirmada
+  const getVisibleButtons = (item: any) => {
+    const orderId = item.order_id || item.id;
+    
+    // Si la orden fue confirmada, ocultar botones de Confirmar y Rechazar
+    if (confirmedOrders.has(orderId)) {
+      return actionButtons.filter(button => 
+        button.label !== 'Confirmar' && button.label !== 'Rechazar'
+      );
+    }
+    
+    return actionButtons;
   };
 
   return (
@@ -105,59 +120,64 @@ const RentalTable: React.FC<DynamicTableProps> = ({
               </tr>
             </thead>
             <tbody className="orders-table-body">
-              {items.map((item, itemIndex) => (
-                <tr key={item.id || item.order_id || itemIndex} className="orders-table-row">
-                  {columns.map((column) => (
-                    <td key={column.key} className="orders-table-cell">
-                      {column.render ? column.render(item[column.key], item) : (item[column.key] || 'N/A')}
-                    </td>
-                  ))}
-                  
-                  {statusField && (
-                    <td className="orders-table-cell orders-status-cell">
-                      <select
-                        value={item[statusField] || ''}
-                        onChange={(e) => onStatusChange && onStatusChange(item.id, e.target.value)}
-                        className={`orders-select ${statusColors[item[statusField]?.toLowerCase()?.trim()] || 'bg-white text-orange-500 border'}`}
-                      >
-                        {statusOptions.map((option) => (
-                          <option 
-                            key={option.value} 
-                            value={option.value}
-                          >
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                  )}
-
-                  {actionButtons.length > 0 && (
-                    <td className="orders-table-cell orders-actions-cell">
-                      <div className="orders-actions-container">
-                        {actionButtons.map((button, buttonIndex) => {
-                          const IconComponent = getButtonIcon(button.label);
-                          return (
-                            <button
-                              key={buttonIndex}
-                              onClick={() => {
-                                button.onClick(item);
-                              }}
-                              className={`orders-action-button ${button.className || ''}`}
-                              title={`${button.label} orden`}
+              {items.map((item, itemIndex) => {
+                const visibleButtons = getVisibleButtons(item);
+                
+                return (
+                  <tr key={item.id || item.order_id || itemIndex} className="orders-table-row">
+                    {columns.map((column) => (
+                      <td key={column.key} className="orders-table-cell">
+                        {column.render ? column.render(item[column.key], item) : (item[column.key] || 'N/A')}
+                      </td>
+                    ))}
+                    
+                    {statusField && (
+                      <td className="orders-table-cell orders-status-cell">
+                        <select
+                          value={item[statusField] || ''}
+                          onChange={(e) => onStatusChange && onStatusChange(item.id, e.target.value)}
+                          className={`orders-select ${statusColors[item[statusField]?.toLowerCase()?.trim()] || 'bg-white text-orange-500 border'}`}
+                        >
+                          {statusOptions.map((option) => (
+                            <option 
+                              key={option.value} 
+                              value={option.value}
                             >
-                              <IconComponent />
-                              <span className={`orders-button-text ${button.className?.includes('icon-only') ? 'sr-only' : ''}`}>
-                                {button.label}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                    )}
+
+                    {visibleButtons.length > 0 && (
+                      <td className="orders-table-cell orders-actions-cell">
+                        <div className="orders-actions-container">
+                          {visibleButtons.map((button, buttonIndex) => {
+                            const IconComponent = getButtonIcon(button.label);
+                            
+                            return (
+                              <button
+                                key={buttonIndex}
+                                onClick={() => {
+                                  button.onClick(item);
+                                }}
+                                className={`orders-action-button ${button.className || ''}`}
+                                title={`${button.label} orden`}
+                              >
+                                <IconComponent />
+                                <span className={`orders-button-text ${button.className?.includes('icon-only') ? 'sr-only' : ''}`}>
+                                  {button.label}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

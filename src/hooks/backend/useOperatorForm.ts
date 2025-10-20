@@ -12,9 +12,7 @@ import {
 } from "@/types/operator";
 import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
-import { LocationClient, SearchPlaceIndexForTextCommand } from "@aws-sdk/client-location";
 
-// 🔹 Esquema de validación con Yup
 const schema = Yup.object().shape({
   name: Yup.string().required("El nombre es requerido"),
   email: Yup.string().email("Correo inválido").required("El correo es requerido"),
@@ -25,7 +23,7 @@ const schema = Yup.object().shape({
   curp: Yup.string().required("La CURP es requerida"),
   license: Yup.string().required("La licencia es requerida"),
   region_id: Yup.string().required("La región es requerida"),
-  address: Yup.string().required("La dirección es requerida"), 
+  address: Yup.string().required("La dirección es requerida"),
 });
 
 export default function useOperatorForm({ onCreated }: { onCreated?: () => void } = {}) {
@@ -33,10 +31,11 @@ export default function useOperatorForm({ onCreated }: { onCreated?: () => void 
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isValid },
   } = useForm<OperatorFormData>({
     resolver: yupResolver(schema) as any,
-    mode: "onBlur",
+    mode: "onChange", // ✅ Cambiar de "onBlur" a "onChange"
     defaultValues: {
       name: "",
       email: "",
@@ -50,23 +49,35 @@ export default function useOperatorForm({ onCreated }: { onCreated?: () => void 
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const session = useSession();
+  const { data: session, status } = useSession();
 
   const submit = async (data: OperatorFormData) => {
     console.log(">>> SUBMIT ejecutado con datos:", data);
+    console.log(">>> Estado de sesión:", status);
+    
+    if (status === "loading") {
+      toast.error("Cargando sesión, espera un momento...");
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      toast.error("No estás autenticado. Por favor, inicia sesión.");
+      return;
+    }
+
+    const token = (session as any)?.accessToken;
+    
+    if (!token) {
+      console.error("❌ Token no encontrado");
+      toast.error("No se encontró el token de autenticación. Por favor, inicia sesión nuevamente.");
+      return;
+    }
+
+    console.log("✅ Token encontrado:", token.substring(0, 20) + "...");
+
     setIsLoading(true);
+    
     try {
-      // 🔹 Resolver dirección con AWS Location Service
-      const client = new LocationClient({ region: "us-east-2" }); 
-      const command = new SearchPlaceIndexForTextCommand({
-        IndexName: "tu-place-index", 
-        Text: data.address,
-        MaxResults: 1,
-      });
-
-      const response = await client.send(command);
-      const coords = response.Results?.[0]?.Place?.Geometry?.Point;
-
       const operatorData: CreateOperatorRequest = {
         name: data.name.trim(),
         email: data.email.trim(),
@@ -76,14 +87,18 @@ export default function useOperatorForm({ onCreated }: { onCreated?: () => void 
         license: data.license.trim(),
         region_id: data.region_id,
         address: data.address.trim(),
-        gps_lng: coords?.[0] ?? null,
-        gps_lat: coords?.[1] ?? null,
+        gps_lng: null,
+        gps_lat: null,
       };
+
+      console.log(">>> Enviando datos al servicio:", operatorData);
 
       const result: CreateOperatorResponse = await createOperator(
         operatorData,
-        (session.data as (typeof session.data & { accessToken?: string }))?.accessToken || ""
+        token
       );
+
+      console.log(">>> Resultado del servicio:", result);
 
       if (result.success) {
         toast.success(`Operador "${data.name}" registrado exitosamente`);
@@ -91,10 +106,11 @@ export default function useOperatorForm({ onCreated }: { onCreated?: () => void 
         if (onCreated) onCreated();
       } else {
         toast.error(result.message || "Error al crear el operador");
+        console.error("Error del backend:", result);
       }
     } catch (error: any) {
-      console.error(error);
-      toast.error("Error al crear el operador. Inténtalo de nuevo.");
+      console.error("❌ Error completo:", error);
+      toast.error(error.message || "Error al crear el operador. Inténtalo de nuevo.");
     } finally {
       setIsLoading(false);
     }
@@ -107,5 +123,6 @@ export default function useOperatorForm({ onCreated }: { onCreated?: () => void 
     errors,
     isLoading,
     isValid,
+    setValue,
   };
 }
