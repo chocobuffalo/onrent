@@ -1,17 +1,12 @@
-
+// src/app/(backoffice)/dashboard/operator/page.tsx
 import { Metadata } from "next";
+import OperatorUI from "@/components/organism/OperatorUI/OperatorUI";
 
 export const metadata: Metadata = {
-  title: 'Operador',
-  description: 'Gestionar operadores',
-}
+  title: "Operadores",
+  description: "Gestiona tus operadores",
+};
 
-export default function Operator() {
-
-    return (
-    <div>
-    <h1>No tienes operadores para gestionar</h1>
-    </div>
-    )
-   
+export default function OperatorPage() {
+  return <OperatorUI />;
 }
