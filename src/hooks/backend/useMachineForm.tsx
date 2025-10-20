@@ -10,52 +10,49 @@ import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
 
 const schema = Yup.object().shape({
-  name: Yup.string().required("Nombre de la maquinaria es requerida"),
-  brand: Yup.string(),
-  model: Yup.string(),
-  serial_number: Yup.string().required("Número de serie es requerido"),
-  machine_type: Yup.string().required("Tipo de maquinaria es requerido"),
+  name: Yup.string().required("El nombre de la maquinaria es obligatorio"),
+  brand: Yup.string().required("La marca es obligatoria"),
+  model: Yup.string().required("El modelo es obligatorio"),
+  serial_number: Yup.string().required("El número de serie es obligatorio"),
+  machine_type: Yup.string().required("El tipo de maquinaria es obligatorio"),
   daily_rate: Yup.number()
-    .typeError("Debe ser un número")
-    .required("Tarifa diaria es requerida")
+    .required("La tarifa diaria es obligatoria")
+    .typeError("La tarifa diaria es obligatoria")
     .min(0, "La tarifa diaria no puede ser negativa"),
-  status: Yup.string().required("Estado de la maquinaria es requerido"),
-  location_info: Yup.string().required("Información de ubicación es requerida"),
+  status: Yup.string().required("El estado de la maquinaria es obligatorio"),
+  location_info: Yup.string(), // SIN required
   weight_tn: Yup.number()
-    .typeError("Debe ser un número")
+    .required("El peso es obligatorio")
+    .typeError("El peso es obligatorio")
     .min(0, "El peso no puede ser negativo")
-    .nullable()
     .transform((value, originalValue) => {
-      return originalValue === "" ? null : value;
+      return originalValue === "" ? undefined : value;
     }),
-  motor_spec: Yup.string(),
+  motor_spec: Yup.string().required("Las especificaciones del motor son obligatorias"),
   height_m: Yup.number()
-    .typeError("Debe ser un número")
+    .required("La altura es obligatoria")
+    .typeError("La altura es obligatoria")
     .min(0, "La altura no puede ser negativa")
-    .nullable()
     .transform((value, originalValue) => {
-      return originalValue === "" ? null : value;
+      return originalValue === "" ? undefined : value;
     }),
   width_m: Yup.number()
-    .typeError("Debe ser un número")
+    .required("La longitud es obligatoria")
+    .typeError("La longitud es obligatoria")
     .min(0, "El ancho no puede ser negativo")
-    .nullable()
     .transform((value, originalValue) => {
-      return originalValue === "" ? null : value;
+      return originalValue === "" ? undefined : value;
     }),
   seat_count: Yup.number()
-    .typeError("Debe ser un número")
+    .required("El número de asientos es obligatorio")
+    .typeError("El número de asientos es obligatorio")
     .min(0, "El número de asientos no puede ser negativo")
     .integer("El número de asientos debe ser un número entero")
-    .nullable()
     .transform((value, originalValue) => {
-      return originalValue === "" ? null : value;
+      return originalValue === "" ? undefined : value;
     }),
-  fuel_type: Yup.string().required("Tipo de combustible es requerido"),
-  machine_category: Yup.string().required(
-    "Categoría de maquinaria es requerida"
-  ),
-  // image: Yup.mixed<FileList>(), // TODO: Uncomment when image upload is implemented
+  fuel_type: Yup.string().required("El tipo de combustible es obligatorio"),
+  machine_category: Yup.string().required("La categoría de maquinaria es obligatoria"),
   gps_lat: Yup.number(),
   gps_lng: Yup.number(),
 });
@@ -70,7 +67,7 @@ export default function useMachineForm() {
     formState: { errors, isValid },
   } = useForm<MachineFormData>({
     resolver: yupResolver(schema) as any,
-    mode: "onBlur",
+    mode: "onChange",
     defaultValues: {
       name: "",
       brand: "",
@@ -89,14 +86,21 @@ export default function useMachineForm() {
       machine_category: "",
       gps_lat: undefined,
       gps_lng: undefined,
-      // image: undefined, // TODO: Uncomment when image upload is implemented
     }
   });
   
   const [isLoading, setIsLoading] = useState(false);
+  const [locationError, setLocationError] = useState(false);
   const session = useSession();
 
   const submit = async (data: MachineFormData) => {
+    // Validar ubicación manualmente
+    if (!data.location_info || data.location_info.trim() === '') {
+      setLocationError(true);
+      return;
+    }
+    setLocationError(false);
+
     setIsLoading(true);
     
     try {
@@ -126,6 +130,7 @@ export default function useMachineForm() {
       if (result.success) {
         toast.success(`Maquinaria "${data.name}" registrada exitosamente`);
         reset();
+        setLocationError(false);
       } else {
         toast.error(result.message || "Error al crear la maquinaria");
         throw new Error(result.message || "Error al crear la maquinaria");
@@ -147,5 +152,7 @@ export default function useMachineForm() {
     isValid,
     watch,
     setValue,
+    locationError,
+    setLocationError,
   };
 }

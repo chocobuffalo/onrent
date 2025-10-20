@@ -87,7 +87,7 @@ export const BookingForm = ({
 
     const { count, increment, decrement, disableTop, disableBottom } = useAddFormItems();
     const { createPreorder, loading, error } = useBookingPreorder();
-    // ✅ AGREGADO: toastSuccess para notificaciones simples
+ 
     const { toastSuccess, toastSuccessAction, toastError, toastWarning } = useToast();
     const { data: session, status } = useSession();
     const nextRouter = useNextRouter();
@@ -180,7 +180,6 @@ export const BookingForm = ({
 
         console.log("Item agregado:", newItem);
         dispatch(addItemToBooking(newItem));
-        // ✅ CAMBIO: Usar toastSuccess en lugar de toastSuccessAction
         toastSuccess("Item agregado correctamente");
     };
 
