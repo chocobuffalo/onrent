@@ -53,13 +53,13 @@ export default function useOperatorForm({ onCreated }: { onCreated?: () => void 
   const session = useSession();
 
   const submit = async (data: OperatorFormData) => {
-    console.log(">>> SUBMIT ejecutado con datos:", data);1
+    console.log(">>> SUBMIT ejecutado con datos:", data);
     setIsLoading(true);
     try {
       // 🔹 Resolver dirección con AWS Location Service
-      const client = new LocationClient({ region: "us-east-1" }); // ajusta región
+      const client = new LocationClient({ region: "us-east-2" }); 
       const command = new SearchPlaceIndexForTextCommand({
-        IndexName: "tu-place-index", // 👈 usa el nombre de tu Place Index en AWS
+        IndexName: "tu-place-index", 
         Text: data.address,
         MaxResults: 1,
       });
