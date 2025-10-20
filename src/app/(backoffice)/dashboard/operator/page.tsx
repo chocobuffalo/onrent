@@ -1,12 +1,11 @@
-// src/app/(backoffice)/dashboard/operator/page.tsx
-import { Metadata } from "next";
-import OperatorUI from "@/components/organism/OperatorUI/OperatorUI";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Operadores",
-  description: "Gestiona tus operadores",
-};
+import OperatorTable from "@/components/organism/OperatorTable/OperatorTable";
 
-export default function OperatorPage() {
-  return <OperatorUI />;
+export default function OperatorUI() {
+  return (
+    <div className="container mx-auto">
+      <OperatorTable />
+    </div>
+  );
 }

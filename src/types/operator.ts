@@ -1,3 +1,6 @@
+import { ReactNode } from "react";
+
+
 // ==========================
 // Datos básicos del operador
 // ==========================
@@ -87,6 +90,12 @@ export interface OperatorResponse {
   email: string;
   availability: "available" | "unavailable" | "busy";
   active: boolean;
+  address?: string; // ✅ Agregar si no existe
+  curp?: string;
+  license?: string;
+  region_id?: number;
+  gps_lat?: number | null;
+  gps_lng?: number | null;
 }
 
 export interface OperatorDetailResponse {
@@ -122,4 +131,16 @@ export type GetOperatorsResult = OperatorResponse[];
 
 export interface OperatorFormData extends BasicOperatorData, GeolocationData {
   address: string; // 👈 agregado
+}
+
+export interface TableColumn {
+  key: string;
+  label: string;
+  render?: (value: any, item: any) => ReactNode;
+}
+
+export interface ActionButton {
+  label: string;
+  className: string;
+  onClick: (item?: any) => void;
 }

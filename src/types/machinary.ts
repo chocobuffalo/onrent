@@ -160,4 +160,5 @@ export interface DynamicTableProps {
   onSearch?: (value: string) => void;
   onStatusChange?: (itemId: number | string, newStatus: string) => void;
   onAction?: (action: string, item: any) => void;
+  confirmedOrders?: Set<number | string>;
 }

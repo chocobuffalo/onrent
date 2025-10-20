@@ -1,122 +1,249 @@
 "use client";
 
-import { useState } from "react";
-import useOperatorTable from "@/hooks/backend/useOperatorTable";
-import { ImSpinner8 } from "react-icons/im";
+import DynamicTable from "@/components/atoms/DynamicTable/DynamicTable";
+import AddOperator from "@/components/atoms/AddOperator/AddOperator";
+import OperatorForm from "@/components/organism/OperatorForm/OperatorForm";
 import OperatorDetailModal from "@/components/organism/OperatorDetailModal/OperatorDetailModal";
-import updateOperator from "@/services/updateOperator.adapter";
-import deleteOperator from "@/services/deleteOperator.adapter";
+import EditOperatorForm from "@/components/organism/EditOperatorForm/EditOperatorForm";
+import useOperatorTableUI from "@/hooks/frontend/ui/useOperatorTableUI";
 
 export default function OperatorTable() {
-  const { operators, loading, error, refetch } = useOperatorTable();
-  const [selectedOperatorId, setSelectedOperatorId] = useState<number | null>(null);
-
-  // Cambiar estado activo/inactivo usando adapter
-  const toggleActive = async (id: number, isActive: boolean) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token no encontrado");
-
-      const result = await updateOperator(token, id, { id, active: !isActive });
-
-      if (!result.success) throw new Error(result.message || "Error al cambiar estado");
-
-      await refetch();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Eliminar operador usando adapter
-  const handleDelete = async (id: number) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token no encontrado");
-
-      const result = await deleteOperator(token, id);
-
-      if (!result.success) throw new Error(result.message || "Error al eliminar operador");
-
-      await refetch();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center py-6">
-        <ImSpinner8 className="animate-spin" size={24} />
-      </div>
-    );
-  }
-
-  if (error) {
-    return <p className="text-red-500">{error}</p>;
-  }
-
-  if (operators.length === 0) {
-    return <p className="text-gray-500">No hay operadores registrados</p>;
-  }
-
+  const {
+    createModalOpen,
+    detailModalOpen,
+    editModalOpen,
+    selectedOperator,
+    handleAddOperator,
+    handleCloseCreateModal,
+    handleCloseDetailModal,
+    handleCloseEditModal,
+    handleEditModalSuccess,
+    items,
+    isLoading,
+    error,
+    searchValue,
+    columns,
+    actionButtons,
+    onSearch,
+  } = useOperatorTableUI();
+  
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border border-gray-200 rounded-md">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-4 py-2 text-left">Nombre</th>
-            <th className="px-4 py-2 text-left">Correo</th>
-            <th className="px-4 py-2 text-left">Teléfono</th>
-            <th className="px-4 py-2 text-left">Disponibilidad</th>
-            <th className="px-4 py-2 text-left">Activo</th>
-            <th className="px-4 py-2 text-left">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {operators.map((op) => (
-            <tr key={op.operator_id} className="border-t">
-              <td className="px-4 py-2">{op.name}</td>
-              <td className="px-4 py-2">{op.email}</td>
-              <td className="px-4 py-2">{op.phone}</td>
-              <td className="px-4 py-2">{op.availability}</td>
-              <td className="px-4 py-2">{op.active ? "Sí" : "No"}</td>
-              <td className="px-4 py-2 space-x-2">
-                <button
-                  onClick={() => setSelectedOperatorId(op.operator_id)}
-                  className="text-blue-600 hover:underline"
-                >
-                  Ver
-                </button>
-                <button
-                  onClick={() => toggleActive(op.operator_id, op.active)}
-                  className={
-                    op.active
-                      ? "text-red-600 hover:underline"
-                      : "text-green-600 hover:underline"
-                  }
-                >
-                  {op.active ? "Desactivar" : "Activar"}
-                </button>
-                <button
-                  onClick={() => handleDelete(op.operator_id)}
-                  className="text-gray-600 hover:underline"
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <>
+      <style jsx global>{`
+        .modal-overlay,
+        .edit-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          backdrop-filter: blur(2px);
+        }
 
-      {/* Modal de detalle */}
-      {selectedOperatorId && (
-        <OperatorDetailModal
-          operatorId={selectedOperatorId}
-          onClose={() => setSelectedOperatorId(null)}
-          refetch={refetch}
-        />
-      )}
-    </div>
+        .modal-content,
+        .edit-modal-content {
+          background-color: white;
+          border-radius: 12px;
+          max-width: 90vw;
+          max-height: 90vh;
+          width: 800px;
+          overflow: hidden;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+          position: relative;
+          z-index: 10000;
+        }
+
+        .modal-header,
+        .edit-modal-header {
+          background-color: #13123D;
+          padding: 1.5rem 2rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .modal-header h2,
+        .edit-modal-header h2 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: white;
+          margin: 0;
+        }
+
+        .modal-close-btn,
+        .edit-modal-close-btn {
+          background: none;
+          border: none;
+          font-size: 2rem;
+          color: white;
+          cursor: pointer;
+          padding: 0.5rem;
+          border-radius: 6px;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .modal-close-btn:hover,
+        .edit-modal-close-btn:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+          max-height: calc(90vh - 250px);
+          overflow-y: auto;
+        }
+
+        /* Estilos para el footer y botón */
+        .modal-footer,
+        .group-button-submit {
+          padding: 1.5rem 2rem 2rem 2rem !important;
+          border-top: 1px solid #e5e7eb;
+          background-color: #fafafa;
+          margin: 0 !important;
+        }
+
+        .modal-footer.left {
+          display: flex;
+          justify-content: flex-start;
+        }
+
+        .group-button-submit .pre-btn {
+          background-color: #EA6300 !important;
+          color: white;
+          padding: 0.875rem 2.5rem;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          min-width: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: 0.5rem;
+        }
+
+        .group-button-submit .pre-btn:hover:not(:disabled) {
+          background-color: #D15700 !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(234, 99, 0, 0.4);
+        }
+
+        .group-button-submit .pre-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        /* Ajustar el contenedor del formulario */
+        .modal-body .container {
+          padding: 0 !important;
+        }
+
+        .modal-body .row {
+          margin: 0 !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .modal-content,
+          .edit-modal-content {
+            width: 95vw;
+            max-height: 95vh;
+          }
+
+          .modal-header,
+          .edit-modal-header {
+            padding: 1rem 1.5rem;
+          }
+
+          .modal-header h2,
+          .edit-modal-header h2 {
+            font-size: 1.25rem;
+          }
+
+          .modal-footer,
+          .group-button-submit {
+            padding: 1rem 1.5rem 1.5rem 1.5rem !important;
+          }
+
+          .group-button-submit .pre-btn {
+            width: 100%;
+            min-width: auto;
+            padding: 0.75rem 1.5rem;
+          }
+        }
+      `}</style>
+
+      <div className="machine-table-container p-6">
+        <div className="machine-table-header">
+          <div className="machine-table-add-button">
+            <AddOperator active={createModalOpen} func={handleAddOperator} />
+          </div>
+        </div>
+        <div className="machine-table-content">
+          <DynamicTable
+            title="Lista de Operadores"
+            items={items}
+            isLoading={isLoading}
+            error={error}
+            searchValue={searchValue}
+            columns={columns}
+            actionButtons={actionButtons}
+            onSearch={onSearch}
+          />
+        </div>
+        {createModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h2>NUEVO OPERADOR</h2>
+                <button 
+                  className="modal-close-btn"
+                  onClick={handleCloseCreateModal}
+                >
+                  ×
+                </button>
+              </div>
+              <OperatorForm onCreated={handleCloseCreateModal} />
+            </div>
+          </div>
+        )}
+        {editModalOpen && selectedOperator && (
+          <div className="edit-modal-overlay">
+            <div className="edit-modal-content">
+              <div className="edit-modal-header">
+                <h2>EDITAR OPERADOR</h2>
+                <button 
+                  className="edit-modal-close-btn"
+                  onClick={handleCloseEditModal}
+                >
+                  ×
+                </button>
+              </div>
+              <EditOperatorForm 
+                editData={selectedOperator}
+                onSuccess={handleEditModalSuccess}
+              />
+            </div>
+          </div>
+        )}
+        {detailModalOpen && selectedOperator && (
+          <OperatorDetailModal
+            operatorId={selectedOperator.operator_id}
+            onClose={handleCloseDetailModal}
+            refetch={async () => {}}
+          />
+        )}
+      </div>
+    </>
   );
 }
