@@ -14,46 +14,44 @@ export default function useMachineFormUI({ onCreated }: UseMachineFormUIProps = 
   
   const backendHook = useMachineForm();
 
-  // Sincronizar Redux con el formulario cuando cambie la ubicación
   useEffect(() => {
-    if (locationState) {
+    if (locationState && locationState.label) {
       backendHook.setValue("location_info", locationState.label);
       backendHook.setValue("gps_lat", locationState.lat);
       backendHook.setValue("gps_lng", locationState.lon);
+      backendHook.setLocationError(false);
+    } else {
+      backendHook.setValue("location_info", "");
+      backendHook.setValue("gps_lat", undefined);
+      backendHook.setValue("gps_lng", undefined);
     }
-  }, [locationState, backendHook.setValue]);
+  }, [locationState]);
 
-  // Handler que coordina submit backend + callbacks de UI
   const handleFormSubmit = async (data: any) => {
     try {
       await backendHook.submit(data);
       
-      // Solo si el servidor respondió exitosamente, ejecutar callback
       if (onCreated) {
         onCreated();
       }
       
       dispatch(toggleModal());
-      
-      // Disparar evento para actualizar MachineTable
       window.dispatchEvent(new CustomEvent('machineryCreated'));
       
     } catch (error) {
-      // NO cerrar modal ni ejecutar callback si hay error del servidor
-      // El modal permanece abierto para que el usuario pueda corregir
+      // Modal permanece abierto
     }
   };
 
   return {
-    // Exponer todo del hook backend
     register: backendHook.register,
     handleSubmit: backendHook.handleSubmit,
     errors: backendHook.errors,
     isLoading: backendHook.isLoading,
     isValid: backendHook.isValid,
     watch: backendHook.watch,
-    
-    // Sobrescribir submit con la versión que maneja UI
     submit: handleFormSubmit,
+    locationError: backendHook.locationError,
+    setLocationError: backendHook.setLocationError,
   };
 }

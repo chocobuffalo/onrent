@@ -25,7 +25,7 @@ const schema = Yup.object().shape({
   curp: Yup.string().required("La CURP es requerida"),
   license: Yup.string().required("La licencia es requerida"),
   region_id: Yup.string().required("La región es requerida"),
-  address: Yup.string().required("La dirección es requerida"), // 👈 requerido
+  address: Yup.string().required("La dirección es requerida"), 
 });
 
 export default function useOperatorForm({ onCreated }: { onCreated?: () => void } = {}) {
@@ -53,7 +53,7 @@ export default function useOperatorForm({ onCreated }: { onCreated?: () => void 
   const session = useSession();
 
   const submit = async (data: OperatorFormData) => {
-    console.log(">>> SUBMIT ejecutado con datos:", data);
+    console.log(">>> SUBMIT ejecutado con datos:", data);1
     setIsLoading(true);
     try {
       // 🔹 Resolver dirección con AWS Location Service

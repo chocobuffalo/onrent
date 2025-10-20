@@ -1,4 +1,3 @@
-// src/hooks/backend/usePersonalForm.ts
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -16,7 +15,6 @@ const schema = Yup.object({
   fullName: Yup.string().required("Nombres y apellidos son requeridos"),
   telephone: Yup.string().required("Teléfono es requerido"),
   regionId: Yup.number().nullable(),
-  // Campos del operador (condicionales)
   curp: Yup.string().when('$showOperator', {
     is: true,
     then: (schema) => schema.required("CURP es requerido").length(18, "CURP debe tener 18 caracteres"),
@@ -83,6 +81,7 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
   const [regions, setRegions] = useState<Region[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<number | null>(null);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [cityError, setCityError] = useState(false);
   const [initialValues, setInitialValues] = useState({
     fullName: "",
     telephone: "",
@@ -115,7 +114,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     context: { showOperator: showOperatorForm }
   });
 
-  // 🆕 Obtener ubicación automáticamente cuando se muestra el formulario de operador
   useEffect(() => {
     if (showOperatorForm && 'geolocation' in navigator) {
       setLocationStatus('loading');
@@ -136,7 +134,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
           console.error('❌ Error obteniendo ubicación:', error);
           setLocationStatus('error');
           
-          // Valores por defecto en caso de error
           setValue('gpsLat', 0);
           setValue('gpsLng', 0);
           
@@ -154,7 +151,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     }
   }, [showOperatorForm, setValue]);
 
-  // Función para sincronizar datos del perfil con el formulario
   const syncProfileToForm = (profileData: any) => {
     const fullName = profileData.name || "";
     const telephone = profileData.phone || "";
@@ -184,7 +180,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     setValue("gpsLng", gpsLng);
     setSelectedRegion(regionId);
     
-    // Actualizar valores iniciales para comparación
     setInitialValues({
       fullName,
       telephone,
@@ -201,19 +196,16 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
       gpsLng,
     });
 
-    // Actualizar Redux store
     dispatch(setName(fullName));
     dispatch(setPhone(telephone));
   };
 
-  // Cargar regiones y perfil del usuario
   useEffect(() => {
     const loadData = async () => {
       if (!session?.user?.access_token) return;
 
       setIsLoadingRegions(true);
       try {
-        // Cargar regiones
         const regionsResponse = await getRegionsList(session.user.access_token);
         if (regionsResponse.success && regionsResponse.data) {
           setRegions(regionsResponse.data);
@@ -221,7 +213,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
           toast.error(regionsResponse.message);
         }
 
-        // Cargar perfil completo del usuario
         const profileResponse = await getProfile(session.user.access_token);
         if (profileResponse) {
           syncProfileToForm(profileResponse);
@@ -248,7 +239,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
         telephone: data.telephone,
       };
 
-      // Solo agregar campos del operador si el checkbox está marcado
       if (showOperatorForm) {
         updateData.curp = data.curp;
         updateData.licenseNumber = data.licenseNumber;
@@ -265,7 +255,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
       const userProfile = await setProfileForm(updateData);
       console.log("Información actualizada:", userProfile);
 
-      // Actualizar región si cambió
       if (selectedRegion !== initialValues.regionId && selectedRegion !== null) {
         const regionResponse = await updateUserRegion(session.user.access_token, {
           regionId: selectedRegion
@@ -279,13 +268,11 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
         console.log("Región actualizada:", regionResponse);
       }
 
-      // Recargar perfil para mantener sincronización
       const updatedProfile = await getProfile(session.user.access_token);
       if (updatedProfile) {
         syncProfileToForm(updatedProfile);
       }
 
-      // Limpiar campos del operador si el checkbox estaba marcado
       if (showOperatorForm) {
         setValue("curp", "");
         setValue("licenseNumber", "");
@@ -299,7 +286,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
         setValue("gpsLng", 0);
         setLocationStatus('idle');
         
-        // Desmarcar el checkbox
         onOperatorFormReset();
       }
       
@@ -311,7 +297,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     }
   };
 
-  // Verificar si hay cambios pendientes
   const hasChanges = () => {
     const currentValues = {
       fullName: watch("fullName") || "",
@@ -345,6 +330,8 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     selectedRegion,
     setSelectedRegion,
     hasChanges,
-    locationStatus, // 🆕 Exportar el estado de la ubicación
+    locationStatus,
+    cityError,
+    setCityError,
   };
 }
