@@ -25,7 +25,7 @@ export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFo
     isLoading, 
     isValid, 
     setValue,
-    handleLocationChange, // ✅ Agregar este handler del hook UI
+    handleLocationChange,
   } = useEditOperatorFormUI({ editData, onSuccess });
 
   const [regions, setRegions] = useState<SelectInterface[]>([]);
@@ -67,7 +67,11 @@ export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFo
       setValue("name", editData.name || "");
       setValue("email", editData.email || "");
       setValue("phone", editData.phone || "");
-      // Si tienes más campos en editData, agrégalos aquí
+      setValue("curp", editData.curp || "");
+      setValue("license_number", editData.license_number || "");
+      setValue("license_type", editData.license_type || "");
+      setValue("region_id", editData.region_id ? String(editData.region_id) : "");
+      setValue("address", editData.address || "");
     }
   }, [editData, setValue]);
 
@@ -116,16 +120,36 @@ export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFo
               errors={errors}
             />
           </div>
+
+          {/* Número de licencia */}
           <div className="col-md-6 pb-3">
             <Input 
-              label="Licencia" 
+              label="Número de licencia" 
               type="text" 
-              name="license" 
+              name="license_number" 
               placeHolder="Número de licencia" 
               register={register} 
               errors={errors}
             />
           </div>
+
+          {/* Tipo de licencia */}
+          <div className="col-md-6 pb-3">
+            <SelectInput
+              options={[
+                { value: "A", label: "Tipo A", color: "#000000" },
+                { value: "B", label: "Tipo B", color: "#000000" },
+                { value: "C", label: "Tipo C", color: "#000000" },
+              ]}
+              label="Tipo de licencia"
+              name="license_type"
+              placeHolder="Selecciona tipo de licencia"
+              register={register}
+              errors={errors}
+            />
+          </div>
+
+          {/* Región */}
           <div className="col-md-6 pb-3">
             <SelectInput
               options={regions}
@@ -137,7 +161,7 @@ export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFo
             />
           </div>
 
-          {/* Dirección con autocompletado - CORREGIDO */}
+          {/* Dirección con autocompletado */}
           <div className="col-md-12 pb-3">
             <div className="form-group">
               <label className="form-label">Dirección</label>
