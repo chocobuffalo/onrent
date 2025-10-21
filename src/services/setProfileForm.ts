@@ -14,6 +14,7 @@ export default async function setProfileForm({
     availability,
     gpsLat,
     gpsLng,
+    compatibleMachinesIds, 
 }: {
     token: string;
     fullName?: string;
@@ -29,6 +30,7 @@ export default async function setProfileForm({
     availability?: string;
     gpsLat?: number;
     gpsLng?: number;
+    compatibleMachinesIds?: number[]; 
 }) {
     const body: any = {};
 
@@ -45,6 +47,9 @@ export default async function setProfileForm({
     if (availability) body.availability = availability;
     if (gpsLat !== undefined) body.gps_lat = gpsLat;
     if (gpsLng !== undefined) body.gps_lng = gpsLng;
+    if (compatibleMachinesIds && compatibleMachinesIds.length > 0) {
+        body.compatible_machines_ids = compatibleMachinesIds;
+    }
 
     const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/client/profile/update_profile`,
