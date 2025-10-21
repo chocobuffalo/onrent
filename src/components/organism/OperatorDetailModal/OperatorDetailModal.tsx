@@ -1,84 +1,252 @@
 "use client";
 
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import useOperatorDetail from "@/hooks/backend/useOperatorDetail";
-import updateOperator from "@/services/updateOperator.adapter";
+import { OperatorDetailResponse } from "@/types/operator";
+import "./OperatorDetailModal.scss";
+import { ImSpinner8 } from "react-icons/im";
 
 interface OperatorDetailModalProps {
   operatorId: number;
   onClose: () => void;
-  refetch?: () => Promise<void>; // 👈 sigue opcional
+  refetch?: () => Promise<void>;
 }
 
-export default function OperatorDetailModal({
+export default function OperatorDetailModal({ 
   operatorId,
   onClose,
-  refetch,
+  refetch 
 }: OperatorDetailModalProps) {
   const { operator, loading, error } = useOperatorDetail(operatorId);
 
-  const handleUpdate = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token no encontrado");
-
-      // 👇 usamos el adapter en lugar de fetch directo
-      const result = await updateOperator(token, operatorId, {
-        id: operatorId,
-        availability: "busy", // ejemplo: actualizar disponibilidad
-      });
-
-      if (!result.success) {
-        throw new Error(result.message || "Error al actualizar operador");
-      }
-
-      if (refetch) {
-        await refetch();
-      }
-
-      alert("Operador actualizado correctamente");
-      onClose();
-    } catch (err) {
-      console.error(err);
-      alert("Hubo un error al actualizar el operador");
+  useEffect(() => {
+    if (operatorId) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [operatorId]);
+
+  if (!operatorId || !operator) return null;
+
+  const formatAvailability = (availability: string) => {
+    const availabilityMap: { [key: string]: string } = {
+      'available': 'Disponible',
+      'unavailable': 'No disponible',
+      'busy': 'Ocupado'
+    };
+    return availabilityMap[availability] || availability;
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-        <h2 className="text-xl font-bold mb-4">Detalle del Operador</h2>
+  const formatExperienceLevel = (level: string) => {
+    const levelMap: { [key: string]: string } = {
+      'beginner': 'Principiante',
+      'intermediate': 'Intermedio',
+      'expert': 'Experto'
+    };
+    return levelMap[level] || level;
+  };
 
-        {loading && <p>Cargando...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-        {operator && (
-          <div className="space-y-2">
-            <p><strong>Nombre:</strong> {operator.name}</p>
-            <p><strong>Correo:</strong> {operator.email}</p>
-            <p><strong>Teléfono:</strong> {operator.phone}</p>
-            <p><strong>CURP:</strong> {operator.curp}</p>
-            <p><strong>Licencia:</strong> {operator.license_number} ({operator.license_type})</p>
-            <p><strong>Región:</strong> {operator.region_name}</p>
-            <p><strong>Disponibilidad:</strong> {operator.availability}</p>
-            <p><strong>Experiencia:</strong> {operator.experience_years} años ({operator.experience_level})</p>
-            <p><strong>Notas:</strong> {operator.notes}</p>
+  const getAvailabilityClass = (availability: string) => {
+    const classMap: { [key: string]: string } = {
+      'available': 'operator-detail-modal__status--available',
+      'unavailable': 'operator-detail-modal__status--unavailable',
+      'busy': 'operator-detail-modal__status--busy'
+    };
+    return `operator-detail-modal__status ${classMap[availability] || 'operator-detail-modal__status--unavailable'}`;
+  };
+
+  const modalContent = (
+    <div 
+      className="operator-detail-modal__overlay"
+      onClick={onClose}
+    >
+      <div 
+        className="operator-detail-modal__content"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="operator-detail-modal__header">
+          <div className="operator-detail-modal__header-info">
+            <h2>Detalle del Operador #{operator.operator_id}</h2>
           </div>
-        )}
-
-        <div className="mt-6 flex justify-end space-x-2">
-          <button
+          <button 
+            className="operator-detail-modal__header-close"
             onClick={onClose}
-            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+            aria-label="Cerrar modal"
           >
-            Cerrar
+            ×
           </button>
-          <button
-            onClick={handleUpdate}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Actualizar
-          </button>
+        </div>
+        
+        {/* Body */}
+        <div className="operator-detail-modal__body">
+          
+          {loading && (
+            <div className="flex justify-center items-center py-16">
+              <ImSpinner8 className="h-8 w-8 animate-spin text-[#EA6300]" />
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center py-8">
+              <p className="text-red-500">{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && operator && (
+            <>
+              {/* Información principal */}
+              <div className="operator-detail-modal__main-info">
+                <div className="operator-detail-modal__main-info-item">
+                  <div className="label">Nombre</div>
+                  <p className="value">{operator.name || 'No especificado'}</p>
+                </div>
+                <div className="operator-detail-modal__main-info-item">
+                  <div className="label">Disponibilidad</div>
+                  <span className={getAvailabilityClass(operator.availability)}>
+                    {formatAvailability(operator.availability)}
+                  </span>
+                </div>
+                <div className="operator-detail-modal__main-info-item">
+                  <div className="label">Estado</div>
+                  <span className={`operator-detail-modal__status ${
+                    operator.active 
+                      ? 'operator-detail-modal__status--active' 
+                      : 'operator-detail-modal__status--inactive'
+                  }`}>
+                    {operator.active ? 'Activo' : 'Inactivo'}
+                  </span>
+                </div>
+                <div className="operator-detail-modal__main-info-item">
+                  <div className="label">Experiencia</div>
+                  <p className="value value--large value--accent">
+                    {operator.experience_years || 0} años
+                  </p>
+                </div>
+              </div>
+
+              {/* Información Personal */}
+              <div className="operator-detail-modal__section">
+                <h3 className="operator-detail-modal__section-title">
+                  Información Personal
+                </h3>
+                <div className="operator-detail-modal__personal-info">
+                  <div className="operator-detail-modal__personal-info-grid">
+                    <div className="operator-detail-modal__personal-info-item">
+                      <div className="field-label">Correo</div>
+                      <p className="field-value">
+                        {operator.email || 'No especificado'}
+                      </p>
+                    </div>
+                    <div className="operator-detail-modal__personal-info-item">
+                      <div className="field-label">Teléfono</div>
+                      <p className="field-value">
+                        {operator.phone || 'No especificado'}
+                      </p>
+                    </div>
+                    <div className="operator-detail-modal__personal-info-item">
+                      <div className="field-label">CURP</div>
+                      <p className="field-value">
+                        {operator.curp || 'No especificado'}
+                      </p>
+                    </div>
+                    <div className="operator-detail-modal__personal-info-item">
+                      <div className="field-label">Región</div>
+                      <p className="field-value">
+                        {operator.region_name || 'No especificada'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Certificaciones y Licencias */}
+              <div className="operator-detail-modal__section">
+                <h3 className="operator-detail-modal__section-title">
+                  Certificaciones y Licencias
+                </h3>
+                <div className="operator-detail-modal__certifications-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Tipo de Licencia</th>
+                        <th>Número de Licencia</th>
+                        <th>Nivel de Experiencia</th>
+                        <th>Estado de Capacitación</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>{operator.license_type || 'No especificado'}</td>
+                        <td>{operator.license_number || 'No especificado'}</td>
+                        <td>{formatExperienceLevel(operator.experience_level || '')}</td>
+                        <td>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                            operator.training_status === 'completed' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {operator.training_status === 'completed' ? 'Completada' : 'Pendiente'}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Maquinaria Compatible */}
+              {operator.compatible_machines && operator.compatible_machines.length > 0 && (
+                <div className="operator-detail-modal__section">
+                  <h3 className="operator-detail-modal__section-title">
+                    Maquinaria Compatible
+                  </h3>
+                  <div className="operator-detail-modal__machines-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ID Maquinaria</th>
+                          <th>Nombre</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {operator.compatible_machines.map((machine, index) => (
+                          <tr key={machine.machine_id || index}>
+                            <td>{machine.machine_id}</td>
+                            <td>{machine.name}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Notas Adicionales */}
+              {operator.notes && (
+                <div className="operator-detail-modal__section">
+                  <h3 className="operator-detail-modal__section-title">
+                    Notas Adicionales
+                  </h3>
+                  <div className="operator-detail-modal__notes">
+                    <p>{operator.notes}</p>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' 
+    ? createPortal(modalContent, document.body)
+    : null;
 }

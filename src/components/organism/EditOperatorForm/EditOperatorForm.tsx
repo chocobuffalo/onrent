@@ -2,26 +2,36 @@
 
 import Input from "@/components/atoms/Input/Input";
 import SelectInput from "@/components/atoms/selectInput/selectInput";
-import FilterInput from "@/components/atoms/filterInput/filterInput";
+import EditFilterInput from "@/components/atoms/EditFilterInput/EditFilterInput";
 import { ImSpinner8 } from "react-icons/im";
-import useOperatorFormUI from "@/hooks/frontend/ui/useOperatorFormUI";
+import useEditOperatorFormUI from "@/hooks/frontend/ui/useEditOperatorFormUI";
 import { useEffect, useState } from "react";
 import { SelectInterface } from "@/types/iu";
 import { getRegionsList } from "@/services/getRegions";
 import { useSession } from "next-auth/react";
+import { OperatorResponse } from "@/types/operator";
 
-interface OperatorFormProps {
-  onCreated?: () => void; // ✅ Recibir callback del modal
+interface EditOperatorFormProps {
+  editData: OperatorResponse;
+  onSuccess?: () => Promise<void>;
 }
 
-export default function OperatorForm({ onCreated }: OperatorFormProps) {
-  const { register, handleSubmit, submit, errors, isLoading, isValid } =
-    useOperatorFormUI({ onCreated }); // ✅ Pasar callback al hook
+export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFormProps) {
+  const { 
+    register, 
+    handleSubmit, 
+    submit, 
+    errors, 
+    isLoading, 
+    isValid, 
+    setValue,
+    handleLocationChange, // ✅ Agregar este handler del hook UI
+  } = useEditOperatorFormUI({ editData, onSuccess });
 
   const [regions, setRegions] = useState<SelectInterface[]>([]);
   const { data: session } = useSession();
 
-  // 🔹 Cargar regiones desde el backend usando el adapter
+  // 🔹 Cargar regiones desde el backend
   useEffect(() => {
     const fetchRegions = async () => {
       try {
@@ -51,6 +61,16 @@ export default function OperatorForm({ onCreated }: OperatorFormProps) {
     fetchRegions();
   }, [session]);
 
+  // 🔹 Pre-cargar datos del operador en el formulario
+  useEffect(() => {
+    if (editData) {
+      setValue("name", editData.name || "");
+      setValue("email", editData.email || "");
+      setValue("phone", editData.phone || "");
+      // Si tienes más campos en editData, agrégalos aquí
+    }
+  }, [editData, setValue]);
+
   return (
     <form className="container" onSubmit={handleSubmit(submit)} noValidate>
       <div className="modal-body">
@@ -72,16 +92,6 @@ export default function OperatorForm({ onCreated }: OperatorFormProps) {
               type="email" 
               name="email" 
               placeHolder="Correo electrónico" 
-              register={register} 
-              errors={errors}
-            />
-          </div>
-          <div className="col-md-6 pb-3">
-            <Input 
-              label="Contraseña" 
-              type="password" 
-              name="password" 
-              placeHolder="Contraseña" 
               register={register} 
               errors={errors}
             />
@@ -127,22 +137,28 @@ export default function OperatorForm({ onCreated }: OperatorFormProps) {
             />
           </div>
 
-          {/* Dirección con autocompletado */}
+          {/* Dirección con autocompletado - CORREGIDO */}
           <div className="col-md-12 pb-3">
             <div className="form-group">
               <label className="form-label">Dirección</label>
-              <FilterInput checkpersist={false} name="address" />
-              
-              <input type="hidden" {...register("address")} />
-              <input type="hidden" {...register("gps_lat")} />
-              <input type="hidden" {...register("gps_lng")} />
-              
+              <EditFilterInput 
+                key={`location-${editData?.operator_id || 'new'}`}
+                initialValue={editData?.address || ""}
+                onChange={handleLocationChange}
+                error={errors.address?.message as string}
+                name="address"
+                placeholder="Indica tu dirección"
+              />
               {errors.address && (
                 <div className="invalid-feedback d-block">
                   {errors.address?.message as string}
                 </div>
               )}
             </div>
+            
+            {/* Campos ocultos para GPS */}
+            <input type="hidden" {...register("gps_lat")} />
+            <input type="hidden" {...register("gps_lng")} />
           </div>
         </div>
       </div>
@@ -152,7 +168,7 @@ export default function OperatorForm({ onCreated }: OperatorFormProps) {
           {isLoading ? (
             <ImSpinner8 color="#ffffff" size={20} className="animate-spin mx-auto"/>
           ) : (
-            <span>Añadir operador</span>
+            <span>Actualizar operador</span>
           )}
         </button>
       </div>

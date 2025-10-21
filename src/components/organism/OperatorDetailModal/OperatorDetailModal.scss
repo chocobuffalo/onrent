@@ -1,0 +1,351 @@
+$color-overlay: rgba(0, 0, 0, 0.4);
+$color-modal-bg: #ffffff;
+$color-header-bg: #ffffff;
+$color-text-primary: #1f2937;
+$color-text-secondary: #6b7280;
+$color-text-light: #9ca3af;
+$color-text-white: #ffffff;
+$color-text-header: #1f2937;
+$color-border: #e5e7eb;
+$color-border-light: #f3f4f6;
+$color-section-bg: #fafafa;
+$color-accent: #059669;
+$color-close-hover: #ef4444;
+
+$spacing-xs: 8px;
+$spacing-sm: 12px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin card-shadow {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+// Estilos principales del modal
+.operator-detail-modal {
+  
+  // Overlay del modal
+  &__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: $color-overlay;
+    @include flex-center;
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+  }
+
+  // Contenido del modal
+  &__content {
+    background-color: $color-modal-bg;
+    border-radius: 12px;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 1000px;
+    overflow: hidden;
+    position: relative;
+    @include card-shadow;
+    z-index: 10000;
+  }
+
+  &__header {
+    background-color: $color-header-bg;
+    padding: $spacing-lg $spacing-xl;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid $color-border; 
+
+    &-info {
+      h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: $color-text-header;
+        margin: 0 0 $spacing-xs 0;
+        letter-spacing: -0.025em;
+      }
+    }
+
+    &-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: $color-text-secondary;
+      cursor: pointer;
+      padding: $spacing-xs;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      width: 36px;
+      height: 36px;
+      @include flex-center;
+
+      &:hover {
+        color: $color-close-hover;
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+
+  &__body {
+    padding: $spacing-2xl;
+    overflow-y: auto;
+    max-height: calc(90vh - 140px);
+  }
+
+  &__main-info {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: $spacing-lg;
+    margin-bottom: $spacing-2xl;
+    padding: $spacing-xl;
+    background-color: $color-section-bg;
+    border-radius: 8px;
+    border: 1px solid $color-border-light;
+
+    &-item {
+      text-align: center;
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        right: -#{$spacing-sm};
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1px;
+        height: 60%;
+        background-color: $color-border;
+      }
+
+      &:last-child::after {
+        display: none;
+      }
+
+      .label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: $color-text-secondary;
+        margin-bottom: $spacing-sm;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: $color-text-primary;
+        margin: 0;
+
+        &--large {
+          font-size: 1.5rem;
+          font-weight: 700;
+        }
+
+        &--accent {
+          color: $color-accent;
+        }
+      }
+    }
+  }
+
+  &__status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    
+    &--available {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+
+    &--unavailable {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    &--busy {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    &--active {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+
+    &--inactive {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+  }
+
+  // Secciones
+  &__section {
+    margin-bottom: $spacing-2xl;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: $color-text-primary;
+      margin: 0 0 $spacing-lg 0;
+      padding-bottom: $spacing-sm;
+      border-bottom: 2px solid $color-border-light;
+    }
+  }
+
+  &__personal-info {
+    background-color: $color-section-bg;
+    border-radius: 8px;
+    padding: $spacing-xl;
+    border: 1px solid $color-border;
+
+    &-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $spacing-xl;
+    }
+
+    &-item {
+      .field-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: $color-text-secondary;
+        margin-bottom: $spacing-xs;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+      }
+
+      .field-value {
+        color: $color-text-primary;
+        font-size: 0.95rem;
+        margin: 0;
+        line-height: 1.5;
+      }
+    }
+  }
+
+  &__certifications-table,
+  &__machines-table {
+    background-color: $color-modal-bg;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid $color-border;
+    @include card-shadow;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background-color: $color-section-bg;
+    }
+
+    th {
+      padding: $spacing-lg $spacing-md;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: $color-text-primary;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    tbody {
+      background-color: $color-modal-bg;
+    }
+
+    td {
+      padding: $spacing-lg $spacing-md;
+      font-size: 0.9rem;
+      color: $color-text-primary;
+      border-bottom: 1px solid $color-border-light;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+  }
+
+  &__notes {
+    background-color: $color-section-bg;
+    border-radius: 8px;
+    padding: $spacing-xl;
+    border: 1px solid $color-border;
+
+    p {
+      color: $color-text-primary;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .operator-detail-modal {
+    &__content {
+      width: 95vw;
+      max-height: 95vh;
+    }
+
+    &__header {
+      padding: $spacing-lg;
+
+      &-info h2 {
+        font-size: 1.5rem;
+      }
+    }
+
+    &__body {
+      padding: $spacing-lg;
+    }
+
+    &__main-info {
+      grid-template-columns: repeat(2, 1fr);
+      gap: $spacing-lg;
+      padding: $spacing-lg;
+
+      &-item::after {
+        display: none;
+      }
+    }
+
+    &__personal-info {
+      &-grid {
+        grid-template-columns: 1fr;
+        gap: $spacing-lg;
+      }
+    }
+
+    &__certifications-table,
+    &__machines-table {
+      th, td {
+        padding: $spacing-sm;
+        font-size: 0.8rem;
+      }
+    }
+  }
+}
