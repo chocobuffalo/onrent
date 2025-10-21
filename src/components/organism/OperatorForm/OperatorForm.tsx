@@ -16,7 +16,7 @@ interface OperatorFormProps {
 
 export default function OperatorForm({ onCreated }: OperatorFormProps) {
   const { register, handleSubmit, submit, errors, isLoading, isValid } =
-    useOperatorFormUI({ onCreated }); // ✅ Pasar callback al hook
+    useOperatorFormUI({ onCreated });
 
   const [regions, setRegions] = useState<SelectInterface[]>([]);
   const { data: session } = useSession();
@@ -57,65 +57,86 @@ export default function OperatorForm({ onCreated }: OperatorFormProps) {
         <div className="row p-4">
           {/* Campos básicos */}
           <div className="col-md-6 pb-3">
-            <Input 
-              label="Nombre" 
-              type="text" 
-              name="name" 
-              placeHolder="Nombre del operador" 
-              register={register} 
+            <Input
+              label="Nombre"
+              type="text"
+              name="name"
+              placeHolder="Nombre del operador"
+              register={register}
               errors={errors}
             />
           </div>
+
           <div className="col-md-6 pb-3">
-            <Input 
-              label="Correo" 
-              type="email" 
-              name="email" 
-              placeHolder="Correo electrónico" 
-              register={register} 
+            <Input
+              label="Correo"
+              type="email"
+              name="email"
+              placeHolder="Correo electrónico"
+              register={register}
               errors={errors}
             />
           </div>
+
           <div className="col-md-6 pb-3">
-            <Input 
-              label="Contraseña" 
-              type="password" 
-              name="password" 
-              placeHolder="Contraseña" 
-              register={register} 
+            <Input
+              label="Contraseña"
+              type="password"
+              name="password"
+              placeHolder="Contraseña"
+              register={register}
               errors={errors}
             />
           </div>
+
           <div className="col-md-6 pb-3">
-            <Input 
-              label="Teléfono" 
-              type="text" 
-              name="phone" 
-              placeHolder="Teléfono" 
-              register={register} 
+            <Input
+              label="Teléfono"
+              type="text"
+              name="phone"
+              placeHolder="Teléfono"
+              register={register}
               errors={errors}
             />
           </div>
+
           <div className="col-md-6 pb-3">
-            <Input 
-              label="CURP" 
-              type="text" 
-              name="curp" 
-              placeHolder="CURP" 
-              register={register} 
+            <Input
+              label="CURP"
+              type="text"
+              name="curp"
+              placeHolder="CURP"
+              register={register}
               errors={errors}
             />
           </div>
+
           <div className="col-md-6 pb-3">
-            <Input 
-              label="Licencia" 
-              type="text" 
-              name="license" 
-              placeHolder="Número de licencia" 
-              register={register} 
+            <Input
+              label="Número de licencia"
+              type="text"
+              name="license_number"
+              placeHolder="Número de licencia"
+              register={register}
               errors={errors}
             />
           </div>
+
+          <div className="col-md-6 pb-3">
+            <SelectInput
+              options={[
+                { value: "A", label: "Tipo A" , color: "#000000" },
+                { value: "B", label: "Tipo B"  , color: "#000000" },
+                { value: "C", label: "Tipo C" , color: "#000000"  },
+              ]}
+              label="Tipo de licencia"
+              name="license_type"
+              placeHolder="Selecciona tipo de licencia"
+              register={register}
+              errors={errors}
+            />
+          </div>
+
           <div className="col-md-6 pb-3">
             <SelectInput
               options={regions}
@@ -132,11 +153,11 @@ export default function OperatorForm({ onCreated }: OperatorFormProps) {
             <div className="form-group">
               <label className="form-label">Dirección</label>
               <FilterInput checkpersist={false} name="address" />
-              
+
               <input type="hidden" {...register("address")} />
               <input type="hidden" {...register("gps_lat")} />
               <input type="hidden" {...register("gps_lng")} />
-              
+
               {errors.address && (
                 <div className="invalid-feedback d-block">
                   {errors.address?.message as string}
@@ -148,9 +169,17 @@ export default function OperatorForm({ onCreated }: OperatorFormProps) {
       </div>
 
       <div className="group-button-submit modal-footer left">
-        <button className="pre-btn" type="submit" disabled={!isValid || isLoading}>
+        <button
+          className="pre-btn"
+          type="submit"
+          disabled={!isValid || isLoading}
+        >
           {isLoading ? (
-            <ImSpinner8 color="#ffffff" size={20} className="animate-spin mx-auto"/>
+            <ImSpinner8
+              color="#ffffff"
+              size={20}
+              className="animate-spin mx-auto"
+            />
           ) : (
             <span>Añadir operador</span>
           )}

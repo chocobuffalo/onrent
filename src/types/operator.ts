@@ -10,7 +10,8 @@ export interface BasicOperatorData {
   password: string;
   phone: string;
   curp: string;
-  license: string;
+  license_number: string;
+  license_type: string; 
   region_id: string;
 }
 
@@ -27,7 +28,7 @@ export interface GeolocationData {
 // Requests
 // ==========================
 export interface CreateOperatorRequest extends BasicOperatorData, GeolocationData {
-  address: string; // 👈 agregado
+  address: string; 
 }
 
 export interface UpdateOperatorRequest extends Partial<BasicOperatorData> {
@@ -37,7 +38,7 @@ export interface UpdateOperatorRequest extends Partial<BasicOperatorData> {
   geospatial_status?: string;
   availability?: "available" | "unavailable" | "busy";
   active?: boolean;
-  address?: string; // 👈 agregado
+  address?: string; 
 }
 
 export interface DeleteOperatorRequest {
@@ -90,9 +91,10 @@ export interface OperatorResponse {
   email: string;
   availability: "available" | "unavailable" | "busy";
   active: boolean;
-  address?: string; // ✅ Agregar si no existe
+  address?: string; 
   curp?: string;
-  license?: string;
+  license_number?: string;
+  license_type?: string;
   region_id?: number;
   gps_lat?: number | null;
   gps_lng?: number | null;
@@ -130,7 +132,7 @@ export interface OperatorDetailResponse {
 export type GetOperatorsResult = OperatorResponse[];
 
 export interface OperatorFormData extends BasicOperatorData, GeolocationData {
-  address: string; // 👈 agregado
+  address: string; 
 }
 
 export interface TableColumn {
