@@ -32,6 +32,24 @@ export default function useOperatorList(props?: UseOperatorListProps) {
       setError(null);
       
       const data = await getOperators(token);
+      
+      // ✅ CONSOLE LOG PARA VER TODOS LOS OPERADORES Y SUS PROPIEDADES
+      console.log("📋 Lista completa de operadores:", data);
+      console.log("📊 Total de operadores:", data.length);
+      
+      // ✅ CONSOLE LOG DE CADA OPERADOR CON SU ID
+      data.forEach((operator, index) => {
+        console.log(`👤 Operador ${index + 1}:`, {
+          operator_id: operator.operator_id,
+          name: operator.name,
+          email: operator.email,
+          phone: operator.phone,
+          availability: operator.availability,
+          active: operator.active,
+          "Todas las propiedades": operator
+        });
+      });
+      
       setOperators(data);
     } catch (error: any) {
       setError(error.message || "Error al cargar los operadores");
@@ -106,6 +124,8 @@ export default function useOperatorList(props?: UseOperatorListProps) {
       label: "Detalle",
       className: "table-action-button futura-font",
       onClick: (item?: OperatorResponse) => {
+        // ✅ CONSOLE LOG CUANDO HACES CLIC EN DETALLE
+        console.log("👁️ Ver detalle del operador:", item);
         if (props?.onDetail && item) props.onDetail(item);
       },
     },
@@ -113,6 +133,8 @@ export default function useOperatorList(props?: UseOperatorListProps) {
       label: "Editar",
       className: "table-action-button futura-font",
       onClick: (item?: OperatorResponse) => {
+        // ✅ CONSOLE LOG CUANDO HACES CLIC EN EDITAR
+        console.log("✏️ Editar operador:", item);
         if (props?.onEdit && item) props.onEdit(item);
       },
     },
@@ -120,6 +142,8 @@ export default function useOperatorList(props?: UseOperatorListProps) {
       label: "Desactivar",
       className: "table-action-button futura-font",
       onClick: (item?: OperatorResponse) => {
+        // ✅ CONSOLE LOG CUANDO HACES CLIC EN DESACTIVAR
+        console.log("🚫 Desactivar operador:", item);
         if (props?.onDeactivate && item) props.onDeactivate(item);
       },
     },
