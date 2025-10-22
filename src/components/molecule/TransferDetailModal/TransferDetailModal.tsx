@@ -212,13 +212,13 @@ const TransferDetailModal = ({ transferId, onClose, onSuccess }: TransferDetailM
                 </div>
               )}
 
-              {transfer.state === 'completed' && (
+              {transfer.state === 'done' && (
                 <div className="pt-4 bg-green-50 border border-green-200 rounded-lg p-4 text-center">
                   <p className="text-green-800 font-semibold">✓ Traslado completado</p>
                 </div>
               )}
 
-              {transfer.state === 'pending' && (
+              {transfer.state === 'draft' && (
                 <div className="pt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
                   <p className="text-yellow-800 font-semibold">Este traslado aún no ha iniciado</p>
                 </div>
