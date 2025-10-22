@@ -98,13 +98,13 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     icon: PencilWrite,
     roles: ["proveedor", "cliente_proveedor"], // Gestión de contratos de renta
   },
-  /*
+  
   {
     link: "/dashboard/referrals",
     title: "Mis referidos",
     icon: HearthIcon,
-    roles: ["proveedor", "cliente_proveedor"], // Sistema de referidos para proveedores
-  },*/
+    roles: ["proveedor", "cliente"], // Sistema de referidos para proveedores
+  },
 
   /* ----------------------------------------------------
    * SECCIÓN OPERADORES - Funcionalidades específicas para operadores

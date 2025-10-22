@@ -1,9 +1,8 @@
 import { userRoles } from "@/constants/user";
 
-
-export default async function createUser(arg0:{email:string, name:string, password:string, role:string}) {
+export default async function createUser(arg0: { email: string; name: string; password: string; role: string; referral_code?: string | null }) {
   const errors: string[] = [];
-  const { email, name, password, role } = arg0;
+  const { email, name, password, role, referral_code } = arg0;
   
   // Validación de campos requeridos
   if (!email) {
@@ -33,19 +32,25 @@ export default async function createUser(arg0:{email:string, name:string, passwo
     };
   }
 
+  // 👇 payload dinámico: solo incluye referral_code si existe
+  const payload: any = { email, name, password, role };
+  if (referral_code) {
+    payload.referral_code = referral_code;
+  }
+
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/user/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({email, name, password, role}),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
     throw new Error("Error creating user");
   }
   const data = await response.json();
-  //console.log(data, "createUser response");
+
   return {
     response: {
       email: data.email,
