@@ -180,7 +180,7 @@ $spacing-scale: (
     font-weight: 500;
     border-radius: 0.1875rem;
     border-width: 1px;
-    min-width: 2.25rem; // Aumentado para mejor área de hover
+    min-width: 2.25rem;
     max-width: 2.5rem;
     gap: 0.125rem;
     
@@ -201,7 +201,7 @@ $spacing-scale: (
     gap: 0.3rem;
 
     span {
-      display: inline; // Se muestra el texto desde 500px
+      display: inline;
     }
   }
   
@@ -232,8 +232,8 @@ $spacing-scale: (
     font-size: 0.75rem;
     font-weight: 650;
     gap: 0.3125rem;
-    min-width: 3.75rem;
-    max-width: 4rem;
+    min-width: 4.5rem; // ✅ CAMBIADO de 3.75rem
+    max-width: 5.5rem; // ✅ CAMBIADO de 4rem
   }
   
   @include respond-to(map-get($breakpoints, xxl), map-get($breakpoints, xxl-max)) {
@@ -243,8 +243,8 @@ $spacing-scale: (
     font-weight: 700;
     border-radius: 0.5rem;
     gap: 0.5rem;
-    min-width: 5rem;
-    max-width: 6rem;
+    min-width: 6rem; // ✅ CAMBIADO de 5rem
+    max-width: 7.5rem; // ✅ CAMBIADO de 6rem
   }
   
   @include respond-to(map-get($breakpoints, xxxl)) {
@@ -254,10 +254,11 @@ $spacing-scale: (
     font-weight: 700;
     border-radius: 0.625rem;
     gap: 0.625rem;
-    min-width: 5.5rem;
-    max-width: 6.5rem;
+    min-width: 7rem; // ✅ CAMBIADO de 5.5rem
+    max-width: 9rem; // ✅ CAMBIADO de 6.5rem
   }
 }
+
 
 // =============================================================================
 // CONTENEDOR PRINCIPAL DE MACHINE TABLE
@@ -1109,6 +1110,229 @@ $spacing-scale: (
         th:last-child, td:last-child {
           padding-right: 1.5rem !important;
         }
+      }
+    }
+  }
+}
+
+// =============================================================================
+// FIXES RESPONSIVOS PARA EVITAR SCROLL Y CORTES
+// =============================================================================
+
+// Fix para 768px-991px (Tablets - MD y LG)
+@include respond-to(map-get($breakpoints, md), map-get($breakpoints, lg-max)) {
+  .dynamic-table-container {
+    width: 100%;
+    overflow-x: hidden;
+    
+    table {
+      width: 100%;
+      table-layout: fixed;
+    }
+    
+    th, td {
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+    }
+    
+    tbody td:last-child div {
+      gap: 0.3rem !important;
+    }
+    
+    .table-action-button {
+      padding: 0.35rem 0.75rem !important;
+      font-size: 0.7rem !important;
+      min-width: 4.2rem !important;
+      max-width: 5rem !important;
+      gap: 0.25rem !important;
+      
+      svg {
+        width: 0.68rem !important;
+        height: 0.68rem !important;
+      }
+    }
+  }
+}
+
+// Fix para 992px-1199px (XL)
+@include respond-to(map-get($breakpoints, xl), map-get($breakpoints, xl-max)) {
+  .dynamic-table-container {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    
+    .overflow-x-auto {
+      overflow-x: hidden !important;
+    }
+    
+    table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+    
+    th, td {
+      padding-left: 0.4rem !important;
+      padding-right: 0.4rem !important;
+    }
+    
+    th:nth-child(1), td:nth-child(1) {
+      width: 20% !important;
+    }
+    
+    th:nth-child(2), td:nth-child(2) {
+      width: 22% !important;
+    }
+    
+    th:nth-child(3), td:nth-child(3) {
+      width: 18% !important;
+    }
+    
+    th:last-child,
+    td:last-child {
+      min-width: 260px !important;
+      width: 40% !important;
+      overflow: visible !important;
+    }
+    
+    tbody td:last-child {
+      div {
+        gap: 0.2rem !important;
+        overflow: visible !important;
+        flex-wrap: nowrap !important;
+      }
+    }
+    
+    .table-action-button {
+      padding: 0.3rem 0.55rem !important;
+      font-size: 0.65rem !important;
+      min-width: auto !important;
+      max-width: none !important;
+      gap: 0.22rem !important;
+      white-space: nowrap !important;
+      border-width: 1.5px !important;
+      
+      svg {
+        width: 0.62rem !important;
+        height: 0.62rem !important;
+        flex-shrink: 0 !important;
+      }
+    }
+  }
+}
+
+// Fix para 1200px-1399px (XXL)
+@include respond-to(map-get($breakpoints, xxl), map-get($breakpoints, xxl-max)) {
+  .dynamic-table-container {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    
+    .overflow-x-auto {
+      overflow-x: hidden !important;
+    }
+    
+    table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+    
+    th, td {
+      padding-left: 0.7rem !important;
+      padding-right: 0.7rem !important;
+    }
+    
+    th:last-child,
+    td:last-child {
+      min-width: 280px !important;
+      width: 32% !important;
+      overflow: visible !important;
+    }
+    
+    tbody td:last-child {
+      div {
+        gap: 0.4rem !important;
+        overflow: visible !important;
+        flex-wrap: nowrap !important;
+      }
+    }
+    
+    .table-action-button {
+      padding: 0.5rem 0.9rem !important;
+      font-size: 0.8rem !important;
+      min-width: auto !important;
+      max-width: none !important;
+      gap: 0.4rem !important;
+      white-space: nowrap !important;
+      
+      svg {
+        width: 0.8rem !important;
+        height: 0.8rem !important;
+        flex-shrink: 0 !important;
+      }
+    }
+  }
+}
+
+// Fix para 1400px+ (XXXL)
+@include respond-to(map-get($breakpoints, xxxl)) {
+  .dynamic-table-container {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    
+    .overflow-x-auto {
+      overflow-x: hidden !important;
+    }
+    
+    table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+    
+    th, td {
+      padding-left: 0.7rem !important;
+      padding-right: 0.7rem !important;
+    }
+    
+    th:nth-child(1), td:nth-child(1) {
+      width: 20% !important;
+    }
+    
+    th:nth-child(2), td:nth-child(2) {
+      width: 22% !important;
+    }
+    
+    th:nth-child(3), td:nth-child(3) {
+      width: 18% !important;
+    }
+    
+    th:last-child,
+    td:last-child {
+      min-width: 300px !important;
+      width: 40% !important;
+      overflow: visible !important;
+    }
+    
+    tbody td:last-child {
+      div {
+        gap: 0.4rem !important;
+        overflow: visible !important;
+        flex-wrap: nowrap !important;
+      }
+    }
+    
+    .table-action-button {
+      padding: 0.55rem 1rem !important;
+      font-size: 0.85rem !important;
+      min-width: auto !important;
+      max-width: none !important;
+      gap: 0.45rem !important;
+      white-space: nowrap !important;
+      
+      svg {
+        width: 0.85rem !important;
+        height: 0.85rem !important;
+        flex-shrink: 0 !important;
       }
     }
   }

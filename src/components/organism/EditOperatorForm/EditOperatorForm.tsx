@@ -16,6 +16,12 @@ interface EditOperatorFormProps {
   onSuccess?: () => Promise<void>;
 }
 
+// ✅ Helper para convertir valores a string
+const safeString = (value: string | null | boolean | undefined): string => {
+  if (value === false || value === null || value === undefined) return "";
+  return String(value);
+};
+
 export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFormProps) {
   const { 
     register, 
@@ -26,6 +32,7 @@ export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFo
     isValid, 
     setValue,
     handleLocationChange,
+    watch,
   } = useEditOperatorFormUI({ editData, onSuccess });
 
   const [regions, setRegions] = useState<SelectInterface[]>([]);
@@ -60,20 +67,6 @@ export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFo
 
     fetchRegions();
   }, [session]);
-
-  // 🔹 Pre-cargar datos del operador en el formulario
-  useEffect(() => {
-    if (editData) {
-      setValue("name", editData.name || "");
-      setValue("email", editData.email || "");
-      setValue("phone", editData.phone || "");
-      setValue("curp", editData.curp || "");
-      setValue("license_number", editData.license_number || "");
-      setValue("license_type", editData.license_type || "");
-      setValue("region_id", editData.region_id ? String(editData.region_id) : "");
-      setValue("address", editData.address || "");
-    }
-  }, [editData, setValue]);
 
   return (
     <form className="container" onSubmit={handleSubmit(submit)} noValidate>
@@ -152,12 +145,18 @@ export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFo
           {/* Región */}
           <div className="col-md-6 pb-3">
             <SelectInput
+              key={`region-${watch("region_id") || "empty"}`}
               options={regions}
               label="Región"
               name="region_id"
               placeHolder="Selecciona una región"
               register={register}
               errors={errors}
+              defaultValue={
+                watch("region_id") && regions.length > 0
+                  ? regions.find(r => r.value === watch("region_id"))
+                  : undefined
+              }
             />
           </div>
 
@@ -167,7 +166,7 @@ export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFo
               <label className="form-label">Dirección</label>
               <EditFilterInput 
                 key={`location-${editData?.operator_id || 'new'}`}
-                initialValue={editData?.address || ""}
+                initialValue={safeString(editData?.address)}
                 onChange={handleLocationChange}
                 error={errors.address?.message as string}
                 name="address"
