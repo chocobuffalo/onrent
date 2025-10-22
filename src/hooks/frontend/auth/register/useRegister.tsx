@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import createUser from "@/services/createUser";
 import { useToast } from "../../ui/useToast";
 
@@ -30,6 +30,21 @@ export default function useRegister() {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const { toastSuccessAction, toastError } = useToast();
   const router = useRouter();
+
+  // 👇 Nuevo: capturar referral_code de la URL o de localStorage
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (code) {
+      localStorage.setItem("referral_code", code);
+      setReferralCode(code);
+    } else {
+      const stored = localStorage.getItem("referral_code");
+      if (stored) setReferralCode(stored);
+    }
+  }, []);
+
   const {
     register,
     handleSubmit,
@@ -52,42 +67,37 @@ export default function useRegister() {
         email: data.email,
         password: data.password,
         role: data.tipoUsuario,
+        referral_code: referralCode, // 👈 se envía si existe
       });
 
       console.log("Respuesta completa:", createUserResponse);
 
-      // Verificar si hay errores en la respuesta
       if (createUserResponse.errors && createUserResponse.errors.length > 0) {
         setRegistrationError(createUserResponse.errors.join(", "));
         return;
       }
 
-      // Verificar si la respuesta fue exitosa
       if (createUserResponse.responseStatus >= 200 && createUserResponse.responseStatus < 300) {
-       // console.log("Usuario registrado exitosamente:", createUserResponse.response);
         setRegistrationSuccess(true);
-        
-        
-        // - Redireccionar al usuario
-        toastSuccessAction("Usuario registrado exitosamente, redirigiendo a tu perfil... Espere",()=>{
-          signIn('credentials',{
-          email: data.email,
-          password: data.password,
-          redirect:true,
-          callbackUrl: `/catalogo`
-        });});
-        
-        // - Mostrar mensaje de éxito
-        // - Limpiar el formulario
-        
+
+        toastSuccessAction(
+          "Usuario registrado exitosamente, redirigiendo a tu perfil... Espere",
+          () => {
+            signIn("credentials", {
+              email: data.email,
+              password: data.password,
+              redirect: true,
+              callbackUrl: `/catalogo`,
+            });
+          }
+        );
       } else {
         setRegistrationError("Error al registrar usuario. Por favor intenta nuevamente.");
         toastError("Error al registrar usuario. Por favor intenta nuevamente.");
       }
-
     } catch (error) {
       console.error("Error inesperado al registrar el usuario:", error);
-      toastError("Error inesperado. Por favor intenta nuevamente: "+error);
+      toastError("Error inesperado. Por favor intenta nuevamente: " + error);
       setRegistrationError("Error inesperado. Por favor intenta nuevamente.");
     } finally {
       setIsLoading(false);

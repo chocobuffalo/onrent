@@ -75,14 +75,14 @@ export default function useEditOperatorForm(editData: OperatorResponse) {
     resolver: yupResolver(schema) as any,
     mode: "onChange",
     defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      curp: "",
-      license_number: "",
+      name: editData.name || "",
+      email: editData.email || "",
+      phone: editData.phone || "",
+      curp: "", // Si tienes CURP en editData, agrégalo
+      license_number: "", // Si tienes license en editData, agrégalo
       license_type: "",
-      region_id: "", // ⚠️ Dejar vacío inicialmente
-      address: "",
+      region_id: "", // Si tienes region_id en editData, agrégalo
+      address: "", // Si tienes address en editData, agrégalo
     },
   });
 
