@@ -14,8 +14,9 @@ export default async function setProfileForm({
     availability,
     gpsLat,
     gpsLng,
-    compatibleMachinesIds, 
-}: {
+    providerId,                
+    compatibleMachinesIds,
+  }: {
     token: string;
     fullName?: string;
     telephone?: string;
@@ -30,10 +31,11 @@ export default async function setProfileForm({
     availability?: string;
     gpsLat?: number;
     gpsLng?: number;
-    compatibleMachinesIds?: number[]; 
-}) {
+    providerId?: number;        // 👈 nuevo
+    compatibleMachinesIds?: number[];
+  }) {
     const body: any = {};
-
+  
     if (fullName) body.name = fullName;
     if (telephone) body.phone = telephone;
     if (avatar) body.image_base64 = avatar;
@@ -47,21 +49,23 @@ export default async function setProfileForm({
     if (availability) body.availability = availability;
     if (gpsLat !== undefined) body.gps_lat = gpsLat;
     if (gpsLng !== undefined) body.gps_lng = gpsLng;
+    if (providerId !== undefined) body.provider_id = providerId;   // 👈 nuevo
     if (compatibleMachinesIds && compatibleMachinesIds.length > 0) {
-        body.compatible_machines_ids = compatibleMachinesIds;
+      body.compatible_machines_ids = compatibleMachinesIds;
     }
-
+  
     const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/client/profile/update_profile`,
-        {
-            method: "PUT",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-        }
+      `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/client/profile/update_profile`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }
     );
-    const data = await res.json();
-    return data;
-}
+  
+    return res.json();
+  }
+  
