@@ -8,20 +8,22 @@ import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
 
 export default function useOperatorTableUI() {
-  // ✅ Usar estado local en lugar de Redux
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedOperator, setSelectedOperator] = useState<OperatorResponse | null>(null);
+  
+  // ✅ Estado para modal de confirmación de desactivar
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [operatorToDelete, setOperatorToDelete] = useState<OperatorResponse | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const [wasCreatedSuccessfully, setWasCreatedSuccessfully] = useState(false);
   
   const { data: session } = useSession();
   const token = (session as any)?.accessToken || "";
   
-  // Handler para editar
   const handleEdit = (item: OperatorResponse): void => {
-    // Cerrar modal de creación si está abierto
     if (createModalOpen) {
       setCreateModalOpen(false);
     }
@@ -30,9 +32,7 @@ export default function useOperatorTableUI() {
     setShowEditModal(true);
   };
 
-  // Handler para ver detalle
   const handleDetail = (item: OperatorResponse): void => {
-    // Cerrar modal de creación si está abierto
     if (createModalOpen) {
       setCreateModalOpen(false);
     }
@@ -41,24 +41,47 @@ export default function useOperatorTableUI() {
     setShowDetailModal(true);
   };
 
-  // Handler para DESACTIVAR
+  // ✅ Handler para abrir modal de confirmación
   const handleDeactivate = async (item: OperatorResponse) => {
-    if (!confirm(`¿Estás seguro de desactivar al operador "${item.name}"?`)) {
-      return;
-    }
+    setOperatorToDelete(item);
+    setShowDeleteModal(true);
+  };
 
+  // ✅ Confirmar desactivación
+  const handleConfirmDeactivate = async () => {
+    if (!operatorToDelete) return;
+
+    setIsDeleting(true);
+    
     try {
-      const result = await deleteOperator(token, item.operator_id);
+      const result = await deleteOperator(token, operatorToDelete.operator_id);
 
       if (!result.success) {
         throw new Error(result.message || "Error al desactivar operador");
       }
 
       toast.success("Operador desactivado exitosamente");
-      await operatorData.refreshList();
+      
     } catch (error: any) {
+      console.error("❌ Error en desactivación:", error);
       toast.error(error.message || "Error al desactivar operador");
+    } finally {
+      // ✅ IMPORTANTE: Cerrar modal SIEMPRE en el finally
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      setOperatorToDelete(null);
+      
+      // Refrescar la lista (sin await para no bloquear el cierre del modal)
+      operatorData.refreshList().catch(err => {
+        console.error("Error al refrescar lista:", err);
+      });
     }
+  };
+
+  // ✅ Cancelar desactivación
+  const handleCancelDeactivate = () => {
+    setShowDeleteModal(false);
+    setOperatorToDelete(null);
   };
   
   const operatorData = useOperatorList({
@@ -67,7 +90,6 @@ export default function useOperatorTableUI() {
     onDeactivate: handleDeactivate,
   });
 
-  // Escuchar evento de creación
   useEffect(() => {
     const handleOperatorCreated = () => {
       setWasCreatedSuccessfully(true);
@@ -80,7 +102,6 @@ export default function useOperatorTableUI() {
     };
   }, []);
 
-  // Refrescar lista después de crear
   useEffect(() => {
     if (wasCreatedSuccessfully && !createModalOpen) {
       setTimeout(() => {
@@ -95,8 +116,6 @@ export default function useOperatorTableUI() {
     setShowDetailModal(false);
     setShowEditModal(false);
     setSelectedOperator(null);
-    
-    // ✅ Abrir modal con estado local
     setCreateModalOpen(true);
   };
 
@@ -112,7 +131,6 @@ export default function useOperatorTableUI() {
   };
   
   const handleCloseCreateModal = () => {
-    // ✅ Cerrar modal con estado local
     setCreateModalOpen(false);
   };
   
@@ -131,6 +149,13 @@ export default function useOperatorTableUI() {
     detailModalOpen: showDetailModal,
     editModalOpen: showEditModal,
     selectedOperator,
+    
+    // ✅ Estados y handlers para modal de confirmación
+    showDeleteModal,
+    operatorToDelete,
+    isDeleting,
+    handleConfirmDeactivate,
+    handleCancelDeactivate,
     
     handleAddOperator,
     handleCloseCreateModal,

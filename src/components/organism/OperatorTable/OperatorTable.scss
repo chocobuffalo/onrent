@@ -1,0 +1,148 @@
+// src/components/organism/OperatorTable/OperatorTable.scss
+
+.modal-overlay,
+.edit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content,
+.edit-modal-content {
+  background-color: white;
+  border-radius: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 800px;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10000;
+}
+
+.modal-header,
+.edit-modal-header {
+  background-color: #13123D;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2,
+.edit-modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.modal-close-btn,
+.edit-modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.modal-body {
+  max-height: calc(90vh - 250px);
+  overflow-y: auto;
+
+  .container {
+    padding: 0 !important;
+  }
+
+  .row {
+    margin: 0 !important;
+  }
+}
+
+.modal-footer,
+.group-button-submit {
+  padding: 1.5rem 2rem 2rem 2rem !important;
+  border-top: 1px solid #e5e7eb;
+  background-color: #fafafa;
+  margin: 0 !important;
+
+  &.left {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .pre-btn {
+    background-color: #EA6300 !important;
+    color: white;
+    padding: 0.875rem 2.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.5rem;
+
+    &:hover:not(:disabled) {
+      background-color: #D15700 !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(234, 99, 0, 0.4);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content,
+  .edit-modal-content {
+    width: 95vw;
+    max-height: 95vh;
+  }
+
+  .modal-header,
+  .edit-modal-header {
+    padding: 1rem 1.5rem;
+
+    h2 {
+      font-size: 1.25rem;
+    }
+  }
+
+  .modal-footer,
+  .group-button-submit {
+    padding: 1rem 1.5rem 1.5rem 1.5rem !important;
+
+    .pre-btn {
+      width: 100%;
+      min-width: auto;
+      padding: 0.75rem 1.5rem;
+    }
+  }
+}

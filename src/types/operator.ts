@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 
-
 // ==========================
 // Datos básicos del operador
 // ==========================
@@ -81,6 +80,14 @@ export interface DeleteOperatorResponse {
 }
 
 // ==========================
+// ✅ Tipo para Region (objeto)
+// ==========================
+export interface RegionData {
+  id: number;
+  name: string;
+}
+
+// ==========================
 // Representaciones de operador
 // ==========================
 export interface OperatorResponse {
@@ -91,11 +98,12 @@ export interface OperatorResponse {
   email: string;
   availability: "available" | "unavailable" | "busy";
   active: boolean;
-  address?: string; 
-  curp?: string;
-  license_number?: string;
-  license_type?: string;
-  region_id?: number;
+  address?: string | null | boolean; // ✅ Puede venir como string, null o false
+  curp?: string | null | boolean; // ✅ Puede venir como string, null o false
+  license_number?: string | null | boolean; // ✅ Puede venir como string, null o false
+  license_type?: string | null | boolean; // ✅ Puede venir como string, null o false
+  region_id?: number | null; // ✅ Para cuando viene directamente
+  region?: number | RegionData | null; // ✅ Para cuando viene como objeto {id, name} o número
   gps_lat?: number | null;
   gps_lng?: number | null;
 }
@@ -104,14 +112,15 @@ export interface OperatorDetailResponse {
   operator_id: number;
   external_id: string;
   name: string;
-  curp?: string;
-  license_number?: string;
-  license_type?: string;
+  curp?: string | null | boolean;
+  license_number?: string | null | boolean;
+  license_type?: string | null | boolean;
   phone?: string | null;
   email: string;
-  dc3_filename?: string;
-  license_filename?: string;
-  operator_photo_filename?: string;
+  address?: string | null | boolean;
+  dc3_filename?: string | null;
+  license_filename?: string | null;
+  operator_photo_filename?: string | null;
   experience_years?: number;
   experience_level?: "beginner" | "intermediate" | "expert";
   training_status?: "pending" | "completed";
@@ -120,9 +129,10 @@ export interface OperatorDetailResponse {
   gps_lat?: number | null;
   gps_lng?: number | null;
   region_id?: number | null;
+  region?: number | RegionData | null; // ✅ Para cuando viene como objeto
   region_name?: string | null;
   compatible_machines?: { machine_id: number; name: string }[];
-  notes?: string;
+  notes?: string | null;
   active: boolean;
 }
 
