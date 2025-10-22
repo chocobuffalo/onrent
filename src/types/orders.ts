@@ -166,7 +166,7 @@ export interface Transfer {
   transfer_id: number;
   order_id: number;
   name: string;
-  state: 'pending' | 'in_progress' | 'completed';
+  state: 'draft' | 'confirmed' | 'in_progress' | 'done' | 'cancelled';
   machine_name: string;
   start_date: string;
   end_date: string;
