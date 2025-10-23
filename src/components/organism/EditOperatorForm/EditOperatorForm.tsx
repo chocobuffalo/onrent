@@ -23,28 +23,18 @@ const safeString = (value: string | null | boolean | undefined): string => {
 };
 
 export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFormProps) {
-  const { 
-    register, 
-    handleSubmit, 
-    submit, 
-    errors, 
-    isLoading, 
-    isValid, 
-    setValue,
-    handleLocationChange,
-    watch,
-  } = useEditOperatorFormUI({ editData, onSuccess });
-
   const [regions, setRegions] = useState<SelectInterface[]>([]);
+  const [regionsLoaded, setRegionsLoaded] = useState(false); // ✅ NUEVO: Estado de carga
   const { data: session } = useSession();
 
-  // 🔹 Cargar regiones desde el backend
+  // ✅ CAMBIO: Cargar regiones ANTES de inicializar el formulario
   useEffect(() => {
     const fetchRegions = async () => {
       try {
         const token = (session as any)?.accessToken;
         if (!token) {
           console.error("Token no encontrado");
+          setRegionsLoaded(true); // ✅ Marcar como cargado aunque falle
           return;
         }
 
@@ -57,16 +47,48 @@ export default function EditOperatorForm({ editData, onSuccess }: EditOperatorFo
               color: "#000000",
             }))
           );
-        } else {
-          console.error(result.message);
         }
       } catch (err) {
         console.error("Error cargando regiones:", err);
+      } finally {
+        setRegionsLoaded(true); // ✅ IMPORTANTE: Marcar como cargado
       }
     };
 
     fetchRegions();
   }, [session]);
+
+  // ✅ CAMBIO: Solo inicializar el hook cuando las regiones estén cargadas
+  const { 
+    register, 
+    handleSubmit, 
+    submit, 
+    errors, 
+    isLoading, 
+    isValid, 
+    setValue,
+    handleLocationChange,
+    watch,
+  } = useEditOperatorFormUI({ editData, onSuccess });
+
+  // ✅ NUEVO: Setear region_id cuando las regiones se carguen
+  useEffect(() => {
+    if (regionsLoaded && editData.region_id) {
+      const regionId = String(editData.region_id);
+      setValue("region_id", regionId, { shouldValidate: true });
+      console.log("✅ Region_id seteado después de cargar regiones:", regionId);
+    }
+  }, [regionsLoaded, editData.region_id, setValue]);
+
+  // ✅ NUEVO: Mostrar loading mientras cargan las regiones
+  if (!regionsLoaded) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <ImSpinner8 color="#EA6300" size={32} className="animate-spin" />
+        <span className="ml-3 text-gray-600">Cargando datos...</span>
+      </div>
+    );
+  }
 
   return (
     <form className="container" onSubmit={handleSubmit(submit)} noValidate>

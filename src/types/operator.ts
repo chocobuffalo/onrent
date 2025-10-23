@@ -129,8 +129,10 @@ export interface OperatorDetailResponse {
   gps_lat?: number | null;
   gps_lng?: number | null;
   region_id?: number | null;
-  region?: number | RegionData | null; // ✅ Para cuando viene como objeto
-  region_name?: string | null;
+    region: {           // ✅ CAMBIO: De region_name a region como objeto
+    id: number;
+    name: string;
+  } | null;
   compatible_machines?: { machine_id: number; name: string }[];
   notes?: string | null;
   active: boolean;

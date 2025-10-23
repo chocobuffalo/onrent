@@ -159,7 +159,7 @@ export default function OperatorDetailModal({
                     <div className="operator-detail-modal__personal-info-item">
                       <div className="field-label">Región</div>
                       <p className="field-value">
-                        {operator.region_name || 'No especificada'}
+                        {operator.region?.name || 'No especificada'}
                       </p>
                     </div>
                   </div>

@@ -42,7 +42,7 @@ export default function OperatorTable() {
             <AddOperator active={createModalOpen} func={handleAddOperator} />
           </div>
         </div>
-        <div className="machine-table-content">
+        <div className="machine-table-content operators-table">
           <DynamicTable
             title="Lista de Operadores"
             items={items}

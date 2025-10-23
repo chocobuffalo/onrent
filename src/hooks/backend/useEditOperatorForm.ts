@@ -10,7 +10,7 @@ import {
   OperatorResponse,
   UpdateOperatorResponse,
 } from "@/types/operator";
-import { toast } from "react-toastify";
+import { useToast } from "@/hooks/frontend/ui/useToast";
 import { useSession } from "next-auth/react";
 
 const schema = Yup.object().shape({
@@ -45,6 +45,8 @@ const safeString = (value: string | null | boolean | undefined): string => {
 };
 
 export default function useEditOperatorForm(editData: OperatorResponse) {
+  const { toastSuccess, toastError } = useToast();
+  
   const getRegionId = (): string => {
     if (editData.region && typeof editData.region === 'object' && 'id' in editData.region) {
       console.log("✅ Region encontrado como objeto con id:", editData.region.id);
@@ -78,42 +80,34 @@ export default function useEditOperatorForm(editData: OperatorResponse) {
       name: editData.name || "",
       email: editData.email || "",
       phone: editData.phone || "",
-      curp: "", // Si tienes CURP en editData, agrégalo
-      license_number: "", // Si tienes license en editData, agrégalo
-      license_type: "",
-      region_id: "", // Si tienes region_id en editData, agrégalo
-      address: "", // Si tienes address en editData, agrégalo
+      curp: safeString(editData.curp),
+      license_number: safeString(editData.license_number),
+      license_type: safeString(editData.license_type),
+      region_id: calculatedRegionId || "",  // ✅ CAMBIO: Setear directamente aquí
+      address: safeString(editData.address),
     },
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const session = useSession();
 
-  // ✅ SOLUCIÓN: Usar useEffect para setear TODOS los valores después del render
-  useEffect(() => {
-    console.log("🔄 [useEffect] Seteando valores en el formulario...");
-    
-    setValue("name", editData.name || "", { shouldValidate: true });
-    setValue("email", editData.email || "", { shouldValidate: true });
-    setValue("phone", editData.phone || "", { shouldValidate: true });
-    setValue("curp", safeString(editData.curp), { shouldValidate: true });
-    setValue("license_number", safeString(editData.license_number), { shouldValidate: true });
-    setValue("license_type", safeString(editData.license_type), { shouldValidate: true });
-    setValue("address", safeString(editData.address), { shouldValidate: true });
-    
-    // ✅ IMPORTANTE: Setear region_id DESPUÉS con setValue
-    if (calculatedRegionId) {
-      console.log("✅ [useEffect] Seteando region_id:", calculatedRegionId);
-      setValue("region_id", calculatedRegionId, { shouldValidate: true });
-    }
-  }, [editData, calculatedRegionId, setValue]);
+  // ✅ CAMBIO: Remover el useEffect que seteaba los valores
+  // Ya no es necesario porque los defaultValues se setean correctamente arriba
 
   const submit = async (data: OperatorFormData) => {
-    console.log(">>> SUBMIT EDITAR ejecutado con datos:", data);
+    console.log("🔵 [1] SUBMIT EDITAR ejecutado con datos:", data);
     setIsLoading(true);
     
     try {
       const token = (session.data as (typeof session.data & { accessToken?: string }))?.accessToken || "";
+
+      const gps_lat = data.gps_lat !== undefined && data.gps_lat !== null && String(data.gps_lat).trim() !== "" 
+        ? Number(data.gps_lat) 
+        : null;
+      
+      const gps_lng = data.gps_lng !== undefined && data.gps_lng !== null && String(data.gps_lng).trim() !== "" 
+        ? Number(data.gps_lng) 
+        : null;
 
       const updatePayload: UpdateOperatorRequest = {
         id: editData.operator_id,
@@ -125,11 +119,11 @@ export default function useEditOperatorForm(editData: OperatorResponse) {
         license_type: data.license_type,
         region_id: data.region_id,
         address: data.address.trim(),
-        gps_lat: data.gps_lat ?? null,
-        gps_lng: data.gps_lng ?? null,
+        gps_lat: gps_lat,
+        gps_lng: gps_lng,
       };
 
-      console.log("📤 Payload que se enviará al backend:", updatePayload);
+      console.log("🔵 [2] Payload preparado:", updatePayload);
 
       const result: UpdateOperatorResponse = await updateOperator(
         token,
@@ -137,18 +131,23 @@ export default function useEditOperatorForm(editData: OperatorResponse) {
         updatePayload
       );
 
-      if (result.success) {
-        toast.success(`Operador "${data.name}" actualizado exitosamente`);
+      console.log("🔵 [3] Resultado del servidor:", result);
+
+      if (!result.error && result.message) {
+        console.log("✅ [6] ÉXITO DETECTADO - Llamando toastSuccess");
+        toastSuccess(`Operador "${data.name}" actualizado exitosamente`);
         return true;
       } else {
-        toast.error(result.message || "Error al actualizar el operador");
+        console.log("❌ [6] ERROR DETECTADO - Llamando toastError");
+        toastError(result.error || result.message || "Error al actualizar el operador");
         return false;
       }
     } catch (error: any) {
-      console.error("❌ Error en submit:", error);
-      toast.error("Error al actualizar el operador. Inténtalo de nuevo.");
+      console.error("❌ [CATCH] Error en submit:", error);
+      toastError("Error al actualizar el operador. Inténtalo de nuevo.");
       return false;
     } finally {
+      console.log("🔵 [FINALLY] Terminando submit");
       setIsLoading(false);
     }
   };

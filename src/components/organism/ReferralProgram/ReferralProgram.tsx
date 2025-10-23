@@ -64,25 +64,41 @@ export default function ReferralProgram() {
 
   return (
     <div className="container p-4">
-      <h2 className="text-xl font-bold mb-2">Programa de Lealtad - Referidos</h2>
+      <h2 
+        style={{ 
+          fontSize: '28px', 
+          fontWeight: 'bold', 
+          marginBottom: '24px' 
+        }}
+      >
+        Programa de Lealtad - Referidos
+      </h2>
+<p 
+  style={{ 
+    fontSize: '20px', 
+    fontWeight: '500',
+    marginBottom: '32px',
+    lineHeight: '1.6'
+  }}
+>
+  ¡Comparte tu código de referido para <span style={{ color: '#f97316' }}>ganar puntos</span> que podrás canjear
+  por premios o dinero real!
+</p>
+
 
       <input
         value={referralLink}
         readOnly
-        className="border p-2 w-full mb-2"
+        className="border p-2 w-full mb-4"
       />
 
-      {qrImage ? (
-        <img src={`data:image/png;base64,${qrImage}`} alt="QR" />
-      ) : (
-        referralLink && <QRCode value={referralLink} size={128} />
-      )}
-
-      {/* 👇 Leyenda motivadora */}
-      <p className="mt-4 text-sm text-gray-600 text-center">
-        ¡Comparte tu código de referido para ganar puntos que podrás canjear
-        por premios o dinero real!
-      </p>
+      <div className="mb-6">
+        {qrImage ? (
+          <img src={`data:image/png;base64,${qrImage}`} alt="QR" />
+        ) : (
+          referralLink && <QRCode value={referralLink} size={128} />
+        )}
+      </div>
 
       {/* Tabla de referidos usando DynamicTable */}
       <div className="mt-6">
@@ -93,7 +109,7 @@ export default function ReferralProgram() {
           error={null}
           searchValue={""}
           columns={columns}
-          actionButtons={[]} // sin botones de acción
+          actionButtons={[]}
         />
       </div>
     </div>
