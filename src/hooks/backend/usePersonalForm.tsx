@@ -68,6 +68,8 @@ const schema = Yup.object({
       return originalValue === '' ? undefined : value;
     })
     .nullable(),
+    providerId: Yup.number().nullable(),
+    compatibleMachinesIds: Yup.array().of(Yup.number()).nullable(),
 });
 
 interface UsePersonalFormProps {
@@ -82,6 +84,12 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
   const [selectedRegion, setSelectedRegion] = useState<number | null>(null);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [cityError, setCityError] = useState(false);
+  const [licenseTypes, setLicenseTypes] = useState<[string, string][]>([]);
+  const [experienceLevels, setExperienceLevels] = useState<[string, string][]>([]);
+  const [trainingStatuses, setTrainingStatuses] = useState<[string, string][]>([]);
+  const [availabilities, setAvailabilities] = useState<[string, string][]>([]);
+  const [providers, setProviders] = useState<{id:number; name:string}[]>([]);
+  const [machines, setMachines] = useState<{id:number; name:string}[]>([]);
   const [initialValues, setInitialValues] = useState({
     fullName: "",
     telephone: "",
@@ -96,6 +104,8 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     availability: "",
     gpsLat: 0,
     gpsLng: 0,
+    providerId: null as number | null, 
+    compatibleMachinesIds: [] as number[], 
   });
   
   const dispatch = useUIAppDispatch();
@@ -165,6 +175,8 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     const availability = profileData.availability || "";
     const gpsLat = profileData.gps_lat || 0;
     const gpsLng = profileData.gps_lng || 0;
+    const providerId = profileData?.provider?.id || null;
+    const compatibleMachinesIds = profileData?.compatible_machines_ids?.map((m:any)=>m.id) || [];
 
     setValue("fullName", fullName);
     setValue("telephone", telephone);
@@ -178,6 +190,8 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     setValue("availability", availability);
     setValue("gpsLat", gpsLat);
     setValue("gpsLng", gpsLng);
+    setValue("providerId", providerId);
+    setValue("compatibleMachinesIds", compatibleMachinesIds);
     setSelectedRegion(regionId);
     
     setInitialValues({
@@ -194,6 +208,8 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
       availability,
       gpsLat,
       gpsLng,
+      providerId,
+      compatibleMachinesIds,
     });
 
     dispatch(setName(fullName));
@@ -217,6 +233,27 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
         if (profileResponse) {
           syncProfileToForm(profileResponse);
         }
+
+        // opciones de operador
+        const optionsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/client/profile/operator/options`, {
+          headers: { Authorization: `Bearer ${session.user.access_token}` }
+        }).then(r => r.json());
+        setLicenseTypes(optionsRes.license_types || []);
+        setExperienceLevels(optionsRes.experience_levels || []);
+        setTrainingStatuses(optionsRes.training_statuses || []);
+        setAvailabilities(optionsRes.availabilities || []);
+
+        // proveedores
+        const providersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/client/profile/providers`, {
+          headers: { Authorization: `Bearer ${session.user.access_token}` }
+        }).then(r => r.json());
+        setProviders(providersRes || []);
+
+        // máquinas
+        const machinesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/client/profile/machines`, {
+          headers: { Authorization: `Bearer ${session.user.access_token}` }
+        }).then(r => r.json());
+        setMachines(machinesRes || []);
 
       } catch (error) {
         toast.error("Error al cargar la información");
@@ -250,6 +287,8 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
         updateData.availability = data.availability;
         updateData.gpsLat = Number(data.gpsLat) || 0;
         updateData.gpsLng = Number(data.gpsLng) || 0;
+        updateData.providerId = data.providerId || null;                   
+        updateData.compatibleMachinesIds = data.compatibleMachinesIds || [];
       }
 
       const userProfile = await setProfileForm(updateData);
@@ -333,5 +372,12 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     locationStatus,
     cityError,
     setCityError,
+    initialValues,
+    licenseTypes,
+    experienceLevels,
+    trainingStatuses,
+    availabilities,
+    providers,
+    machines,
   };
 }
