@@ -20,6 +20,10 @@ const TransferDetailModal = ({ transferId, onClose, onSuccess }: TransferDetailM
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
 
+  // 👇 Flag para evitar hydration error
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const getToken = useCallback(() => {
     const nextAuthToken = (session as any)?.accessToken || (session as any)?.user?.accessToken;
     const localStorageToken = typeof window !== 'undefined' ? localStorage.getItem("api_access_token") : null;
@@ -112,24 +116,8 @@ const TransferDetailModal = ({ transferId, onClose, onSuccess }: TransferDetailM
         </div>
 
         <div className="p-6">
-          {loading && (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-              <p className="text-gray-600">Cargando detalle...</p>
-            </div>
-          )}
-          
-          {error && (
-            <div className="text-center py-8">
-              <div className="text-red-600 mb-4">{error}</div>
-              <button
-                onClick={onClose}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                Cerrar
-              </button>
-            </div>
-          )}
+          {loading && <p>Cargando detalle...</p>}
+          {error && <p className="text-red-600">{error}</p>}
 
           {transfer && !loading && !error && (
             <div className="space-y-4">
@@ -162,67 +150,45 @@ const TransferDetailModal = ({ transferId, onClose, onSuccess }: TransferDetailM
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-semibold text-gray-600">Fecha Inicio</p>
-                  <p className="text-lg">{new Date(transfer.start_date).toLocaleDateString('es-ES')}</p>
+                  <p className="text-lg">
+                    {mounted && transfer.start_date ? new Date(transfer.start_date).toLocaleDateString('es-ES') : ''}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-600">Fecha Fin</p>
-                  <p className="text-lg">{new Date(transfer.end_date).toLocaleDateString('es-ES')}</p>
+                  <p className="text-lg">
+                    {mounted && transfer.end_date ? new Date(transfer.end_date).toLocaleDateString('es-ES') : ''}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-600">Duración</p>
                   <p className="text-lg">{transfer.duration_days} días</p>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-600">Renta Dinámica</p>
-                  <p className="text-lg">${transfer.dynamic_rent.toLocaleString()}</p>
-                </div>
-              </div>
-
-              <hr />
-
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">Descripción del Trabajo</p>
-                <p className="text-base">{transfer.work_description}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">Proyecto</p>
-                  <p className="text-lg">{transfer.project}</p>
+                  <p className="text-sm font-semibold text-gray-600">Origen</p>
+                  <p className="text-lg">{transfer.origin}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-600">Operador</p>
-                  <p className="text-lg">{transfer.operator_name}</p>
+                  <p className="text-sm font-semibold text-gray-600">Destino</p>
+                  <p className="text-lg">{transfer.destination}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-600">Proveedor</p>
-                  <p className="text-lg">{transfer.provider_name}</p>
+                  <p className="text-sm font-semibold">Proveedor</p>
+                  <p>{transfer.provider_name ?? '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Teléfono Proveedor</p>
+                  <p>{transfer.provider_phone ?? '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Cliente</p>
+                  <p>{transfer.client_name ?? '-'}</p>
+                </div>
+                <div>
+                   <p className="text-sm font-semibold">Teléfono Cliente</p>
+                   <p>{transfer.client_phone ?? '-'}</p>
                 </div>
               </div>
-
-              {transfer.state === 'in_progress' && (
-                <div className="pt-4">
-                  <button
-                    onClick={handleComplete}
-                    disabled={completing}
-                    className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
-                  >
-                    {completing ? 'Completando...' : 'Marcar como Completado'}
-                  </button>
-                </div>
-              )}
-
-              {transfer.state === 'done' && (
-                <div className="pt-4 bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                  <p className="text-green-800 font-semibold">✓ Traslado completado</p>
-                </div>
-              )}
-
-              {transfer.state === 'draft' && (
-                <div className="pt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-                  <p className="text-yellow-800 font-semibold">Este traslado aún no ha iniciado</p>
-                </div>
-              )}
             </div>
           )}
         </div>

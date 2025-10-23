@@ -13,6 +13,7 @@ export default function ReferralProgram() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [referralLink, setReferralLink] = useState("");
   const [qrImage, setQrImage] = useState<string | null>(null);
+  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function ReferralProgram() {
         const linkData = await generateReferral(token);
         setReferralLink(linkData.referral_link);
         setQrImage(linkData.qr_image_base64);
+        setLoyaltyPoints(linkData.loyalty_points);
 
         const data = await getReferrals(token);
         setReferrals(data);
@@ -68,39 +70,73 @@ export default function ReferralProgram() {
         style={{ 
           fontSize: '28px', 
           fontWeight: 'bold', 
-          marginBottom: '24px' 
+          marginBottom: '24px',
+          color: '#1f2937'
         }}
       >
         Programa de Lealtad - Referidos
       </h2>
-<p 
-  style={{ 
-    fontSize: '20px', 
-    fontWeight: '500',
-    marginBottom: '32px',
-    lineHeight: '1.6'
-  }}
->
-  ¡Comparte tu código de referido para <span style={{ color: '#f97316' }}>ganar puntos</span> que podrás canjear
-  por premios o dinero real!
-</p>
 
+      {/* 👇 Badge con color exacto del sistema #EA6300 (--color-secondary) */}
+      <div 
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          backgroundColor: '#FF7101',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '12px',
+          marginBottom: '20px',
+          boxShadow: '0 4px 6px rgba(234, 99, 0, 0.25)'
+        }}
+      >
+        <span style={{ fontSize: '16px', fontWeight: '500', marginRight: '8px' }}>
+          🎁 Tus puntos de lealtad:
+        </span>
+        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>
+          {loyaltyPoints}
+        </span>
+      </div>
+
+      {/* 👇 Texto motivacional con acento naranja #EA6300 */}
+      <p 
+        style={{ 
+          fontSize: '20px', 
+          fontWeight: '500', 
+          color: '#4b5563',
+          marginBottom: '32px',
+          lineHeight: '1.6'
+        }}
+      >
+        ¡Comparte tu código de referido para <span style={{ color: '#EA6300' }}>ganar puntos</span> que podrás canjear por premios o dinero real!
+      </p>
 
       <input
         value={referralLink}
         readOnly
         className="border p-2 w-full mb-4"
+        style={{
+          borderRadius: '8px',
+          borderColor: '#d1d5db',
+          padding: '12px',
+          fontSize: '14px',
+          color: '#6b7280'
+        }}
       />
 
       <div className="mb-6">
         {qrImage ? (
-          <img src={`data:image/png;base64,${qrImage}`} alt="QR" />
+          <img 
+            src={`data:image/png;base64,${qrImage}`} 
+            alt="QR" 
+            style={{ maxWidth: '200px', height: 'auto' }}
+          />
         ) : (
           referralLink && <QRCode value={referralLink} size={128} />
         )}
       </div>
 
-      {/* Tabla de referidos usando DynamicTable */}
+      {/* Tabla de referidos */}
       <div className="mt-6">
         <DynamicTable
           title="Lista de Referidos"
