@@ -66,28 +66,77 @@ export default function ReferralProgram() {
 
   return (
     <div className="container p-4">
-      <h2 className="text-xl font-bold mb-2">Programa de Lealtad - Referidos</h2>
-      <p>Tus puntos de lealtad: {loyaltyPoints}</p>
+      <h2 
+        style={{ 
+          fontSize: '28px', 
+          fontWeight: 'bold', 
+          marginBottom: '24px',
+          color: '#1f2937'
+        }}
+      >
+        Programa de Lealtad - Referidos
+      </h2>
+
+      {/* 👇 Badge con color exacto del sistema #EA6300 (--color-secondary) */}
+      <div 
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          backgroundColor: '#FF7101',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '12px',
+          marginBottom: '20px',
+          boxShadow: '0 4px 6px rgba(234, 99, 0, 0.25)'
+        }}
+      >
+        <span style={{ fontSize: '16px', fontWeight: '500', marginRight: '8px' }}>
+          🎁 Tus puntos de lealtad:
+        </span>
+        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>
+          {loyaltyPoints}
+        </span>
+      </div>
+
+      {/* 👇 Texto motivacional con acento naranja #EA6300 */}
+      <p 
+        style={{ 
+          fontSize: '20px', 
+          fontWeight: '500', 
+          color: '#4b5563',
+          marginBottom: '32px',
+          lineHeight: '1.6'
+        }}
+      >
+        ¡Comparte tu código de referido para <span style={{ color: '#EA6300' }}>ganar puntos</span> que podrás canjear por premios o dinero real!
+      </p>
 
       <input
         value={referralLink}
         readOnly
-        className="border p-2 w-full mb-2"
+        className="border p-2 w-full mb-4"
+        style={{
+          borderRadius: '8px',
+          borderColor: '#d1d5db',
+          padding: '12px',
+          fontSize: '14px',
+          color: '#6b7280'
+        }}
       />
 
-      {qrImage ? (
-        <img src={`data:image/png;base64,${qrImage}`} alt="QR" />
-      ) : (
-        referralLink && <QRCode value={referralLink} size={128} />
-      )}
+      <div className="mb-6">
+        {qrImage ? (
+          <img 
+            src={`data:image/png;base64,${qrImage}`} 
+            alt="QR" 
+            style={{ maxWidth: '200px', height: 'auto' }}
+          />
+        ) : (
+          referralLink && <QRCode value={referralLink} size={128} />
+        )}
+      </div>
 
-      {/* 👇 Leyenda motivadora */}
-      <p className="mt-4 text-sm text-gray-600 text-center">
-        ¡Comparte tu código de referido para ganar puntos que podrás canjear
-        por premios o dinero real!
-      </p>
-
-      {/* Tabla de referidos usando DynamicTable */}
+      {/* Tabla de referidos */}
       <div className="mt-6">
         <DynamicTable
           title="Lista de Referidos"
@@ -96,7 +145,7 @@ export default function ReferralProgram() {
           error={null}
           searchValue={""}
           columns={columns}
-          actionButtons={[]} // sin botones de acción
+          actionButtons={[]}
         />
       </div>
     </div>

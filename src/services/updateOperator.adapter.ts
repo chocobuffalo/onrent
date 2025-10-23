@@ -9,7 +9,7 @@ export default async function updateOperator(
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/provider/operator/update/${id}`,
       {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

@@ -56,15 +56,23 @@ export default function useOperatorList(props?: UseOperatorListProps) {
 
   const refreshList = useCallback(() => fetchOperators(), [fetchOperators]);
 
+  // ✅ CORREGIDO: Manejo seguro de valores null/undefined
   const filteredOperators = useMemo(() => {
     if (!searchValue.trim()) return operators;
     
     const search = searchValue.toLowerCase();
-    return operators.filter(operator =>
-      operator.name?.toLowerCase().includes(search) ||
-      operator.email?.toLowerCase().includes(search) ||
-      operator.phone?.toLowerCase().includes(search)
-    );
+    return operators.filter(operator => {
+      // Convertir a string vacío si es null/undefined, luego aplicar toLowerCase
+      const name = (operator.name || '').toLowerCase();
+      const email = (operator.email || '').toLowerCase();
+      const phone = (operator.phone || '').toLowerCase();
+      
+      return (
+        name.includes(search) ||
+        email.includes(search) ||
+        phone.includes(search)
+      );
+    });
   }, [operators, searchValue]);
 
   const getAvailabilityLabel = (availability: string) => {
