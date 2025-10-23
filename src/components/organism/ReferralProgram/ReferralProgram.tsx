@@ -13,6 +13,7 @@ export default function ReferralProgram() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [referralLink, setReferralLink] = useState("");
   const [qrImage, setQrImage] = useState<string | null>(null);
+  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function ReferralProgram() {
         const linkData = await generateReferral(token);
         setReferralLink(linkData.referral_link);
         setQrImage(linkData.qr_image_base64);
+        setLoyaltyPoints(linkData.loyalty_points);
 
         const data = await getReferrals(token);
         setReferrals(data);
@@ -65,6 +67,7 @@ export default function ReferralProgram() {
   return (
     <div className="container p-4">
       <h2 className="text-xl font-bold mb-2">Programa de Lealtad - Referidos</h2>
+      <p>Tus puntos de lealtad: {loyaltyPoints}</p>
 
       <input
         value={referralLink}

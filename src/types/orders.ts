@@ -179,7 +179,9 @@ export interface TransferDetail extends Transfer {
   project: string;
   operator_name: string;
   provider_name: string;
-  dynamic_rent: number;
+  provider_phone?: string;
+  origin?: string;
+  destination?: string;
 }
 
 export interface GetTransfersResult {
