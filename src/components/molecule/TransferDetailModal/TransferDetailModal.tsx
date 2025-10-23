@@ -180,6 +180,14 @@ const TransferDetailModal = ({ transferId, onClose, onSuccess }: TransferDetailM
                   <p className="text-sm font-semibold">Teléfono Proveedor</p>
                   <p>{transfer.provider_phone ?? '-'}</p>
                 </div>
+                <div>
+                  <p className="text-sm font-semibold">Cliente</p>
+                  <p>{transfer.client_name ?? '-'}</p>
+                </div>
+                <div>
+                   <p className="text-sm font-semibold">Teléfono Cliente</p>
+                   <p>{transfer.client_phone ?? '-'}</p>
+                </div>
               </div>
             </div>
           )}

@@ -180,6 +180,8 @@ export interface TransferDetail extends Transfer {
   operator_name: string;
   provider_name: string;
   provider_phone?: string;
+  client_name?: string; 
+  client_phone?: string;
   origin?: string;
   destination?: string;
 }
