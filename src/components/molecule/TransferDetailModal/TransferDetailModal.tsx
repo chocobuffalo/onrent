@@ -1,11 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useSession } from 'next-auth/react';
 import { TransferDetail } from '@/types/orders';
 import getTransferDetail from '@/services/getTransferDetail';
 import markTransferArrived from '@/services/markTransferArrived';
-import { X } from 'lucide-react';
+import { ImSpinner8 } from "react-icons/im";
+import { toast } from 'react-toastify';
+import "./TransferDetailModal.scss";
 
 interface TransferDetailModalProps {
   transferId: number;
@@ -20,33 +23,26 @@ const TransferDetailModal = ({ transferId, onClose, onSuccess }: TransferDetailM
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
 
-  // 👇 Flag para evitar hydration error
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const token = (session as any)?.accessToken || (session as any)?.user?.accessToken || 
+                localStorage.getItem("api_access_token") || "";
+  
+  const hasFetched = useRef(false);
 
-  const getToken = useCallback(() => {
-    const nextAuthToken = (session as any)?.accessToken || (session as any)?.user?.accessToken;
-    const localStorageToken = typeof window !== 'undefined' ? localStorage.getItem("api_access_token") : null;
-    return nextAuthToken || localStorageToken || '';
-  }, [session]);
-
-  const fetchDetail = useCallback(async () => {
+  const fetchDetail = async () => {
+    if (!token) {
+      setError('No se encontró token de autenticación');
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     
     try {
-      const token = getToken();
-      if (!token) {
-        setError('No se encontró token de autenticación');
-        setLoading(false);
-        return;
-      }
-      
       const result = await getTransferDetail(token, transferId);
       
       if (!result.success) {
         setError(result.message || 'Error al cargar el detalle');
-        setLoading(false);
         return;
       }
       
@@ -57,28 +53,35 @@ const TransferDetailModal = ({ transferId, onClose, onSuccess }: TransferDetailM
     } finally {
       setLoading(false);
     }
-  }, [getToken, transferId]);
+  };
 
   useEffect(() => {
-    fetchDetail();
-  }, [fetchDetail]);
+    if (transferId) {
+      document.body.style.overflow = 'hidden';
+      
+      // ✅ Fetch solo una vez
+      if (!hasFetched.current) {
+        hasFetched.current = true;
+        fetchDetail();
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [transferId]); // Solo depende de transferId
 
   const handleComplete = async () => {
     if (!transfer || transfer.state !== 'in_progress') {
-      alert('Solo se pueden completar traslados en estado "En progreso"');
-      return;
-    }
-
-    if (!confirm('¿Estás seguro de marcar este traslado como completado?')) {
+      toast.warning('Solo se pueden completar traslados en estado "En progreso"');
       return;
     }
 
     setCompleting(true);
     
     try {
-      const token = getToken();
       if (!token) {
-        alert('No se encontró token de autenticación');
+        toast.error('No se encontró token de autenticación');
         setCompleting(false);
         return;
       }
@@ -86,115 +89,230 @@ const TransferDetailModal = ({ transferId, onClose, onSuccess }: TransferDetailM
       const result = await markTransferArrived(token, transferId);
       
       if (!result.success) {
-        alert(result.message || 'Error al completar el traslado');
+        toast.error(result.message || 'Error al completar el traslado');
         setCompleting(false);
         return;
       }
       
-      alert(result.message || 'Traslado marcado como completado exitosamente');
+      toast.success(result.message || 'Traslado marcado como completado exitosamente');
       onSuccess();
       onClose();
     } catch (err) {
       console.error('Error inesperado:', err);
-      alert('Error inesperado al completar el traslado');
+      toast.error('Error inesperado al completar el traslado');
     } finally {
       setCompleting(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Detalle del Traslado</h2>
-          <button
+  const getStateLabel = (state: string) => {
+    const stateMap: { [key: string]: string } = {
+      'draft': 'Borrador',
+      'confirmed': 'Confirmado',
+      'in_progress': 'En progreso',
+      'done': 'Completado',
+      'cancelled': 'Cancelado'
+    };
+    return stateMap[state] || state;
+  };
+
+  const getStateClass = (state: string) => {
+    const classMap: { [key: string]: string } = {
+      'draft': 'transfer-detail-modal__status--draft',
+      'confirmed': 'transfer-detail-modal__status--confirmed',
+      'in_progress': 'transfer-detail-modal__status--in-progress',
+      'done': 'transfer-detail-modal__status--done',
+      'cancelled': 'transfer-detail-modal__status--cancelled'
+    };
+    return `transfer-detail-modal__status ${classMap[state] || 'transfer-detail-modal__status--draft'}`;
+  };
+
+  // ✅ CAMBIO CRÍTICO: Mostrar modal INMEDIATAMENTE, no esperar datos
+  if (!transferId) return null;
+
+  const modalContent = (
+    <div 
+      className="transfer-detail-modal__overlay"
+      onClick={onClose}
+    >
+      <div 
+        className="transfer-detail-modal__content"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header - Siempre visible */}
+        <div className="transfer-detail-modal__header">
+          <div className="transfer-detail-modal__header-info">
+            <h2>Detalle del Traslado #{transferId}</h2>
+          </div>
+          <button 
+            className="transfer-detail-modal__header-close"
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+            aria-label="Cerrar modal"
           >
-            <X size={24} />
+            ×
           </button>
         </div>
-
-        <div className="p-6">
-          {loading && <p>Cargando detalle...</p>}
-          {error && <p className="text-red-600">{error}</p>}
-
-          {transfer && !loading && !error && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">ID Traslado</p>
-                  <p className="text-lg">{transfer.transfer_id}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">ID Orden</p>
-                  <p className="text-lg">{transfer.order_id}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">Nombre</p>
-                  <p className="text-lg">{transfer.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">Estado</p>
-                  <p className="text-lg capitalize">{transfer.state.replace('_', ' ')}</p>
-                </div>
-              </div>
-
-              <hr />
-
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">Máquina</p>
-                <p className="text-lg">{transfer.machine_name}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">Fecha Inicio</p>
-                  <p className="text-lg">
-                    {mounted && transfer.start_date ? new Date(transfer.start_date).toLocaleDateString('es-ES') : ''}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">Fecha Fin</p>
-                  <p className="text-lg">
-                    {mounted && transfer.end_date ? new Date(transfer.end_date).toLocaleDateString('es-ES') : ''}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">Duración</p>
-                  <p className="text-lg">{transfer.duration_days} días</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">Origen</p>
-                  <p className="text-lg">{transfer.origin}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">Destino</p>
-                  <p className="text-lg">{transfer.destination}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Proveedor</p>
-                  <p>{transfer.provider_name ?? '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Teléfono Proveedor</p>
-                  <p>{transfer.provider_phone ?? '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Cliente</p>
-                  <p>{transfer.client_name ?? '-'}</p>
-                </div>
-                <div>
-                   <p className="text-sm font-semibold">Teléfono Cliente</p>
-                   <p>{transfer.client_phone ?? '-'}</p>
-                </div>
-              </div>
+        
+        {/* Body */}
+        <div className="transfer-detail-modal__body">
+          
+          {/* Loading state */}
+          {loading && (
+            <div className="flex justify-center items-center py-16">
+              <ImSpinner8 className="h-8 w-8 animate-spin text-[#EA6300]" />
             </div>
+          )}
+
+          {/* Error state */}
+          {error && !loading && (
+            <div className="text-center py-8">
+              <p className="text-red-500">{error}</p>
+            </div>
+          )}
+
+          {/* Content - Solo mostrar cuando tenga datos */}
+          {!loading && !error && transfer && (
+            <>
+              {/* Información principal */}
+              <div className="transfer-detail-modal__main-info">
+                <div className="transfer-detail-modal__main-info-item">
+                  <div className="label">ID Orden</div>
+                  <p className="value value--large value--accent">{transfer.order_id}</p>
+                </div>
+                <div className="transfer-detail-modal__main-info-item">
+                  <div className="label">Nombre</div>
+                  <p className="value">{transfer.name || 'No especificado'}</p>
+                </div>
+                <div className="transfer-detail-modal__main-info-item">
+                  <div className="label">Estado</div>
+                  <span className={getStateClass(transfer.state)}>
+                    {getStateLabel(transfer.state)}
+                  </span>
+                </div>
+                <div className="transfer-detail-modal__main-info-item">
+                  <div className="label">Duración</div>
+                  <p className="value value--large value--accent">
+                    {transfer.duration_days || 0} días
+                  </p>
+                </div>
+              </div>
+
+              {/* Información de la Máquina */}
+              <div className="transfer-detail-modal__section">
+                <h3 className="transfer-detail-modal__section-title">
+                  Información de la Máquina
+                </h3>
+                <div className="transfer-detail-modal__machine-info">
+                  <div className="transfer-detail-modal__machine-info-grid">
+                    <div className="transfer-detail-modal__machine-info-item">
+                      <div className="field-label">Máquina</div>
+                      <p className="field-value">
+                        {transfer.machine_name || 'No especificada'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fechas y Ubicaciones */}
+              <div className="transfer-detail-modal__section">
+                <h3 className="transfer-detail-modal__section-title">
+                  Fechas y Ubicaciones
+                </h3>
+                <div className="transfer-detail-modal__dates-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          {transfer.start_date 
+                            ? new Date(transfer.start_date).toLocaleDateString('es-ES') 
+                            : 'No especificada'}
+                        </td>
+                        <td>
+                          {transfer.end_date 
+                            ? new Date(transfer.end_date).toLocaleDateString('es-ES') 
+                            : 'No especificada'}
+                        </td>
+                        <td>{transfer.origin || 'No especificado'}</td>
+                        <td>{transfer.destination || 'No especificado'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Información de Contacto */}
+              <div className="transfer-detail-modal__section">
+                <h3 className="transfer-detail-modal__section-title">
+                  Información de Contacto
+                </h3>
+                <div className="transfer-detail-modal__contact-info">
+                  <div className="transfer-detail-modal__contact-info-grid">
+                    <div className="transfer-detail-modal__contact-info-item">
+                      <div className="field-label">Proveedor</div>
+                      <p className="field-value">
+                        {transfer.provider_name || 'No especificado'}
+                      </p>
+                    </div>
+                    <div className="transfer-detail-modal__contact-info-item">
+                      <div className="field-label">Teléfono Proveedor</div>
+                      <p className="field-value">
+                        {transfer.provider_phone || 'No especificado'}
+                      </p>
+                    </div>
+                    <div className="transfer-detail-modal__contact-info-item">
+                      <div className="field-label">Cliente</div>
+                      <p className="field-value">
+                        {transfer.client_name || 'No especificado'}
+                      </p>
+                    </div>
+                    <div className="transfer-detail-modal__contact-info-item">
+                      <div className="field-label">Teléfono Cliente</div>
+                      <p className="field-value">
+                        {transfer.client_phone || 'No especificado'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botón de acción */}
+              {transfer.state === 'in_progress' && (
+                <div className="transfer-detail-modal__actions">
+                  <button
+                    onClick={handleComplete}
+                    disabled={completing}
+                    className="transfer-detail-modal__action-button transfer-detail-modal__action-button--primary"
+                  >
+                    {completing ? (
+                      <>
+                        <ImSpinner8 className="animate-spin mr-2" />
+                        Procesando...
+                      </>
+                    ) : (
+                      'Marcar como Completado'
+                    )}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' 
+    ? createPortal(modalContent, document.body)
+    : null;
 };
 
 export default TransferDetailModal;
