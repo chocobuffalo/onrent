@@ -2,11 +2,21 @@ import usePersonalForm from "@/hooks/backend/usePersonalForm";
 import { ImSpinner8 } from "react-icons/im";
 import { FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import { toast } from "react-toastify";
+import MultiSelectCheckbox from "@/components/molecule/MultiSelectCheckbox/MultiSelectCheckbox";
+import { useState, useEffect } from "react";
+
+
+
+
 
 interface PersonalFormProps {
   showOperatorForm: boolean;
   onOperatorFormReset: () => void;
 }
+
+
+
+
 
 export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: PersonalFormProps) {
   const {
@@ -14,6 +24,7 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
     errors,
     handleSubmit,
     register,
+    setValue,
     isValid,
     isLoading,
     authEmail,
@@ -25,14 +36,64 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
     locationStatus,
     cityError,
     setCityError,
-    // listas dinámicas del hook
     licenseTypes,
     experienceLevels,
     trainingStatuses,
     availabilities,
     providers,
     machines,
+    selectedMachines,
+    setSelectedMachines,
+    initialValues,
   } = usePersonalForm({ showOperatorForm, onOperatorFormReset });
+
+
+
+
+
+  const [providerError, setProviderError] = useState(false);
+  const [machinesError, setMachinesError] = useState(false);
+  const [providerTouched, setProviderTouched] = useState(false);
+  const [machinesTouched, setMachinesTouched] = useState(false);
+
+  const [hasEppChecked, setHasEppChecked] = useState(false);
+
+
+
+  useEffect(() => {
+    if (initialValues?.hasEpp !== undefined) {
+      setHasEppChecked(initialValues.hasEpp);
+    }
+  }, [initialValues?.hasEpp]);
+
+
+
+
+
+  const validateProvider = (value: any) => {
+    if (!value || value === "") {
+      setProviderError(true);
+      return false;
+    }
+    setProviderError(false);
+    return true;
+  };
+
+
+
+
+
+  const validateMachines = () => {
+    if (selectedMachines.length === 0) {
+      setMachinesError(true);
+      return false;
+    }
+    setMachinesError(false);
+    return true;
+  };
+
+
+
 
   return (
     <div className="">
@@ -40,13 +101,35 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
       <form
         onSubmit={handleSubmit(
           (data) => {
-            // validación de región manual
+            // Validación manual de región
             if (!selectedRegion) {
               setCityError(true);
               toast.error("El campo ciudad es obligatorio");
               return;
             }
             setCityError(false);
+
+
+
+
+            // Validación de proveedor
+            if (showOperatorForm && !validateProvider(data.providerId)) {
+              toast.error("El campo proveedor es obligatorio");
+              return;
+            }
+
+
+
+
+            // Validación de máquinas
+            if (showOperatorForm && !validateMachines()) {
+              toast.error("Debes seleccionar al menos una máquina compatible");
+              return;
+            }
+
+
+
+
             onSubmit(data);
           },
           (validationErrors) => {
@@ -57,6 +140,9 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
               setCityError(true);
               missingFields.push("ciudad");
             }
+
+
+
 
             if (missingFields.length > 0) {
               let errorMessage = "";
@@ -89,6 +175,9 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
               </div>
             </div>
 
+
+
+
             {/* Teléfono */}
             <div className="col-md-6">
               <div className="form-group">
@@ -103,6 +192,9 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
               </div>
             </div>
 
+
+
+
             {/* Email (solo lectura) */}
             <div className="col-md-6">
               <div className="form-group">
@@ -116,6 +208,9 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                 />
               </div>
             </div>
+
+
+
 
             {/* Región */}
             <div className="col-md-12">
@@ -160,32 +255,51 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
             </div>
           </div>
 
+
+
+
           {/* Información de Operador */}
           {showOperatorForm && (
             <div className="mt-4">
               <h2 className="form-title mb-2">Información de Operador</h2>
 
-              {/* Estado de ubicación */}
+
+
+
+              {/*Estado de ubicación - SOLO loading y error */}
               <div className="mb-4">
                 {locationStatus === "loading" && (
-                  <div className="alert alert-info d-flex align-items-center" style={{ borderRadius: "0.5rem" }}>
+                  <div 
+                    className="alert d-flex align-items-center" 
+                    style={{ 
+                      borderRadius: "0.5rem",
+                      backgroundColor: "#fff3cd",
+                      border: "1px solid #ffc107",
+                      color: "#856404"
+                    }}
+                  >
                     <ImSpinner8 size={20} className="animate-spin me-2" />
                     <span>Obteniendo tu ubicación...</span>
                   </div>
                 )}
-                {locationStatus === "success" && (
-                  <div className="alert alert-success d-flex align-items-center" style={{ borderRadius: "0.5rem" }}>
-                    <FaCheckCircle size={20} className="me-2" />
-                    <span>✓ Ubicación obtenida correctamente</span>
-                  </div>
-                )}
                 {locationStatus === "error" && (
-                  <div className="alert alert-warning d-flex align-items-center" style={{ borderRadius: "0.5rem" }}>
+                  <div 
+                    className="alert d-flex align-items-center" 
+                    style={{ 
+                      borderRadius: "0.5rem",
+                      backgroundColor: "#fff3cd",
+                      border: "1px solid #ffc107",
+                      color: "#856404"
+                    }}
+                  >
                     <FaExclamationTriangle size={20} className="me-2" />
                     <span>No se pudo obtener la ubicación. Por favor, permite el acceso en el navegador.</span>
                   </div>
                 )}
               </div>
+
+
+
 
               <div className="row">
                 {/* CURP */}
@@ -203,6 +317,9 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                   </div>
                 </div>
 
+
+
+
                 {/* Número de licencia */}
                 <div className="col-md-6">
                   <div className="form-group">
@@ -217,7 +334,10 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                   </div>
                 </div>
 
-                {/* Tipo de licencia (select) */}
+
+
+
+                {/* Tipo de licencia */}
                 <div className="col-md-6">
                   <div className="form-group">
                     <label htmlFor="licenseType">Tipo de Licencia</label>
@@ -233,7 +353,6 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                   </div>
                 </div>
 
-                {/* Años de experiencia */}
                 <div className="col-md-6">
                   <div className="form-group">
                     <label htmlFor="experienceYears">Años de Experiencia</label>
@@ -241,14 +360,17 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                       {...register("experienceYears")}
                       type="number"
                       className="form-control"
-                      placeholder="Años de experiencia"
+                      placeholder="0"
                       min="0"
                     />
                     {errors.experienceYears && <span className="text-danger">{errors.experienceYears.message}</span>}
                   </div>
                 </div>
 
-                {/* Nivel de experiencia (select) */}
+
+
+
+                {/* Nivel de experiencia */}
                 <div className="col-md-6">
                   <div className="form-group">
                     <label htmlFor="experienceLevel">Nivel de Experiencia</label>
@@ -264,7 +386,10 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                   </div>
                 </div>
 
-                {/* Estado de capacitación (select) */}
+
+
+
+                {/* Estado de capacitación */}
                 <div className="col-md-6">
                   <div className="form-group">
                     <label htmlFor="trainingStatus">Estado de Capacitación</label>
@@ -280,7 +405,10 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                   </div>
                 </div>
 
-                {/* Disponibilidad (select) */}
+
+
+
+                {/* Disponibilidad */}
                 <div className="col-md-6">
                   <div className="form-group">
                     <label htmlFor="availability">Disponibilidad</label>
@@ -296,11 +424,27 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                   </div>
                 </div>
 
-                {/* Proveedor (select) */}
+
+
+
+                {/* Proveedor con validación onBlur */}
                 <div className="col-md-6">
                   <div className="form-group">
                     <label htmlFor="providerId">Proveedor</label>
-                    <select {...register("providerId")} className="form-control">
+                    <select 
+                      {...register("providerId")} 
+                      className="form-control"
+                      onChange={(e) => {
+                        register("providerId").onChange(e);
+                        if (providerTouched) {
+                          validateProvider(e.target.value);
+                        }
+                      }}
+                      onBlur={(e) => {
+                        setProviderTouched(true);
+                        validateProvider(e.target.value);
+                      }}
+                    >
                       <option value="">Selecciona un proveedor</option>
                       {providers.map((p) => (
                         <option key={p.id} value={p.id}>
@@ -308,42 +452,96 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                         </option>
                       ))}
                     </select>
-                    {errors.providerId && <span className="text-danger">{errors.providerId.message}</span>}
-                  </div>
-                </div>
-
-                {/* Máquinas compatibles (multi-select) */}
-                <div className="col-md-6">
-                  <div className="form-group">
-                    <label htmlFor="compatibleMachinesIds">Máquinas Compatibles</label>
-                    <select {...register("compatibleMachinesIds")} multiple className="form-control">
-                      {machines.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name}
-                        </option>
-                      ))}
-                    </select>
-                    <small className="form-text text-muted">Usa Ctrl/Cmd para seleccionar varias</small>
-                    {errors.compatibleMachinesIds && (
-                      <span className="text-danger">{(errors.compatibleMachinesIds as any)?.message}</span>
+                    {providerTouched && providerError && (
+                      <span className="text-danger">Proveedor es requerido</span>
                     )}
                   </div>
                 </div>
 
-                {/* EPP */}
-                <div className="col-md-6">
-                  <div className="form-group d-flex align-items-center" style={{ marginTop: "32px" }}>
+
+
+
+                {/* Máquinas compatibles con validación onBlur */}
+                <div className="col-md-12">
+                  <div 
+                    onBlur={() => {
+                      setMachinesTouched(true);
+                      validateMachines();
+                    }}
+                  >
+                    <MultiSelectCheckbox
+                      options={machines}
+                      selectedIds={selectedMachines}
+                      onChange={(ids: number[]) => {
+                        setSelectedMachines(ids);
+                        setValue('compatibleMachinesIds', ids);
+                        if (machinesTouched) {
+                          validateMachines();
+                        }
+                      }}
+                      placeholder="Selecciona las máquinas que puedes operar"
+                      label="Máquinas Compatibles"
+                      error={machinesTouched && machinesError ? "Debes seleccionar al menos una máquina compatible" : undefined}
+                    />
+                  </div>
+                </div>
+
+
+
+
+                {/* EPP - IGUAL al checkbox de operario */}
+                <div className="col-md-12" style={{ paddingTop: '20px', paddingBottom: '20px', paddingLeft: '25px', marginBottom: '12px' }}>
+                  <div className="flex items-center relative">
                     <input
                       {...register("hasEpp")}
                       type="checkbox"
                       id="hasEpp"
-                      style={{ width: "20px", height: "20px", marginRight: "10px", cursor: "pointer" }}
+                      checked={hasEppChecked}
+                      onChange={(e) => {
+                        setHasEppChecked(e.target.checked);
+                        setValue('hasEpp', e.target.checked);
+                      }}
+                      style={{
+                        appearance: 'none',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '4px',
+                        border: '2px solid #ff6b35',
+                        backgroundColor: hasEppChecked ? '#ff6b35' : 'transparent',
+                        marginRight: '32px',
+                        cursor: 'pointer',
+                        flexShrink: 0
+                      }}
                     />
-                    <label htmlFor="hasEpp" style={{ marginBottom: 0, cursor: "pointer" }}>
+                    {hasEppChecked && (
+                      <div style={{
+                        position: 'absolute',
+                        left: '6px',
+                        top: '2px',
+                        color: 'white',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        pointerEvents: 'none'
+                      }}>
+                        ✓
+                      </div>
+                    )}
+                    <label 
+                      htmlFor="hasEpp"
+                      style={{
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        cursor: 'pointer'
+                      }}
+                    >
                       ¿Cuenta con EPP (Equipo de Protección Personal)?
                     </label>
                   </div>
                 </div>
+
+
+
 
                 {/* GPS ocultos */}
                 <input {...register("gpsLat")} type="hidden" />
@@ -351,6 +549,9 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
               </div>
             </div>
           )}
+
+
+
 
           {/* Botón submit */}
           <div className="group-button-submit left mb-0">
