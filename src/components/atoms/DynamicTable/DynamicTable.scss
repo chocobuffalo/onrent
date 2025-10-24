@@ -1384,3 +1384,258 @@ $spacing-scale: (
   }
 }
 
+// =============================================================================
+// TABLA DE TAREAS - VERSIÓN FINAL COMPLETA
+// =============================================================================
+
+.dynamic-table-container.tasks-table {
+  // LG (768px - 991px) - AMBOS botones en DOS LÍNEAS
+  @include respond-to(map-get($breakpoints, lg), map-get($breakpoints, lg-max)) {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    
+    .overflow-x-auto {
+      overflow-x: hidden !important;
+    }
+    
+    table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+    
+    th:nth-child(1), td:nth-child(1) { width: 27% !important; }
+    th:nth-child(2), td:nth-child(2) { width: 19% !important; }
+    th:nth-child(3), td:nth-child(3) { width: 15% !important; }
+    th:nth-child(4), td:nth-child(4) { width: 15% !important; }
+    th:last-child, td:last-child { width: 24% !important; overflow: visible !important; }
+    
+    th, td {
+      padding-left: 0.45rem !important;
+      padding-right: 0.35rem !important;
+      font-size: 0.68rem !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    
+    tbody td:last-child {
+      div {
+        gap: 0.25rem !important;
+        overflow: visible !important;
+        flex-wrap: nowrap !important;
+      }
+    }
+    
+    .table-action-button {
+      padding: 0.35rem 0.5rem !important;
+      font-size: 0.62rem !important;
+      min-width: 4.2rem !important;
+      max-width: 5rem !important;
+      gap: 0.2rem !important;
+      white-space: pre-line !important;
+      text-align: center !important;
+      line-height: 1.2 !important;
+      border-width: 1.5px !important;
+      
+      svg {
+        width: 0.6rem !important;
+        height: 0.6rem !important;
+        flex-shrink: 0 !important;
+      }
+    }
+  }
+  
+  // XL (992px - 1199px) - AJUSTADO para que no se corten los botones
+  @include respond-to(map-get($breakpoints, xl), map-get($breakpoints, xl-max)) {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    
+    .overflow-x-auto {
+      overflow-x: hidden !important;
+    }
+    
+    table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+    
+    // ✅ REDISTRIBUCIÓN: Reducir columnas, aumentar Acciones
+    th:nth-child(1), td:nth-child(1) { width: 26% !important; } // Nombre (era 28%)
+    th:nth-child(2), td:nth-child(2) { width: 18% !important; } // Máquina (era 19%)
+    th:nth-child(3), td:nth-child(3) { width: 15% !important; } // Fecha Inicio (era 16%)
+    th:nth-child(4), td:nth-child(4) { width: 15% !important; } // Fecha Fin (era 16%)
+    th:last-child, td:last-child { width: 26% !important; overflow: visible !important; } // ✅ Acciones (era 21%)
+    
+    th, td {
+      padding-left: 0.45rem !important;
+      padding-right: 0.35rem !important;
+      font-size: 0.68rem !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    
+    tbody td:last-child {
+      div {
+        gap: 0.2rem !important; // ✅ Gap más pequeño
+        overflow: visible !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important; // ✅ Alinear a la izquierda
+      }
+    }
+    
+    .table-action-button {
+      padding: 0.32rem 0.45rem !important; // ✅ Padding más compacto
+      font-size: 0.6rem !important; // ✅ Fuente más pequeña
+      min-width: 4rem !important;
+      max-width: 4.8rem !important;
+      gap: 0.18rem !important;
+      white-space: pre-line !important;
+      text-align: center !important;
+      line-height: 1.2 !important;
+      border-width: 1.5px !important;
+      
+      svg {
+        width: 0.6rem !important;
+        height: 0.6rem !important;
+        flex-shrink: 0 !important;
+      }
+    }
+    
+    .table-action-button--primary {
+      min-width: 4.3rem !important;
+      max-width: 5rem !important;
+    }
+  }
+  
+  // XXL (1200px - 1399px) - DOS LÍNEAS
+  @include respond-to(map-get($breakpoints, xxl), map-get($breakpoints, xxl-max)) {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    
+    .overflow-x-auto {
+      overflow-x: hidden !important;
+    }
+    
+    table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+    
+    th:nth-child(1), td:nth-child(1) { width: 27% !important; }
+    th:nth-child(2), td:nth-child(2) { width: 20% !important; }
+    th:nth-child(3), td:nth-child(3) { width: 16% !important; }
+    th:nth-child(4), td:nth-child(4) { width: 16% !important; }
+    th:last-child, td:last-child { width: 21% !important; overflow: visible !important; }
+    
+    th, td {
+      padding-left: 0.6rem !important;
+      padding-right: 0.55rem !important;
+      font-size: 0.78rem !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    
+    tbody td:last-child {
+      div {
+        gap: 0.3rem !important;
+        overflow: visible !important;
+        flex-wrap: nowrap !important;
+      }
+    }
+    
+    .table-action-button {
+      padding: 0.42rem 0.75rem !important;
+      font-size: 0.72rem !important;
+      min-width: auto !important;
+      max-width: none !important;
+      gap: 0.28rem !important;
+      white-space: pre-line !important;
+      text-align: center !important;
+      line-height: 1.26 !important;
+      border-width: 2px !important;
+      
+      svg {
+        width: 0.72rem !important;
+        height: 0.72rem !important;
+        flex-shrink: 0 !important;
+      }
+    }
+    
+    .table-action-button--primary {
+      min-width: 5.2rem !important;
+      max-width: 6.2rem !important;
+    }
+  }
+  
+  // XXXL (1400px+) - DOS LÍNEAS + sin scroll
+  @include respond-to(map-get($breakpoints, xxxl)) {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    
+    .overflow-x-auto {
+      overflow-x: hidden !important;
+    }
+    
+    table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+    
+    th:nth-child(1), td:nth-child(1) { width: 26% !important; }
+    th:nth-child(2), td:nth-child(2) { width: 20% !important; }
+    th:nth-child(3), td:nth-child(3) { width: 16% !important; }
+    th:nth-child(4), td:nth-child(4) { width: 16% !important; }
+    th:last-child, td:last-child { width: 22% !important; overflow: visible !important; }
+    
+    th, td {
+      padding-left: 0.7rem !important;
+      padding-right: 0.65rem !important;
+      font-size: 0.86rem !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      word-wrap: break-word !important;
+    }
+    
+    th:first-child, td:first-child {
+      padding-left: 1.2rem !important;
+    }
+    
+    th:last-child, td:last-child {
+      padding-right: 1.2rem !important;
+    }
+    
+    tbody td:last-child {
+      div {
+        gap: 0.32rem !important;
+        overflow: visible !important;
+        flex-wrap: nowrap !important;
+      }
+    }
+    
+    .table-action-button {
+      padding: 0.46rem 0.8rem !important;
+      font-size: 0.78rem !important;
+      min-width: auto !important;
+      max-width: none !important;
+      gap: 0.3rem !important;
+      white-space: pre-line !important;
+      text-align: center !important;
+      line-height: 1.24 !important;
+      border-width: 2px !important;
+      
+      svg {
+        width: 0.78rem !important;
+        height: 0.78rem !important;
+        flex-shrink: 0 !important;
+      }
+    }
+    
+    .table-action-button--primary {
+      min-width: 5.8rem !important;
+      max-width: 6.8rem !important;
+    }
+  }
+}

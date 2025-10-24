@@ -32,7 +32,8 @@ export default function OperatorDetailModal({
     };
   }, [operatorId]);
 
-  if (!operatorId || !operator) return null;
+  // ✅ CAMBIO: Solo verifica operatorId, no operator
+  if (!operatorId) return null;
 
   const formatAvailability = (availability: string) => {
     const availabilityMap: { [key: string]: string } = {
@@ -70,10 +71,10 @@ export default function OperatorDetailModal({
         className="operator-detail-modal__content"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Header - Siempre visible */}
         <div className="operator-detail-modal__header">
           <div className="operator-detail-modal__header-info">
-            <h2>Detalle del Operador #{operator.operator_id}</h2>
+            <h2>Detalle del Operador #{operatorId}</h2>
           </div>
           <button 
             className="operator-detail-modal__header-close"
@@ -87,18 +88,21 @@ export default function OperatorDetailModal({
         {/* Body */}
         <div className="operator-detail-modal__body">
           
+          {/* ✅ Loading State */}
           {loading && (
             <div className="flex justify-center items-center py-16">
               <ImSpinner8 className="h-8 w-8 animate-spin text-[#EA6300]" />
             </div>
           )}
 
-          {error && (
+          {/* ✅ Error State */}
+          {error && !loading && (
             <div className="text-center py-8">
               <p className="text-red-500">{error}</p>
             </div>
           )}
 
+          {/* ✅ Content - Solo cuando tenga datos */}
           {!loading && !error && operator && (
             <>
               {/* Información principal */}
