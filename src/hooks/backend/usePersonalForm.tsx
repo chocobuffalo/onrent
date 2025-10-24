@@ -11,6 +11,7 @@ import { setName, setPhone } from "@/libs/redux/features/auth/authSlicer";
 import { Region } from "@/types/profile";
 import { toast } from "react-toastify";
 
+
 const schema = Yup.object({
   fullName: Yup.string().required("Nombres y apellidos son requeridos"),
   telephone: Yup.string().required("Teléfono es requerido"),
@@ -68,14 +69,33 @@ const schema = Yup.object({
       return originalValue === '' ? undefined : value;
     })
     .nullable(),
-    providerId: Yup.number().nullable(),
-    compatibleMachinesIds: Yup.array().of(Yup.number()).nullable(),
+  providerId: Yup.number()
+    .transform((value, originalValue) => {
+      if (originalValue === '' || originalValue === null || originalValue === undefined) {
+        return null;
+      }
+      return Number(originalValue);
+    })
+    .when('$showOperator', {
+      is: true,
+      then: (schema) => schema.required("Proveedor es requerido"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+  compatibleMachinesIds: Yup.array()
+    .of(Yup.number())
+    .when('$showOperator', {
+      is: true,
+      then: (schema) => schema.min(1, "Debes seleccionar al menos una máquina compatible"),
+      otherwise: (schema) => schema.nullable(),
+    }),
 });
+
 
 interface UsePersonalFormProps {
   showOperatorForm: boolean;
   onOperatorFormReset: () => void;
 }
+
 
 export default function usePersonalForm({ showOperatorForm, onOperatorFormReset }: UsePersonalFormProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -90,6 +110,8 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
   const [availabilities, setAvailabilities] = useState<[string, string][]>([]);
   const [providers, setProviders] = useState<{id:number; name:string}[]>([]);
   const [machines, setMachines] = useState<{id:number; name:string}[]>([]);
+  const [selectedMachines, setSelectedMachines] = useState<number[]>([]);
+  
   const [initialValues, setInitialValues] = useState({
     fullName: "",
     telephone: "",
@@ -137,16 +159,25 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
           setValue('gpsLng', lng);
           setLocationStatus('success');
           
-          console.log('📍 Ubicación obtenida:', { lat, lng });
-          toast.success('Ubicación obtenida correctamente');
+          toast.success('✓ Ubicación obtenida correctamente', {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            toastId: "location-success-toast",
+            style: {
+              backgroundColor: "#ff6b35",
+              color: "white",
+              fontWeight: "500"
+            }
+          });
         },
         (error) => {
-          console.error('❌ Error obteniendo ubicación:', error);
           setLocationStatus('error');
-          
           setValue('gpsLat', 0);
           setValue('gpsLng', 0);
-          
           toast.error('No se pudo obtener la ubicación. Por favor, permite el acceso a tu ubicación.');
         },
         {
@@ -176,7 +207,36 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     const gpsLat = profileData.gps_lat || 0;
     const gpsLng = profileData.gps_lng || 0;
     const providerId = profileData?.provider?.id || null;
-    const compatibleMachinesIds = profileData?.compatible_machines_ids?.map((m:any)=>m.id) || [];
+    
+    let compatibleMachinesIds: number[] = [];
+    
+    if (profileData?.compatible_machines_ids) {
+      const rawMachines = profileData.compatible_machines_ids;
+      
+      if (Array.isArray(rawMachines)) {
+        compatibleMachinesIds = rawMachines.map((m: any) => {
+          if (typeof m === 'object' && m !== null && 'id' in m) {
+            return Number(m.id);
+          }
+          return Number(m);
+        }).filter((id: number) => !isNaN(id));
+      }
+      else if (typeof rawMachines === 'number' || typeof rawMachines === 'string') {
+        const id = Number(rawMachines);
+        if (!isNaN(id)) {
+          compatibleMachinesIds = [id];
+        }
+      }
+    }
+    
+    if (compatibleMachinesIds.length === 0 && profileData?.compatible_machines) {
+      const altMachines = profileData.compatible_machines;
+      if (Array.isArray(altMachines)) {
+        compatibleMachinesIds = altMachines.map((m: any) => {
+          return typeof m === 'object' && m !== null && 'id' in m ? Number(m.id) : Number(m);
+        }).filter((id: number) => !isNaN(id));
+      }
+    }
 
     setValue("fullName", fullName);
     setValue("telephone", telephone);
@@ -192,7 +252,9 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     setValue("gpsLng", gpsLng);
     setValue("providerId", providerId);
     setValue("compatibleMachinesIds", compatibleMachinesIds);
+    
     setSelectedRegion(regionId);
+    setSelectedMachines(compatibleMachinesIds);
     
     setInitialValues({
       fullName,
@@ -234,7 +296,6 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
           syncProfileToForm(profileResponse);
         }
 
-        // opciones de operador
         const optionsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/client/profile/operator/options`, {
           headers: { Authorization: `Bearer ${session.user.access_token}` }
         }).then(r => r.json());
@@ -243,13 +304,11 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
         setTrainingStatuses(optionsRes.training_statuses || []);
         setAvailabilities(optionsRes.availabilities || []);
 
-        // proveedores
         const providersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/client/profile/providers`, {
           headers: { Authorization: `Bearer ${session.user.access_token}` }
         }).then(r => r.json());
         setProviders(providersRes || []);
 
-        // máquinas
         const machinesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/client/profile/machines`, {
           headers: { Authorization: `Bearer ${session.user.access_token}` }
         }).then(r => r.json());
@@ -287,12 +346,11 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
         updateData.availability = data.availability;
         updateData.gpsLat = Number(data.gpsLat) || 0;
         updateData.gpsLng = Number(data.gpsLng) || 0;
-        updateData.providerId = data.providerId || null;                   
-        updateData.compatibleMachinesIds = data.compatibleMachinesIds || [];
+        updateData.providerId = data.providerId || null;
+        updateData.compatibleMachinesIds = selectedMachines.length > 0 ? selectedMachines : [];
       }
 
-      const userProfile = await setProfileForm(updateData);
-      console.log("Información actualizada:", userProfile);
+      await setProfileForm(updateData);
 
       if (selectedRegion !== initialValues.regionId && selectedRegion !== null) {
         const regionResponse = await updateUserRegion(session.user.access_token, {
@@ -304,28 +362,11 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
           setIsLoading(false);
           return;
         }
-        console.log("Región actualizada:", regionResponse);
       }
 
       const updatedProfile = await getProfile(session.user.access_token);
       if (updatedProfile) {
         syncProfileToForm(updatedProfile);
-      }
-
-      if (showOperatorForm) {
-        setValue("curp", "");
-        setValue("licenseNumber", "");
-        setValue("licenseType", "");
-        setValue("experienceYears", 0);
-        setValue("experienceLevel", "");
-        setValue("trainingStatus", "");
-        setValue("hasEpp", false);
-        setValue("availability", "");
-        setValue("gpsLat", 0);
-        setValue("gpsLng", 0);
-        setLocationStatus('idle');
-        
-        onOperatorFormReset();
       }
       
       toast.success("Perfil actualizado con éxito");
@@ -351,6 +392,8 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
       availability: showOperatorForm ? (watch("availability") || "") : "",
       gpsLat: showOperatorForm ? (Number(watch("gpsLat")) || 0) : 0,
       gpsLng: showOperatorForm ? (Number(watch("gpsLng")) || 0) : 0,
+      providerId: showOperatorForm ? (watch("providerId") || null) : null,
+      compatibleMachinesIds: showOperatorForm ? selectedMachines : [],
     };
 
     return JSON.stringify(currentValues) !== JSON.stringify(initialValues);
@@ -361,6 +404,7 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     errors,
     handleSubmit,
     register,
+    setValue,
     isValid,
     authEmail: session?.user?.email || "",
     isLoading,
@@ -379,5 +423,7 @@ export default function usePersonalForm({ showOperatorForm, onOperatorFormReset 
     availabilities,
     providers,
     machines,
+    selectedMachines,
+    setSelectedMachines,
   };
 }
