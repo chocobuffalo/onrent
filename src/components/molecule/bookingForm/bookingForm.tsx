@@ -101,7 +101,7 @@ export const BookingForm = ({
         console.log("🔄 Fechas o cantidad cambiaron:", { startDate, endDate, count });
         
         if (startDate && endDate) {
-            const calculatedDays = countDays(startDate, endDate);
+            const calculatedDays = countDays(startDate, endDate) + 1;
             const calculatedPrice = unitPrice * count;
             const calculatedTotal = calculatedPrice * calculatedDays;
             setDayLength(calculatedDays);
@@ -188,7 +188,7 @@ export const BookingForm = ({
             || parseFloat(selectedMachine.price) 
             || 0;
         
-        const dayLength = countDays(bookingSession.startDate!, bookingSession.endDate!);
+        const dayLength = countDays(bookingSession.startDate!, bookingSession.endDate!) + 1;
         
         const existingItem = bookingItems.find(
             item => item.machineId === selectedMachine.id && 
