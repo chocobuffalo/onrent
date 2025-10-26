@@ -34,6 +34,9 @@ const OperatorNavigationPage = () => {
   const [orderIdInput, setOrderIdInput] = useState<string>("");
   const [loadingOrder, setLoadingOrder] = useState(false);
 
+  const userRole = (session as any)?.user?.role || (session as any)?.user?.roles?.[0]?.value;
+  const isOperator = userRole === 'operador';
+
   const {
     currentLocation,
     destination,
@@ -87,7 +90,6 @@ const OperatorNavigationPage = () => {
         return;
       }
 
-      // ✅ CASO 1: location es un objeto con coordenadas
       if (isLocationWithAddress(orderData.location)) {
         const lat = orderData.location.latitude ?? orderData.location.lat;
         const lng = orderData.location.longitude ?? orderData.location.lng;
@@ -102,16 +104,13 @@ const OperatorNavigationPage = () => {
           toast.error("Las coordenadas de la orden no son válidas");
         }
       } 
-      // ✅ CASO 2: location es solo texto, intentar usar location_coords
       else if (typeof orderData.location === 'string') {
         const coords = normalizeLocationCoords(orderData.location_coords);
         
         if (coords) {
-          // Si tenemos location_coords válidos, usarlos directamente
           setDestinationDirectly(coords, orderData.location);
           toast.success(`Destino cargado desde orden #${orderIdInput}`);
         } else {
-          // No hay coordenadas, necesitamos geocodificar el texto
           setSearchQuery(orderData.location);
           toast.info(`Buscando coordenadas para: ${orderData.location}`);
           
@@ -218,20 +217,33 @@ const OperatorNavigationPage = () => {
             <div className="flex items-center gap-2 text-sm">
               <span className="text-gray-500">Dashboard /</span>
               <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => router.push('/dashboard/tracking')}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Volver a Seguimiento
-            </button>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              <span className="text-sm font-medium text-orange-700">Modo Navegación</span>
-            </div>
-          </div>
+                {isOperator ? (
+                  <button
+                    onClick={() => router.push('/dashboard/profile')}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Atrás
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => router.push('/dashboard/tracking')}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Volver a Seguimiento
+                  </button>
+                )}
+                
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-orange-700">Modo Navegación</span>
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
@@ -592,7 +604,6 @@ const OperatorNavigationPage = () => {
             </h2>
           </div>
           
-          {/* Responsive map container */}
           <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px]">
             <OperatorMap
               currentLocation={currentLocation}
