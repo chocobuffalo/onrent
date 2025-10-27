@@ -4,7 +4,7 @@ import  Providers  from "@/libs/providers";
 import Toast from "@/components/atoms/Toast/Toast";
 import { auth } from "@/auth";
 import "./globals.css";
-
+import BackButtonFix from "@/components/BackButtonFix"; 
 
 export const metadata: CustomMetadata = {
   ...customMetadata,title:`Inicio | ${customMetadata.siteName}`,
@@ -24,6 +24,7 @@ export default async function RootLayout({
         <body
           className={``}
           >
+          <BackButtonFix />   
           {children}
           <Toast />
         </body>

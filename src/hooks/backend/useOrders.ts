@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 import { getOrdersList } from "@/services/getOrders";
 import { getOrderDetail } from "@/services/getOrderDetail";
 import { OrderResponse, OrderDetail } from "@/types/orders";
+import { rateOrder } from "@/services/rateOrder";
+import { dismissRating } from "@/services/dismissRating";
 
 export default function useOrders() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
@@ -93,11 +95,46 @@ export default function useOrders() {
     };
   }, []);
 
+  const submitOrderRating = async (orderId: number, rating: number) => {
+    if (!token) {
+      toast.error("Sesión expirada");
+      return false;
+    }
+    try {
+      const r = await rateOrder(orderId, rating, token);
+      toast.success(r.message);
+      // Unificar refresco con tu listener existente
+      window.dispatchEvent(new Event("orderUpdated"));
+      return true;
+    } catch (e: any) {
+      toast.error(e.message || "Error al calificar la orden");
+      return false;
+    }
+  };
+  
+  const dismissOrderRating = async (orderId: number) => {
+    if (!token) {
+      toast.error("Sesión expirada");
+      return false;
+    }
+    try {
+      const r = await dismissRating(orderId, token);
+      toast.info(r.message);
+      window.dispatchEvent(new Event("orderUpdated"));
+      return true;
+    } catch (e: any) {
+      toast.error(e.message || "Error al descartar la calificación");
+      return false;
+    }
+  };
+
   return {
     orders,
     isLoading,
     error,
     refreshOrders,
     getOrderDetailById,
+    submitOrderRating,
+    dismissOrderRating,
   };
 }
