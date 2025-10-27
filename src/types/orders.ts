@@ -16,6 +16,9 @@ export interface OrderResponse {
   fleet_cost: number;
   extra_charges: number;
   final_price: number;
+  state_code?: string;
+  x_client_rating?: number | null;
+  rating_dismissed?: boolean;
 }
 // Helper para verificar si una orden está confirmada
 export const isConfirmedOrder = (order: OrderResponse): boolean => {

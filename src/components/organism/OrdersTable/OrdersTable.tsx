@@ -1,9 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import DynamicTable from "@/components/atoms/DynamicTable/DynamicTable";
 import OrderDetailModal from "@/components/organism/OrderDetailModal/OrderDetailModal";
 import ConfirmationModal from "@/components/organism/ConfirmationModal/ConfirmationModal";
 import useOrdersTable from "@/hooks/frontend/ui/useOrdersTable";
+import RatingModal from "@/components/organism/RatingModal/RatingModal"; 
+import useOrders from "@/hooks/backend/useOrders";
 
 const OrdersTable = () => {
   const {
@@ -28,6 +31,29 @@ const OrdersTable = () => {
     handleCancelAction,
   } = useOrdersTable();
 
+  // 👇 estados para el RatingModal
+  const [ratingOpen, setRatingOpen] = useState(false);
+  const [orderForRating, setOrderForRating] = useState<any | null>(null);
+
+  const { submitOrderRating, dismissOrderRating } = useOrders();
+
+  // 👇 detectar automáticamente órdenes pendientes de calificación
+  useEffect(() => {
+    if (!items || items.length === 0) return;
+
+    const pending = items.find(
+      (o) =>
+        o.state_code === "completed" &&
+        (o.x_client_rating === 0 || o.x_client_rating === null) &&
+        !o.rating_dismissed
+    );
+
+    if (pending) {
+      setOrderForRating(pending);
+      setRatingOpen(true);
+    }
+  }, [items]);
+
   return (
     <div className="orders-table-container p-6">
       <div className="orders-table-content orders-table">
@@ -51,7 +77,11 @@ const OrdersTable = () => {
       <OrderDetailModal
         isOpen={detailModalOpen}
         orderDetail={orderDetail}
-        orderNumber={orderDetail ? items.find(item => item.order_id)?.order_id?.toString() : ''}
+        orderNumber={
+          orderDetail
+            ? items.find((item) => item.order_id)?.order_id?.toString()
+            : ""
+        }
         onClose={handleCloseDetailModal}
       />
 
@@ -69,6 +99,21 @@ const OrdersTable = () => {
           onCancel={handleCancelAction}
         />
       )}
+
+      {/* 👇 Nuevo modal de calificación */}
+      <RatingModal
+        isOpen={ratingOpen}
+        orderId={orderForRating?.order_id || null}
+        orderName={orderForRating?.name}
+        onSubmit={(rating) =>
+          submitOrderRating(orderForRating.order_id, rating)
+        }
+        onDismiss={() => dismissOrderRating(orderForRating.order_id)}
+        onClose={() => {
+          setRatingOpen(false);
+          setOrderForRating(null);
+        }}
+      />
     </div>
   );
 };

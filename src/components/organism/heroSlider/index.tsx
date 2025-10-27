@@ -13,18 +13,18 @@ import AdvanceFinder from "@/components/molecule/advanceFinder";
 
 export default function HeroSlider() {
   return (
-    <section className="relative h-[60vh] md:h-[70vh]">
+    <section className="relative h-[60vh] md:h-[70vh] max-h-[700px]">
       <Swiper
         effect="fade"
         modules={[Pagination, Autoplay, EffectFade]}
         spaceBetween={20}
         slidesPerView={1}
-        className="relative"
+        className="relative h-full"   // 👈 Swiper ocupa todo el alto del section
         speed={1000}
-        loop={true} // Habilita el loop infinito
+        loop={true}
         autoplay={{
-          delay: 3000, // Cambia de slide cada 3 segundos
-          disableOnInteraction: false, // Continúa el autoplay después de interacción del usuario
+          delay: 3000,
+          disableOnInteraction: false,
         }}
         pagination={{
           clickable: true,
@@ -35,22 +35,31 @@ export default function HeroSlider() {
       >
         {sliderItems.map((item: SliderInterface) => {
           return (
-            <SwiperSlide className="w-full" key={item.id}>
+            <SwiperSlide className="w-full h-full" key={item.id}> {/* 👈 cada slide respeta el alto */}
               <SliderPanel sliderItem={item} />
             </SwiperSlide>
           );
         })}
       </Swiper>
-      <div className="px-3.5 h-full py-40 flex absolute bottom-0 left-0 w-full items-end justify-start z-30">
-        <div className="container mx-auto">
-          <h1 className="text-2xl md:text-3xl lg:text-5xl font-bold text-white">
+
+      {/* Overlay oscuro para mejorar contraste */}
+      <div className="absolute inset-0 bg-black/30 md:bg-black/40 z-20"></div>
+
+      {/* Contenido encima del overlay */}
+      <div className="px-3.5 h-full flex absolute bottom-0 left-0 w-full items-end justify-start z-30
+                      pt-10 sm:pt-12 md:pt-14 lg:pt-16 xl:pt-18
+                      pb-12 sm:pb-16 md:pb-20 lg:pb-24 xl:pb-28">
+        <div className="container mx-auto text-left">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white leading-tight">
             Encuentra y renta maquinaria
             <br /> cerca de tu obra
           </h1>
-          <h2 className="text-xl text-white">
+          <h2 className="mt-2 text-base sm:text-lg md:text-2xl text-white">
             La plataforma líder para renta de maquinaria en México
           </h2>
-          <AdvanceFinder />
+          <div className="mt-6">
+            <AdvanceFinder />
+          </div>
         </div>
       </div>
     </section>

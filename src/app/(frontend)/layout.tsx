@@ -10,22 +10,22 @@ export default function FrontendLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
-      <main className="">
+      <main className="flex-1">
         <TrackingPixels />
         {children}
       </main>
       <Footer />
 
       <WhatsAppWidget
-      // Opcional: puedes pasar props si quieres sobreescribir valores por página
-      // brand="OnRentX"
-      // avatarSrc="/footer-logo.svg"
-      // greeting="¡Hola! 👋 ¿Buscas una máquina?"
-      // defaultMessage="Hola, me interesa cotizar una retroexcavadora."
-      // supportHours="L–V 9:00–18:00 (CST)"
+        // Opcional: puedes pasar props si quieres sobreescribir valores por página
+        // brand="OnRentX"
+        // avatarSrc="/footer-logo.svg"
+        // greeting="¡Hola! 👋 ¿Buscas una máquina?"
+        // defaultMessage="Hola, me interesa cotizar una retroexcavadora."
+        // supportHours="L–V 9:00–18:00 (CST)"
       />
-    </>
+    </div>
   );
 }
