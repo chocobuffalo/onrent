@@ -55,12 +55,16 @@ export function shortDate(stringDate:string){
 
 export function countDays(startDate: string, endDate: string): number {
     const firstDate = fixDate(startDate);
-    if (!firstDate) return 0;
-    const start = new Date(firstDate.year, firstDate.month - 1, firstDate.day);
-
     const secondDate = fixDate(endDate);
-    if (!secondDate) return 0;
-    const end = new Date(secondDate.year, secondDate.month - 1, secondDate.day);
-    const diff = end.getTime() - start.getTime();
-    return Math.ceil(diff / (1000 * 3600 * 24));
-}
+    if (!firstDate || !secondDate) return 0;
+  
+    const startUTC = Date.UTC(firstDate.year, firstDate.month - 1, firstDate.day);
+    const endUTC = Date.UTC(secondDate.year, secondDate.month - 1, secondDate.day);
+  
+    const diff = (endUTC - startUTC) / (1000 * 60 * 60 * 24);
+  
+    // Inclusivo: siempre sumamos 1 día
+    return Math.max(1, Math.floor(diff) + 1);
+  }
+  
+  

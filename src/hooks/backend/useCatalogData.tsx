@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useUIAppSelector } from "@/libs/redux/hooks";
 import { CatalogueItem } from "@/components/organism/Catalogue/types";
@@ -8,6 +9,8 @@ import { interestLinks } from "@/constants/routes/frontend";
 import { SelectInterface } from "@/types/iu";
 
 export default function useCatalog(slug?: string) {
+  const { data: session, status } = useSession();
+  const token = session?.user?.access_token;
   const searchParams = useSearchParams();
   const { type, rangePrice } = useUIAppSelector((state) => state.filters);
 
@@ -24,7 +27,6 @@ export default function useCatalog(slug?: string) {
     ["heavy", "light", "special", "other"].includes((val || "").toLowerCase());
 
   const extractCategoryFromRedux = (t: unknown): string | undefined => {
-
     if (Array.isArray(t) && t.length > 0) {
       const first = t[0] as SelectInterface;
       if (first?.value && typeof first.value === "string") return first.value;
@@ -96,9 +98,15 @@ export default function useCatalog(slug?: string) {
           : `/api/catalog?${params.toString()}`;
 
         console.log("🔍 URL Final de petición:", url);
-        console.log("🔧 API URL:", process.env.NEXT_PUBLIC_API_URL);
 
-        const res = await fetch(url, { method: "GET" });
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }  
+
+        console.log("👉 Token que se envía al catálogo:", headers["Authorization"]);
+
+        const res = await fetch(url, { method: "GET", headers });
         if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
 
         const result = await res.json();
@@ -115,7 +123,6 @@ export default function useCatalog(slug?: string) {
           machinetype: machineCategory || "maquinaria",
           machine_category: machineCategory || "other",
         }));
-        console.log("Datos de imagen del backend:", result.map(m => ({ id: m.id, image: m.image })));
 
         setData(mapped);
       } catch (err: any) {
@@ -126,9 +133,13 @@ export default function useCatalog(slug?: string) {
       }
     }
 
-    fetchCatalogue();
-    // Dispara cuando cambian: slug, querystring, o filtros base relevantes
-  }, [slug, spKey, type, rangePrice]);
+    // 🚦 Condiciones claras para evitar 401
+    if (status === "unauthenticated") {
+      fetchCatalogue(); // público
+    } else if (status === "authenticated" && token) {
+      fetchCatalogue(); // logueado con token válido
+    }
+  }, [slug, spKey, type, rangePrice, status, token]);
 
   return { data, loading, error };
 }

@@ -101,7 +101,7 @@ export const BookingForm = ({
         console.log("🔄 Fechas o cantidad cambiaron:", { startDate, endDate, count });
         
         if (startDate && endDate) {
-            const calculatedDays = countDays(startDate, endDate) + 1;
+            const calculatedDays = countDays(startDate, endDate);
             const calculatedPrice = unitPrice * count;
             const calculatedTotal = calculatedPrice * calculatedDays;
             setDayLength(calculatedDays);
