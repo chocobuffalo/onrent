@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 
 import { CatalogueItem } from "../Catalogue/types";
 import ToggleButton from "@/components/atoms/toggleButton/toggleButton";
@@ -59,6 +59,10 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
 
   } = useMachineDetail(machine.id, projectId);
 
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<{ label: string; value: string } | null>(null);
+
   const [workImagePreview, setWorkImagePreview] = useState<string | null>(null);
   const [isManualMode, setIsManualMode] = useState(false);
   
@@ -102,10 +106,14 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
     }
   };
 
-  const handlerProjectSelect = (value:any) => {
-    setProjectName(value); 
-    setOpenProjects(false);
-    setSelectedProject(value);
+  console.log("Opciones del dropdown:", projects);
+
+  const projectInputRef = useRef<HTMLDivElement>(null);
+
+  const handlerProjectSelect = (option: { label: string; value: string }) => {
+    setProjectName(option.label);  
+    setSelectedProject(option.label);
+    setOpenProjects(false); 
   }
 
   useEffect(()=>{
@@ -183,10 +191,7 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                 ? currentMachine.description
                 : `La ${currentMachine.name} combina potencia, versatilidad y eficiencia en un solo equipo. Ideal para excavación, carga y transporte en obras civiles, agrícolas y de construcción.`}
             </p>
-            <p className="mt-2 text-sm text-gray-600">
-              <span className="font-semibold">Ubicación de la máquina:</span>{" "}
-              {currentMachine.location || "Ubicación no especificada"}
-            </p>
+            
           </div>
 
           {/* Fechas */}
@@ -213,6 +218,7 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                 onProjectSelect={handlerProjectSelect}
                 loadingProject={loadingProject}
                 DropdownComponent={DropdownList}
+                showProjectSection={true} 
               />
             </div>
           </div>
@@ -383,14 +389,25 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                   
                   <div className="relative">
                     <input
+                      
                       type="text"
                       value={projectName}
-                      onChange={(e) => setProjectName(e.target.value)}
+                      onChange={(e) => {
+                        setProjectName(e.target.value);
+                        if (!isManualMode && !projectId) {
+                          setOpenProjects(true);
+                        }  
+                      }}  
+                      onFocus={() => {
+                        if (!isManualMode && !projectId) {
+                          setOpenProjects(true);
+                        }
+                      }}    
                       onClick={() => {
                         if (!isManualMode && !projectId) {
                           setOpenProjects(true);
                         }
-                      }}
+                      }}    
                       className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       placeholder={
                         isManualMode || projectId 
@@ -403,8 +420,13 @@ export default function MachineDetail({ machine, projectId  }: MachineDetailProp
                       <DropdownList 
                         open={openProjects} 
                         options={projects || []} 
-                        handlerChange={handlerProjectSelect} 
                         isLoading={loadingProject} 
+                        handlerChange={(option: { label: string; value: string }) => {
+                          console.log("Seleccionado:", option.label);
+                          setProjectName(option.label); 
+                          setSelectedProject(option.label);
+                          setOpenProjects(false); 
+                        }}  
                       />
                     )}
                   </div>
