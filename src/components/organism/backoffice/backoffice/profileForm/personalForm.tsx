@@ -430,7 +430,7 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                 {/* Proveedor con validación onBlur */}
                 <div className="col-md-6">
                   <div className="form-group">
-                    <label htmlFor="providerId">Proveedor</label>
+                    <label htmlFor="providerId">Selecciona tu empleador</label>
                     <select 
                       {...register("providerId")} 
                       className="form-control"
@@ -445,7 +445,7 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                         validateProvider(e.target.value);
                       }}
                     >
-                      <option value="">Selecciona un proveedor</option>
+                      <option value="">Selecciona tu empleador</option>
                       {providers.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.name}
@@ -453,7 +453,7 @@ export default function PersonalForm({ showOperatorForm, onOperatorFormReset }: 
                       ))}
                     </select>
                     {providerTouched && providerError && (
-                      <span className="text-danger">Proveedor es requerido</span>
+                      <span className="text-danger">Empleador es requerido</span>
                     )}
                   </div>
                 </div>
