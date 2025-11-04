@@ -1,7 +1,7 @@
 // src/app/(backoffice)/dashboard/layout.tsx
 "use client";
-
-import { unstable_ViewTransition as ViewTransition } from 'react'
+// @ts-expect-error React no exporta ViewTransition, usamos flag experimental de Next.js
+import { unstable_ViewTransition as ViewTransition } from 'react';
 import { auth } from "@/auth"
 import Sidebar from '@/components/organism/sidebar/sidebar';
 import TopDashboard from '@/components/organism/TopDashboard/TopDashboard';
@@ -11,8 +11,10 @@ import { redirect } from 'next/navigation';
 import ModalForm from '@/components/organism/modalForm/modalForm';
 import AutoLogoutProvider from '@/components/providers/AutoLogoutProvider';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from '@/lib/react-query'; // Asegúrate de que esta ruta sea correcta
+import { queryClient } from '@/lib/react-query'; 
 import '../../globals.css'
+import NotificationListener from '@/components/molecule/NotificationListener/NotificationListener';
+
 
 export default function DashboardLayout({
     children,
@@ -52,6 +54,7 @@ export default function DashboardLayout({
                 </ViewTransition>
                 <ModalForm/>
             </div>
+            <NotificationListener />
         </QueryClientProvider>
     );
 };

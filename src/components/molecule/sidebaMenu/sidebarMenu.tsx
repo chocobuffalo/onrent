@@ -12,6 +12,8 @@ export default function SidebarMenu() {
   const role = useUIAppSelector((state) => state.auth.profile.role) as UserRole;
   const userName = useUIAppSelector((state) => state.auth.profile.name);
   
+  console.log("ROLE:", role);
+  
   const { handleLogout, isLoading: isLogoutLoading } = useLogout();
 
   const visibleRoutes = dashboardRoutes.filter((route) => {

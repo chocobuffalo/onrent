@@ -16,6 +16,8 @@ import LocationSection from "../LocationSection/LocationSection";
 import ExtrasSection from "@/components/atoms/ExtrasSection/ExtrasSection";
 import NotesSection from "@/components/atoms/NotesInputSection/NotesInputSection";
 import SubmitSection from "@/components/atoms/SubmitSection/SubmitSection";
+import DiscountSummary from "@/components/atoms/DiscountSummary/DiscountSummary";
+import GlobalDiscountSummary from "@/components/atoms/GlobalDiscountSummary/GlobalDiscountSummary";
 import { AddedItemsList } from "@/components/molecule/AddedItemsList/AddedItemsList";
 import { AddMoreMachinesModal } from "@/components/organism/AddMoreMachinesModal/AddMoreMachinesModal";
 
@@ -99,6 +101,11 @@ export const BookingForm = ({
 
     useEffect(() => {
         console.log("🔄 Fechas o cantidad cambiaron:", { startDate, endDate, count });
+        console.log("🔎 Debug fechas BookingForm:", {
+          startDate,
+          endDate,
+          countDays: countDays(startDate, endDate)
+        });
         
         if (startDate && endDate) {
             const calculatedDays = countDays(startDate, endDate);
@@ -179,6 +186,12 @@ export const BookingForm = ({
         };
 
         console.log("Item agregado:", newItem);
+        console.log("🆕 Item agregado:", machine.name, {
+          startDate,
+          endDate,
+          countDays: countDays(startDate, endDate),
+          dayLength
+        });
         dispatch(addItemToBooking(newItem));
         toastSuccess("Item agregado correctamente");
     };
@@ -188,7 +201,7 @@ export const BookingForm = ({
             || parseFloat(selectedMachine.price) 
             || 0;
         
-        const dayLength = countDays(bookingSession.startDate!, bookingSession.endDate!) + 1;
+        const dayLength = countDays(bookingSession.startDate!, bookingSession.endDate!);
         
         const existingItem = bookingItems.find(
             item => item.machineId === selectedMachine.id && 
@@ -343,6 +356,12 @@ export const BookingForm = ({
 
     const canAddItem = startDate && endDate && count > 0;
 
+    useEffect(() => {
+      if (machine?.pricing) {
+        console.log("👉 Pricing recibido desde API:", machine.pricing);
+      }
+    }, [machine]);
+
     return (
       <form
         onSubmit={handleSubmit}
@@ -373,7 +392,7 @@ export const BookingForm = ({
               disabled={!canAddItem}
               className="w-full sm:w-auto sm:flex-1 px-4 py-2.5 bg-white border-2 border-secondary text-secondary rounded-sm font-semibold hover:bg-secondary hover:text-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              agregar
+              Agregar
             </button>
 
             {bookingItems.length > 0 && (
@@ -395,7 +414,8 @@ export const BookingForm = ({
           price={price}
           count={count}
           totalPrice={totalPrice}
-        />
+        /> 
+
 
         <DurationSection
           dayLength={dayLength}
@@ -455,6 +475,19 @@ export const BookingForm = ({
           onIncrement={(id) => dispatch(incrementItemQuantityById(id))}
           onDecrement={(id) => dispatch(decrementItemQuantity(id))}
         />
+
+        {bookingItems.some(
+          (item) =>
+            (item.dayLength ??
+              countDays(
+                typeof item.startDate === "string"
+                  ? item.startDate
+                  : new Date(item.startDate as Date).toISOString(),
+                typeof item.endDate === "string"
+                  ? item.endDate
+                  : new Date(item.endDate as Date).toISOString()
+             )) > 7
+        ) && <GlobalDiscountSummary bookingItems={bookingItems} />}
 
         <SubmitSection
             loading={loading}
