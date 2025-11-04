@@ -201,6 +201,7 @@ export default function MapWithFleet({
 
     return [avgLat, avgLng];
   };
+  
 
   useEffect(() => {
     const filtered = allLocations.filter(location => {
