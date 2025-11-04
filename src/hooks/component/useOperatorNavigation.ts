@@ -32,6 +32,7 @@ export const useOperatorNavigation = (
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const hasShownToastRef = useRef(false);
   
   const [routeDistance, setRouteDistance] = useState<number | null>(null);
   const [estimatedDuration, setEstimatedDuration] = useState<number | null>(null);
@@ -110,6 +111,7 @@ export const useOperatorNavigation = (
     setDestination(coords);
     setDestinationAddress(address);
     setSearchResults([]);
+    hasShownToastRef.current = false;
     
     // Limpiar la ruta anterior si existe
     if (!coords) {
@@ -155,7 +157,10 @@ export const useOperatorNavigation = (
         }
         
         setNavigationState('ready');
-        toast.success("Ruta calculada con éxito.");
+        if (!hasShownToastRef.current) {
+          toast.success("Ruta calculada con éxito.");
+          hasShownToastRef.current = true;
+        }  
       } else {
         setRoute([]);
         setRouteDistance(null);
@@ -258,6 +263,7 @@ export const useOperatorNavigation = (
       setDestination({ lat, lng });
       setDestinationAddress(result.Place.Label);
       setSearchResults([]);
+      hasShownToastRef.current = false;
     },
     handleSearch,
     calculateRoute,

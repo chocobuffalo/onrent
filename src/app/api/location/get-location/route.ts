@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       TableName: process.env.DYNAMODB_LOCATION_TABLE_NAME, // Nombre de la tabla de DynamoDB
       Key: {
         // La clave a buscar. Debe coincidir con la clave principal de tu tabla.
-        deviceId: deviceId,
+        entity_id: deviceId,
       },
     };
 

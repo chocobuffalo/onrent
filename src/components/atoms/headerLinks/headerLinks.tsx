@@ -9,10 +9,12 @@ export default function HeaderLinks({
   links,
   isMobile,
   isTopColor,
+  onLinkClick, 
 }: {
   links: RouteItem[];
   isMobile: boolean;
   isTopColor: boolean;
+  onLinkClick?: () => void;  
 }) {
   const { data: session, status } = useSession();
   const { handleLogout, isLoading: isLoggingOut } = useLogout();
@@ -53,6 +55,7 @@ export default function HeaderLinks({
             <li key={link.id}>
               <Link
                 href={link.slug}
+                onClick={onLinkClick} 
                 className={`${isMobile ? mobileStyle : desktopStyle} ${
                   link.extraClass && link.extraClass
                 }`}

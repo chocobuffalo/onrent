@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import Style from './styles.module.css'
 import HeaderLinks from '../../atoms/headerLinks/headerLinks';
@@ -6,10 +6,25 @@ import { headerLinks } from '@/constants/routes/frontend';
 
 const Navbar = ({isTop}:{isTop:boolean}) => {
   const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleMenu = () => setIsOpen(!isOpen);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   return (
     <>
@@ -43,15 +58,15 @@ const Navbar = ({isTop}:{isTop:boolean}) => {
 
       {/* Mobile Menu */}
     </nav>
-   
-       <div className={`lg:none ${Style.slice} ${isOpen?Style.sliceOpen:''} w-[250px] min-h-[100vh] fixed top-0 z-50 right-0 bottom-0`}>
+       
+       <div ref={menuRef} className={`lg:none ${Style.slice} ${isOpen?Style.sliceOpen:''} w-[250px] min-h-[100vh] fixed top-0 z-50 right-0 bottom-0`}>
 
        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-lg min-h-[100vh]">
          <button onClick={toggleMenu} >
          <X />
          </button>
          <ul className='list-none mobile-menu'>
-            <HeaderLinks links={headerLinks} isTopColor={false} isMobile={true} />
+            <HeaderLinks links={headerLinks} isTopColor={false} isMobile={true} onLinkClick={() => setIsOpen(false)}/>
          </ul>
        </div>
      </div>
