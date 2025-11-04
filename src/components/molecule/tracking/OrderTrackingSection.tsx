@@ -72,6 +72,9 @@ const OrderTrackingSection = ({ orderId, onBack }: OrderTrackingSectionProps) =>
   const [orderData, setOrderData] = useState<OrderDetail | null>(null);
   const [loadingOrder, setLoadingOrder] = useState(true);
   const [distance, setDistance] = useState<string>("--");
+
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const lastCalcRef = useRef<number>(0);
   
   const trackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -191,6 +194,7 @@ const OrderTrackingSection = ({ orderId, onBack }: OrderTrackingSectionProps) =>
                   localStorage.getItem("api_access_token");
 
     try {
+      setIsRecalculating(true);
       const response = await fetch("/api/get-map/route", {
         method: "POST",
         headers: {
@@ -223,17 +227,24 @@ const OrderTrackingSection = ({ orderId, onBack }: OrderTrackingSectionProps) =>
         setEta(hours > 0 ? `${hours}h ${minutes}min` : `${minutes} min`);
 
       } else {
-        setRoute([]);
-        setDistance("--");
-        setEta("--");
+        console.warn("⚠️ No se pudo recalcular ruta, manteniendo la anterior");
       }
     } catch (error) {
       console.error("Error calculando ruta:", error);
-      setRoute([]);
-      setDistance("--");
-      setEta("--");
+    } finally{
+      setIsRecalculating(false);
     }
   }, [machinePosition, destinationPosition, session]);
+
+  useEffect(() => {
+    if (machinePosition && destinationPosition) {
+      const now = Date.now();
+      if (now - lastCalcRef.current > 60000) { // throttle: 60s
+        calculateRoute();
+        lastCalcRef.current = now;
+      }
+    }
+  }, [machinePosition, destinationPosition, calculateRoute]);
 
   useEffect(() => {
     fetchOrderData();
@@ -252,12 +263,6 @@ const OrderTrackingSection = ({ orderId, onBack }: OrderTrackingSectionProps) =>
       };
     }
   }, [orderData, loadingOrder, fetchMachineLocation]);
-
-  useEffect(() => {
-    if (machinePosition && destinationPosition) {
-      calculateRoute();
-    }
-  }, [machinePosition, destinationPosition, calculateRoute]);
 
   if (loadingOrder) {
     return (
@@ -398,6 +403,13 @@ const OrderTrackingSection = ({ orderId, onBack }: OrderTrackingSectionProps) =>
             Cargando mapa de seguimiento...
           </div>
         )}
+
+        {/* Aviso discreto de recálculo */}
+        {isRecalculating && (
+          <div className="absolute bottom-4 right-4 bg-yellow-100 text-yellow-800 px-3 py-1 rounded shadow">
+            Recalculando ruta…
+          </div>
+        )}  
       </div>
 
       {/* Alertas */}

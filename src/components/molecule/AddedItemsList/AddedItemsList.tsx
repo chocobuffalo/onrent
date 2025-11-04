@@ -124,7 +124,7 @@ export const AddedItemsList = ({
 
       {/* Total general */}
       <div className="mt-4 pt-3 border-t border-gray-300 flex justify-between items-center">
-        <p className="font-semibold text-gray-900">Total general:</p>
+        <p className="font-semibold text-gray-900">Subtotal:</p>
         <p className="text-lg font-bold text-green-600">
           {grandTotal.toLocaleString('es-ES')} {currency.code}
         </p>

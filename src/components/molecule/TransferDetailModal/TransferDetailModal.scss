@@ -1,4 +1,6 @@
 // Variables de color (idénticas al OperatorDetailModal)
+@use "sass:color";
+
 $color-overlay: rgba(0, 0, 0, 0.4);
 $color-modal-bg: #ffffff;
 $color-header-bg: #ffffff;
@@ -327,7 +329,7 @@ $spacing-2xl: 48px;
       @include card-shadow;
 
       &:hover:not(:disabled) {
-        background-color: darken($color-accent, 10%);
+        background-color: color.scale($color-accent, $lightness: -10%);
         transform: translateY(-2px);
         box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);
       }
