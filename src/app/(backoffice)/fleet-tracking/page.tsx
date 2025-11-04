@@ -67,7 +67,9 @@ export default function FleetTrackingPage() {
       <p className="text-gray-600 mb-6">Visualiza la ubicación en vivo de todas tus maquinarias activas.</p>
 
       {locations.length > 0 ? (
-        <MapWithFleet locations={locations} />
+        <div className="relative z-0 h-[600px] w-full rounded-lg overflow-hidden shadow">
+         <MapWithFleet locations={locations} />
+        </div>
       ) : (
         <div className="flex items-center justify-center h-[600px] bg-gray-200 rounded-lg">
           <p>No se encontraron maquinarias en la flota del proveedor.</p>

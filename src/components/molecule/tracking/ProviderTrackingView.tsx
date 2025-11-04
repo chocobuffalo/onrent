@@ -336,7 +336,7 @@ const ProviderTrackingView = () => {
       </div>
 
       <div className="flex-1 p-2 sm:p-4">
-        <div className="h-full bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div className="relative z-0 h-full bg-white rounded-lg shadow-sm border overflow-hidden">
           {selectedDeviceId ? (
             <VehicleMap userId={selectedDeviceId} />
           ) : (
