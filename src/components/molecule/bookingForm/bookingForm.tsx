@@ -31,11 +31,14 @@ import {
   removeItemFromBooking, 
   clearBookingSession 
 } from '@/libs/redux/features/booking/bookingSessionSlice';
+import { CatalogueItem } from "@/components/organism/Catalogue/types";
+
 
 interface BookingFormProps {
   machine: any;
   router: any;
   projectId?: string;
+  items?: CatalogueItem[]; 
   getLocationForBooking?: () => {lat: number, lng: number} | null;
   validateLocation?: () => boolean;
   extras?: {
@@ -69,7 +72,8 @@ export const BookingForm = ({
   getWorkData,
   projectData,
   selectedLocation,
-  projectName
+  projectName,
+  items 
 }: BookingFormProps) => {
     const { startDate, endDate } = useDateRange();
     const [open, setOpen] = useState(false);
@@ -100,6 +104,7 @@ export const BookingForm = ({
     const isManualMode = !hasProject;
 
     useEffect(() => {
+        console.log("📦 Items recibidos en BookingForm:", items);
         console.log("🔄 Fechas o cantidad cambiaron:", { startDate, endDate, count });
         console.log("🔎 Debug fechas BookingForm:", {
           startDate,

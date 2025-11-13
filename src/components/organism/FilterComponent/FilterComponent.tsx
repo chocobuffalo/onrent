@@ -44,6 +44,7 @@ const FilterComponent = forwardRef<FilterComponentHandle, Props>(({ initialSearc
     <form
       onSubmit={(e) => {
         e.preventDefault();
+        console.log("➡️ Ejecutando handlerSubmit con mobileSearch:", mobileSearch);
         handlerSubmit();
       }}
       className="filter-component flex flex-col gap-4.5 "

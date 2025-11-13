@@ -18,7 +18,7 @@ interface SearchResult {
 export default function FilterInput({
   checkpersist,
   inputClass,
-  name = "location",
+  name = "region", // ✅ corregido: siempre "region"
 }: {
   name?: string;
   checkpersist?: boolean;
@@ -47,7 +47,7 @@ export default function FilterInput({
           onFocus={() => handlerFocus(inputValue)}
           type="text"
           value={inputValue}
-          name={name}
+          name={name} // ✅ ahora será "region"
           onChange={(e) => handlerInputChange(e.target.value)}
           onBlur={() => setTimeout(() => setOpen(false), 200)}
           placeholder="Indica tu ubicación"
@@ -72,6 +72,11 @@ export default function FilterInput({
                 onMouseDown={(e) => {
                   e.preventDefault();
                   handlerChange(index);
+
+                  const selectedRegion = result.Place.Label;
+                  const params = new URLSearchParams(window.location.search);
+                  params.set("region", selectedRegion); // ✅ siempre "region"
+                  window.history.replaceState({}, "", `?${params.toString()}`);
                 }}
               >
                 {result.Place.Label}

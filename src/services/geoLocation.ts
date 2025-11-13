@@ -1,4 +1,6 @@
 // src/services/geolocationService.ts
+import { Capacitor } from '@capacitor/core';
+import { Geolocation as CapGeolocation } from '@capacitor/geolocation';
 
 interface GeolocationCoords {
   lat: number;
@@ -11,11 +13,49 @@ interface GeolocationCoords {
  * Servicio para manejar geolocalización del usuario
  */
 export class GeolocationService {
-  
+  private static toCoordsFromNavigator(position: GeolocationPosition): GeolocationCoords {
+    return {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+      accuracy: position.coords.accuracy ?? 0,
+      timestamp: position.timestamp,
+    };
+  }
+
+  private static toCoordsFromCapacitor(pos: any): GeolocationCoords {
+    return {
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+      accuracy: pos.coords.accuracy ?? 0,
+      timestamp: pos.timestamp ?? Date.now(),
+    };
+  }
+
   /**
    * Obtiene la ubicación actual del usuario
+   * Intenta primero usar Capacitor en Android/iOS; si falla, cae a navigator.geolocation (web)
    */
   static async getCurrentPosition(): Promise<GeolocationCoords> {
+    const platform = Capacitor.getPlatform(); // 'web' | 'ios' | 'android'
+    // Intento nativo mínimo y no invasivo
+    if (platform === 'android' || platform === 'ios') {
+      try {
+        await CapGeolocation.requestPermissions();
+        const pos = await CapGeolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
+        });
+        const coords = this.toCoordsFromCapacitor(pos);
+        console.log('latitud (nativo):', coords.lat);
+        console.log('longitud (nativo):', coords.lng);
+        return coords;
+      } catch (err) {
+        console.warn('Capacitor geolocation falló, haciendo fallback a navigator.geolocation', err);
+        // continuar al fallback web
+      }
+    }
+
+    // Fallback web (sin cambios funcionales con tu implementación anterior)
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
         reject(new Error('Geolocalización no soportada por este navegador'));
@@ -27,7 +67,7 @@ export class GeolocationService {
           const coords: GeolocationCoords = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
-            accuracy: position.coords.accuracy,
+            accuracy: position.coords.accuracy ?? 0,
             timestamp: position.timestamp,
           };
 
@@ -102,3 +142,4 @@ export class GeolocationService {
     return coords;
   }
 }
+ 
