@@ -1,6 +1,6 @@
 // src/services/dismissRating.ts
 export async function dismissRating(orderId: number, token: string) {
-    const res = await fetch(`/api/orders/${orderId}/rating/dismiss`, {
+    const res = await fetch(`/orders/${orderId}/rating/dismiss`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -89,7 +89,7 @@ export default function CheckoutSummary({
               </span>
             </div>
             <span className="text-gray-900 text-base font-medium lato-font">
-              {machine.price.toLocaleString('es-MX')}$/MXN
+              {machine.price.toLocaleString('es-MX')}$ MXN
             </span>
           </div>
         ))}
@@ -101,28 +101,28 @@ export default function CheckoutSummary({
         <div className="flex justify-between items-center">
           <span className="text-gray-600 text-base lato-font">Renta de Maquinaria:</span>
           <span className="text-gray-900 text-base font-light lato-font">
-            {(order?.estimated_rent || 0).toLocaleString('es-MX')}$MXN
+            {(order?.estimated_rent || 0).toLocaleString('es-MX')}$ MXN
           </span>
         </div>
 
         <div className="flex justify-between items-center">
           <span className="text-gray-600 text-base lato-font">Flete:</span>
           <span className="text-gray-900 text-base font-medium lato-font">
-            {(item.estimated_fleet || 0).toLocaleString('es-MX')}$/MXN
+            {(item.estimated_fleet || 0).toLocaleString('es-MX')}$ MXN
           </span>
         </div>
 
         <div className="flex justify-between items-center">
           <span className="text-gray-600 text-base lato-font">Extras:</span>
           <span className="text-gray-900 text-base font-medium lato-font">
-            {(item.estimated_extras || 0).toLocaleString('es-MX')}$/MXN
+            {(item.estimated_extras || 0).toLocaleString('es-MX')}$ MXN
           </span>
         </div>
 
         <div className="flex justify-between items-center">
           <span className="text-gray-600 text-base lato-font">Impuestos:</span>
           <span className="text-gray-900 text-base font-medium lato-font">
-            {(item.estimated_taxes || 0).toLocaleString('es-MX')}$/MXN
+            {(item.estimated_taxes || 0).toLocaleString('es-MX')}$ MXN
           </span>
         </div>
       </div>
@@ -146,7 +146,7 @@ export default function CheckoutSummary({
               TOTAL RENTA
             </span>
             <span className="text-gray-900 text-base font-bold lato-font">
-              {(order?.contract_total || 0).toLocaleString('es-MX')}$/MXN
+              {(order?.contract_total || 0).toLocaleString('es-MX')}$ MXN
             </span>
           </div>
           <div className="flex justify-between items-center">
@@ -154,7 +154,7 @@ export default function CheckoutSummary({
               HOY PAGAS
             </span>
             <span className="text-gray-900 text-base font-bold lato-font">
-              {(item.monthly_payment || 0).toLocaleString('es-MX')}$/MXN
+              {(item.monthly_payment || 0).toLocaleString('es-MX')}$ MXN
             </span>
           </div>
         </>
@@ -165,7 +165,7 @@ export default function CheckoutSummary({
             TOTAL RENTA
           </span>
           <span className="text-gray-900 text-base font-bold lato-font">
-            {(order?.contract_total || 0).toLocaleString('es-MX')}$/MXN
+            {(order?.contract_total || 0).toLocaleString('es-MX')}$ MXN
           </span>
         </div>
       )}

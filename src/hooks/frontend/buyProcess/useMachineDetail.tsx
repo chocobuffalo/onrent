@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { CatalogueItem } from "@/components/organism/Catalogue/types";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
 interface LocationData {
   lat: number;
@@ -22,6 +23,8 @@ export default function useMachineDetail(machineId: number,  project_Id?: string
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const searchParams = useSearchParams();
+  const regionParam = searchParams.get("region");
 
   const [machineData, setMachineData] = useState<CatalogueItem | null>(null);
 
@@ -46,9 +49,13 @@ export default function useMachineDetail(machineId: number,  project_Id?: string
     const fetchData = async () => {
       try {
         const apiBase = process.env.NEXT_PUBLIC_API_URL_ORIGIN;
-        const url = apiBase
+        let url = apiBase
           ? `${apiBase}/api/catalog/${machineId}`
           : `/api/catalog/${machineId}`;
+
+          if (regionParam) {
+            url += `?region=${encodeURIComponent(regionParam)}`;
+          }  
 
         const res = await fetch(url);
         if (!res.ok) throw new Error("Producto no encontrado");
@@ -62,7 +69,7 @@ export default function useMachineDetail(machineId: number,  project_Id?: string
           id: data.id,
           name: data.name || "Máquina sin nombre",
           location: data.location || "Ubicación no disponible",
-          price: String(data.list_price ?? "0"),
+          list_price: Number(data.list_price ?? 0),
           image: data.image || "/images/catalogue/machine5.jpg",
           machinetype: data.machine_category || "maquinaria",
           machine_category: data.machine_category || "other",
@@ -82,7 +89,7 @@ export default function useMachineDetail(machineId: number,  project_Id?: string
     };
 
     fetchData();
-  }, [machineId]);
+  }, [machineId, regionParam]);
 console.log(projectId)
 useEffect(() => {
   if (projectId && session && session.status === "authenticated") {

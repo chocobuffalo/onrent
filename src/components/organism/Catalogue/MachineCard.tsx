@@ -59,7 +59,7 @@ export default function MachineCard({
 
       <div className="flex items-center justify-between mt-3">
         <span className="text-green-600 font-bold text-sm italic">
-          {data.price}$<span className="not-italic">/{currency.code}</span>
+        {data.list_price.toLocaleString("es-MX")} $<span className="not-italic">/{currency.code}</span>
         </span>
         <Image
           src={machineCategory?.type_icon || "/typemachine/ligera.svg"}
@@ -93,7 +93,11 @@ export default function MachineCard({
 
   // Modo normal: devuelve Link
   return (
-    <Link href={`/${data.id}`} passHref className="w-full">
+    <Link
+      href={`/${data.id}?region=${encodeURIComponent(data.location ?? "")}`}
+      passHref
+      className="w-full"
+    >
       {cardContent}
     </Link>
   );

@@ -15,6 +15,7 @@ export interface CatalogueItem {
   name: string;
   location?: string; // API puede no enviarlo
   price?: string; // para compatibilidad anterior
+  list_price: number;
   image: string;
   machinetype?: string;
   machine_category?: string;

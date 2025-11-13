@@ -1,49 +1,54 @@
-// src/components/organism/Catalogue/CatalogueContainer.tsx
 "use client";
 
 import { useMemo } from "react";
+import { useSelector } from "react-redux";
 import CatalogueList from "./CatalogueList";
-import useCatalog from "@/hooks/backend/useCatalogData";
+import { CatalogueItem } from "./types";
 
 interface CatalogueContainerProps {
-  slug?: string;
+  items?: CatalogueItem[]; // ✅ ahora opcional
   searchValue?: string;
   selectionMode?: boolean;
-  onSelectMachine?: (machine: any) => void;
+  onSelectMachine?: (machine: CatalogueItem) => void;
 }
 
 export default function CatalogueContainer({ 
-  slug, 
+  items = [], // ✅ valor por defecto: []
   searchValue,
   selectionMode = false,
   onSelectMachine
 }: CatalogueContainerProps) {
-  const { data, loading, error } = useCatalog(slug);
+  const filters = useSelector((state: any) => state.filters);
 
   const filteredData = useMemo(() => {
-    if (!searchValue || !searchValue.trim()) return data;
-    
-    const searchTerm = searchValue.toLowerCase().trim();
-    const filtered = data.filter(item => 
-      item.name.toLowerCase().includes(searchTerm)
-    );
-    
-    return filtered.sort((a, b) => {
-      const aName = a.name.toLowerCase();
-      const bName = b.name.toLowerCase();
-      
-      if (aName === searchTerm && bName !== searchTerm) return -1;
-      if (bName === searchTerm && aName !== searchTerm) return 1;
-      
-      if (aName.startsWith(searchTerm) && !bName.startsWith(searchTerm)) return -1;
-      if (bName.startsWith(searchTerm) && !aName.startsWith(searchTerm)) return 1;
-      
-      return 0;
-    });
-  }, [data, searchValue]);
+    let result: CatalogueItem[] = items || [];
 
-  if (loading) return <p className="text-center">Cargando catálogo...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+    // 🔎 Filtro por nombre
+    if (searchValue && searchValue.trim()) {
+      const searchTerm = searchValue.toLowerCase().trim();
+      result = result.filter((item: CatalogueItem) =>
+        item.name?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // 🔎 Filtro por categoría
+    const firstType = Array.isArray(filters.type) ? filters.type[0] : filters.type;
+    if (firstType?.value) {
+      result = result.filter((item: CatalogueItem) =>
+        item.machine_category?.toLowerCase() === firstType.value.toLowerCase()
+      );
+    }
+
+    // 🔎 Filtro por rango de precios usando list_price
+    if (filters.rangePrice?.min != null && filters.rangePrice.min > 0) {
+      result = result.filter((item: CatalogueItem) => item.list_price >= filters.rangePrice.min);
+    }
+    if (filters.rangePrice?.max != null && filters.rangePrice.max > 0) {
+      result = result.filter((item: CatalogueItem) => item.list_price <= filters.rangePrice.max);
+    }
+
+    return result;
+  }, [items, searchValue, filters]);
 
   return (
     <CatalogueList 

@@ -7,13 +7,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "next export"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",
     "@aws-sdk/client-dynamodb": "^3.893.0",
     "@aws-sdk/client-location": "^3.891.0",
     "@aws-sdk/lib-dynamodb": "^3.893.0",
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/geolocation": "^7.1.5",
+    "@capacitor/ios": "^7.4.4",
     "@hookform/resolvers": "^5.2.1",
     "@reduxjs/toolkit": "^2.8.2",
     "@stripe/react-stripe-js": "^4.0.2",

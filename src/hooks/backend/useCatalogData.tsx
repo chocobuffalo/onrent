@@ -118,6 +118,7 @@ export default function useCatalog(slug?: string) {
           id: m.id,
           name: m.name,
           location: m.location || "Ubicación no disponible",
+          list_price: m.list_price ?? 0, 
           price: String(m.list_price ?? "0"),
           image: m.image || "/images/catalogue/machine5.jpg",
           machinetype: machineCategory || "maquinaria",

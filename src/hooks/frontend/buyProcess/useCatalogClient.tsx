@@ -10,13 +10,18 @@ import Catalogue from "@/components/organism/Catalogue/CatalogueContainer";
 import { FiFilter, FiX, FiSearch } from "react-icons/fi";
 import { typeOptions } from "@/constants/routes/home";
 import SelectList from "@/components/atoms/selectList/selectList";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useGeolocation } from "@/hooks/frontend/ui/UseGeolocation"; 
+import { CatalogueItem } from "@/components/organism/Catalogue/types";
 
 export default function CatalogClient({ slug }: { slug?: string }) {
   const dispatch = useDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const filterRef = useRef<FilterComponentHandle | null>(null);
   const [search, setSearch] = useState("");
+  const [items, setItems] = useState<CatalogueItem[]>([]);
+  const { location } = useGeolocation();
 
   useEffect(() => {
     if (slug) {
@@ -25,12 +30,73 @@ export default function CatalogClient({ slug }: { slug?: string }) {
       });
       
       if (typeFromSlug) {
+        console.log("🔎 Tipo detectado desde slug:", typeFromSlug);
         dispatch(setType(typeFromSlug));
       }
     }
   }, [slug, dispatch]);
 
+  useEffect(() => {
+    console.log("🔎 Query params detectados:", Object.fromEntries(searchParams.entries()));
+
+    // Construimos la URL con TODOS los parámetros
+    const params = new URLSearchParams(searchParams.toString());
+
+    // ✅ Normalizar: si viene "location", convertirlo a "region"
+    const locationParam = searchParams.get("location");
+    if (locationParam && !searchParams.get("region")) {
+      params.delete("location");
+      params.set("region", locationParam);
+    }
+
+    // ✅ Siempre usar "region", nunca "location"
+    const regionParam = params.get("region");
+    if (regionParam) {
+      params.set("region", regionParam);
+    } else if (location) {
+      params.set("lat", String(location.lat));
+      params.set("lon", String(location.lng));
+      console.log("📡 Geolocation detectada:", location);
+    }
+
+    const url = `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/catalog?${params.toString()}`;
+    console.log("➡️ Fetch catálogo con URL:", url);
+
+    fetch(url)
+      .then(res => {
+        console.log("⬅️ Response status:", res.status);
+        return res.json();
+      })
+      .then(data => {
+        console.log("⬅️ Response body:", data);
+        setItems(data);
+      })
+      .catch(err => console.error("❌ Error cargando catálogo:", err));
+  }, [searchParams, location]);
+
+  useEffect(() => {
+    console.log("📦 Items enviados a CatalogueList:", items);
+  }, [items]);
+
   const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (search.trim()) {
+      const params = new URLSearchParams();
+      params.set("region", search); // ✅ siempre "region"
+      const url = `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/catalog?${params.toString()}`;
+      console.log("➡️ Fetch catálogo manual con URL:", url);
+
+      fetch(url)
+        .then(res => {
+          console.log("⬅️ Response status (manual):", res.status);
+          return res.json();
+        })
+        .then(data => {
+          console.log("⬅️ Response body (manual):", data);
+          setItems(data);
+        })
+        .catch(err => console.error("❌ Error cargando catálogo (manual):", err));
+    }
   };
 
   return (
@@ -87,15 +153,15 @@ export default function CatalogClient({ slug }: { slug?: string }) {
         </div>
 
         {/* Filtros existentes */}
-        <FilterComponent />
+        <FilterComponent ref={filterRef}/>
       </aside>
 
       {/* Catálogo */}
       <div className="catalogue-wrapper w-full lg:w-3/4">
-        <Catalogue slug={slug} searchValue={search} />
+        <Catalogue items={items} searchValue={search} />
       </div>
 
-      {/* Modal con filtros (mobile) - MEJORADO */}
+      {/* Modal con filtros (mobile) */}
       <Modal>
         <div className="flex justify-between items-center border-b pb-2 mb-4">
           <h2 className="text-lg font-semibold">Filtros Avanzados</h2>

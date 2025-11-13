@@ -1,4 +1,3 @@
-
 "use client";
 import { interestLinks } from "@/constants/routes/frontend";
 import { useUIAppSelector } from "@/libs/redux/hooks";
@@ -20,15 +19,19 @@ export default function useSendAction() {
     const firstType = getFirstSelected(filters.type);
     const catalogueValue = firstType?.value || "";
 
+    // La categoría se refleja en el path (ej: /catalogo/maquinaria-ligera)
     const basePath =
       interestLinks.find((link) => link.machine_category === catalogueValue)
         ?.slug || "/catalogo";
 
     const params = new URLSearchParams();
 
-    const locationValue = filters.location?.value;
-    if (locationValue) params.set("location", locationValue);
+    // Solo enviamos region al backend para precios
+    const regionValue = filters.location?.value;
+    console.log("📍 Región seleccionada:", regionValue);
+    if (regionValue) params.set("region", regionValue);
 
+    // El resto de filtros se mantienen igual
     if (filters.rangePrice?.min != null && filters.rangePrice.min > 0) {
       params.set("min_price", String(filters.rangePrice.min));
     }
@@ -40,6 +43,8 @@ export default function useSendAction() {
     if (filters.endDate) params.set("end_date", filters.endDate);
 
     const query = params.toString();
+    const finalUrl = query ? `${basePath}?${query}` : basePath;
+    console.log("➡️ Navegando a:", finalUrl); 
     router.push(query ? `${basePath}?${query}` : basePath);
   };
 

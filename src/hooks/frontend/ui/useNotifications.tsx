@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NotificationToast from "@/components/organism/NotificationToast/NotificationToast";
 
 export function useNotifications() {
