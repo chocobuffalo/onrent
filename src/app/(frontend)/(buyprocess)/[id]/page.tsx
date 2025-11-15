@@ -8,7 +8,7 @@ interface MachineDetailPageProps {
 
 export default async function MachineDetailPage({ 
   params, 
-  searchParams 
+  searchParams
 }: MachineDetailPageProps) {
   const { machinetype, id } = await params;
   const { projectId } = await searchParams;
