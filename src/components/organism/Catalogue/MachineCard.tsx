@@ -59,7 +59,7 @@ export default function MachineCard({
 
       <div className="flex items-center justify-between mt-3">
         <span className="text-green-600 font-bold text-sm italic">
-        {data.list_price.toLocaleString("es-MX")} $<span className="not-italic">/{currency.code}</span>
+        {data.list_price.toLocaleString("es-MX")} <span className="not-italic">{currency.code}</span>
         </span>
         <Image
           src={machineCategory?.type_icon || "/typemachine/ligera.svg"}

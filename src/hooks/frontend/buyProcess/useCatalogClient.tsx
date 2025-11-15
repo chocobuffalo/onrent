@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useRef, useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -9,9 +9,10 @@ import FilterComponent, { FilterComponentHandle } from "@/components/organism/Fi
 import Catalogue from "@/components/organism/Catalogue/CatalogueContainer";
 import { FiFilter, FiX, FiSearch } from "react-icons/fi";
 import { typeOptions } from "@/constants/routes/home";
-import SelectList from "@/components/atoms/selectList/selectList";
+import dynamic from "next/dynamic";
+const SelectList = dynamic(() => import("@/components/atoms/selectList/selectList"), { ssr: false });
 import { useRouter, useSearchParams } from "next/navigation";
-import { useGeolocation } from "@/hooks/frontend/ui/UseGeolocation"; 
+import { useGeolocation } from "@/hooks/frontend/ui/UseGeolocation";
 import { CatalogueItem } from "@/components/organism/Catalogue/types";
 
 export default function CatalogClient({ slug }: { slug?: string }) {
@@ -21,6 +22,7 @@ export default function CatalogClient({ slug }: { slug?: string }) {
   const filterRef = useRef<FilterComponentHandle | null>(null);
   const [search, setSearch] = useState("");
   const [items, setItems] = useState<CatalogueItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { location } = useGeolocation();
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export default function CatalogClient({ slug }: { slug?: string }) {
       const typeFromSlug = typeOptions.find(option => {
         return option.slug?.includes(slug) || option.value === slug;
       });
-      
+
       if (typeFromSlug) {
         console.log("🔎 Tipo detectado desde slug:", typeFromSlug);
         dispatch(setType(typeFromSlug));
@@ -36,43 +38,68 @@ export default function CatalogClient({ slug }: { slug?: string }) {
     }
   }, [slug, dispatch]);
 
+  // -------- Fetch catálogo (estable y con loader) --------
   useEffect(() => {
-    console.log("🔎 Query params detectados:", Object.fromEntries(searchParams.entries()));
+    // estabilizar dependencias a primitivas
+    const paramsStr = searchParams.toString();
+    const locLat = location?.lat ?? null;
+    const locLon = location?.lng ?? null;
 
-    // Construimos la URL con TODOS los parámetros
-    const params = new URLSearchParams(searchParams.toString());
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const controller = new AbortController();
 
-    // ✅ Normalizar: si viene "location", convertirlo a "region"
-    const locationParam = searchParams.get("location");
-    if (locationParam && !searchParams.get("region")) {
-      params.delete("location");
-      params.set("region", locationParam);
-    }
+    debounceTimer = setTimeout(() => {
+      // reconstruir params desde la cadena original
+      const params = new URLSearchParams(paramsStr);
 
-    // ✅ Siempre usar "region", nunca "location"
-    const regionParam = params.get("region");
-    if (regionParam) {
-      params.set("region", regionParam);
-    } else if (location) {
-      params.set("lat", String(location.lat));
-      params.set("lon", String(location.lng));
-      console.log("📡 Geolocation detectada:", location);
-    }
+      // mantener tu lógica de normalización location -> region
+      const locationParam = searchParams.get("location");
+      if (locationParam && !searchParams.get("region")) {
+        params.delete("location");
+        params.set("region", locationParam);
+      }
 
-    const url = `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/catalog?${params.toString()}`;
-    console.log("➡️ Fetch catálogo con URL:", url);
+      const regionParam = params.get("region");
+      if (regionParam) {
+        params.set("region", regionParam);
+      } else if (locLat != null && locLon != null) {
+        params.set("lat", String(locLat));
+        params.set("lon", String(locLon));
+      }
 
-    fetch(url)
-      .then(res => {
-        console.log("⬅️ Response status:", res.status);
-        return res.json();
-      })
-      .then(data => {
-        console.log("⬅️ Response body:", data);
-        setItems(data);
-      })
-      .catch(err => console.error("❌ Error cargando catálogo:", err));
-  }, [searchParams, location]);
+      const url = `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/catalog?${params.toString()}`;
+      console.log("➡️ Fetch catálogo (debounced) con URL:", url);
+
+      setIsLoading(true);
+      fetch(url, { signal: controller.signal })
+        .then(res => {
+          console.log("⬅️ Response status:", res.status);
+          return res.json();
+        })
+        .then(data => {
+          console.log("⬅️ Response body:", data);
+          setItems(data);
+        })
+        .catch(err => {
+          if ((err as any)?.name === "AbortError") {
+            console.log("⚠️ Fetch abortado (intencional)");
+            return;
+          }
+          console.error("❌ Error cargando catálogo:", err);
+          setItems([]);
+        })
+        .finally(() => {
+          // solo desactivar loading si esta petición no fue abortada
+          if (!controller.signal.aborted) setIsLoading(false);
+        });
+    }, 120); // debounce corto
+
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      controller.abort();
+    };
+    // deps estables: string + primitivos
+  }, [searchParams.toString(), location?.lat, location?.lng]);
 
   useEffect(() => {
     console.log("📦 Items enviados a CatalogueList:", items);
@@ -82,10 +109,11 @@ export default function CatalogClient({ slug }: { slug?: string }) {
     e?.preventDefault();
     if (search.trim()) {
       const params = new URLSearchParams();
-      params.set("region", search); // ✅ siempre "region"
+      params.set("region", search); // siempre "region"
       const url = `${process.env.NEXT_PUBLIC_API_URL_ORIGIN}/api/catalog?${params.toString()}`;
       console.log("➡️ Fetch catálogo manual con URL:", url);
 
+      setIsLoading(true);
       fetch(url)
         .then(res => {
           console.log("⬅️ Response status (manual):", res.status);
@@ -95,7 +123,11 @@ export default function CatalogClient({ slug }: { slug?: string }) {
           console.log("⬅️ Response body (manual):", data);
           setItems(data);
         })
-        .catch(err => console.error("❌ Error cargando catálogo (manual):", err));
+        .catch(err => {
+          console.error("❌ Error cargando catálogo (manual):", err);
+          setItems([]);
+        })
+        .finally(() => setIsLoading(false));
     }
   };
 
@@ -153,12 +185,12 @@ export default function CatalogClient({ slug }: { slug?: string }) {
         </div>
 
         {/* Filtros existentes */}
-        <FilterComponent ref={filterRef}/>
+        <FilterComponent ref={filterRef} />
       </aside>
 
       {/* Catálogo */}
       <div className="catalogue-wrapper w-full lg:w-3/4">
-        <Catalogue items={items} searchValue={search} />
+        <Catalogue items={items} searchValue={search} isLoading={isLoading} />
       </div>
 
       {/* Modal con filtros (mobile) */}
@@ -176,7 +208,7 @@ export default function CatalogClient({ slug }: { slug?: string }) {
 
         {/* Filtros avanzados en mobile */}
         <FilterComponent ref={filterRef} />
-        
+
         {/* Botón para aplicar filtros y cerrar modal */}
         <div className="mt-4 pt-4 border-t">
           <button

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
@@ -6,17 +6,19 @@ import CatalogueList from "./CatalogueList";
 import { CatalogueItem } from "./types";
 
 interface CatalogueContainerProps {
-  items?: CatalogueItem[]; // ✅ ahora opcional
+  items?: CatalogueItem[];
   searchValue?: string;
   selectionMode?: boolean;
   onSelectMachine?: (machine: CatalogueItem) => void;
+  isLoading?: boolean;
 }
 
-export default function CatalogueContainer({ 
-  items = [], // ✅ valor por defecto: []
+export default function CatalogueContainer({
+  items = [],
   searchValue,
   selectionMode = false,
-  onSelectMachine
+  onSelectMachine,
+  isLoading = false
 }: CatalogueContainerProps) {
   const filters = useSelector((state: any) => state.filters);
 
@@ -51,10 +53,11 @@ export default function CatalogueContainer({
   }, [items, searchValue, filters]);
 
   return (
-    <CatalogueList 
-      items={filteredData} 
+    <CatalogueList
+      items={filteredData}
       selectionMode={selectionMode}
       onSelectMachine={onSelectMachine}
+      isLoading={isLoading}
     />
   );
 }
