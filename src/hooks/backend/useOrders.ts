@@ -8,6 +8,7 @@ import { getOrderDetail } from "@/services/getOrderDetail";
 import { OrderResponse, OrderDetail } from "@/types/orders";
 import { rateOrder } from "@/services/rateOrder";
 import { dismissRating } from "@/services/dismissRating";
+import { extendOrder } from "@/services/extendOrder";
 
 export default function useOrders() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
@@ -128,6 +129,30 @@ export default function useOrders() {
     }
   };
 
+  const extendOrderById = async (orderId: number, extraDays: number) => {
+    if (!token) {
+      toast.error("Sesión expirada");
+      return false;
+    }
+    try {
+      toast.info("Solicitando extensión de la orden...");
+      const r = await extendOrder(orderId, extraDays, token);
+      if (r.success) {
+        toast.success(r.message || "Orden extendida");
+        // refresco unificado
+        window.dispatchEvent(new Event("orderUpdated"));
+        return true;
+      } else {
+        toast.error(r.message || "Error al extender la orden");
+        return false;
+      }
+    } catch (e: any) {
+      console.error("Error en extendOrderById:", e);
+      toast.error(e.message || "Error al extender la orden");
+      return false;
+    }
+  };
+
   return {
     orders,
     isLoading,
@@ -136,5 +161,6 @@ export default function useOrders() {
     getOrderDetailById,
     submitOrderRating,
     dismissOrderRating,
+    extendOrderById,
   };
 }

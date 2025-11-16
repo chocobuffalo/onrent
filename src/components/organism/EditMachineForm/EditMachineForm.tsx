@@ -12,6 +12,8 @@ import SelectInput from "@/components/atoms/selectInput/selectInput";
 import FileInput from "@/components/atoms/FileInput/FileInput";
 import EditFilterInput from "@/components/atoms/EditFilterInput/EditFilterInput";
 import useEditMachineFormUI from "@/hooks/frontend/ui/useEditMachineFormUI";
+import { useSession } from "next-auth/react";
+import CertificationUploader from "@/components/organism/CertificationUploader/CertificationUploader";
 import "./EditMachineForm.scss";
 
 interface EditMachineFormProps {
@@ -20,7 +22,12 @@ interface EditMachineFormProps {
 }
 
 const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
-  
+  // ---------------------------
+  // Hooks deben estar dentro
+  // ---------------------------
+  const { data: session } = useSession();
+  const token = (session as any)?.accessToken || (session as any)?.access_token || "";
+
   const {
     register,
     handleSubmit,
@@ -195,16 +202,9 @@ const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
               errors={errors}
             />
           </div>
-          {/* 
-          <div className="col-12">
-            <FileInput
-              register={register}
-              name="image"
-              label="Imagen del equipo"
-              placeHolder="Subir imagen"
-            />
-          </div>
-           */}
+        </div>
+        <div className="p-4">
+          <CertificationUploader machineId={editData.id} token={token} />
         </div>
       </div>
       <div className="group-button-submit modal-footer left mb-0">

@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect} from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { OrderDetail, LocationWithAddress } from "@/types/orders";
 import "./OrderDetailModal.scss";
+import ExtendOrderButton from "@/components/atoms/buttons/ExtendOrderButton";
+import ExtendOrderModal from "@/components/organism/OrderDetailModal/ExtendOrderModal";
+
 
 interface OrderDetailModalProps {
   isOpen: boolean;
@@ -35,6 +38,30 @@ export default function OrderDetailModal({
   }, [isOpen]);
 
   if (!isOpen || !orderDetail) return null;
+
+  const [extendOpen, setExtendOpen] = useState(false);
+  const [extendLoading, setExtendLoading] = useState(false);
+
+  // handler para abrir/cerrar el modal de extensión
+  const openExtendModal = () => setExtendOpen(true);
+  const closeExtendModal = () => setExtendOpen(false);
+
+  // ejemplo de submit: llamar a la API/back para crear la orden extendida
+  const handleExtendSubmit = async (extraDays: number) => {
+    if (!orderDetail) return;
+    try {
+      setExtendLoading(true);
+      // llamar a tu API (fetch/axios) para pedir la extensión
+      // await api.post(`/api/orders/${orderDetail.order_id}/extend`, { extra_days: extraDays });
+      // (o usar el hook / servicio que tengas)
+      // opcional: notificar al usuario, refrescar datos, etc.
+      closeExtendModal();
+    } catch (err) {
+      console.error("Error extendiendo orden", err);
+    } finally {
+      setExtendLoading(false);
+    }
+  };
 
   const getLocationDisplay = (location: string | LocationWithAddress | undefined): string => {
     if (!location) return 'No especificada';
