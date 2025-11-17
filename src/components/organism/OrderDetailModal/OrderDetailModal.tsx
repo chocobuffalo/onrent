@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { OrderDetail, LocationWithAddress } from "@/types/orders";
 import "./OrderDetailModal.scss";
 import ExtendOrderButton from "@/components/atoms/buttons/ExtendOrderButton";
 import ExtendOrderModal from "@/components/organism/OrderDetailModal/ExtendOrderModal";
-
 
 interface OrderDetailModalProps {
   isOpen: boolean;
@@ -16,31 +15,33 @@ interface OrderDetailModalProps {
   onClose: () => void;
 }
 
-export default function OrderDetailModal({ 
+export default function OrderDetailModal({
   isOpen,
-  orderDetail, 
+  orderDetail,
   orderNumber,
-  onClose 
+  onClose,
 }: OrderDetailModalProps) {
   const pathname = usePathname();
-  const isRentalsPage = pathname?.includes('/rentals') || pathname?.includes('/rentas');
+  const isRentalsPage =
+    pathname?.includes("/rentals") || pathname?.includes("/rentas");
+
+  // Hooks moved to the top-level of the component (before any early return)
+  const [extendOpen, setExtendOpen] = useState(false);
+  const [extendLoading, setExtendLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
   if (!isOpen || !orderDetail) return null;
-
-  const [extendOpen, setExtendOpen] = useState(false);
-  const [extendLoading, setExtendLoading] = useState(false);
 
   // handler para abrir/cerrar el modal de extensión
   const openExtendModal = () => setExtendOpen(true);
@@ -63,57 +64,60 @@ export default function OrderDetailModal({
     }
   };
 
-  const getLocationDisplay = (location: string | LocationWithAddress | undefined): string => {
-    if (!location) return 'No especificada';
-    if (typeof location === 'string') return location;
-    
+  const getLocationDisplay = (
+    location: string | LocationWithAddress | undefined
+  ): string => {
+    if (!location) return "No especificada";
+    if (typeof location === "string") return location;
+
     if (location.address) return location.address;
-    
+
     const lat = location.latitude ?? location.lat;
     const lng = location.longitude ?? location.lng;
-    
+
     if (lat !== undefined && lng !== undefined) {
       return `Lat: ${lat}, Lng: ${lng}`;
     }
-    
-    return 'No especificada';
+
+    return "No especificada";
   };
 
   const formatState = (state: string) => {
     const stateMap: { [key: string]: string } = {
-      'pending_payment': 'Pendiente',
-      'completed': 'Completado',
-      'in_progress': 'En Progreso',
-      'cancelled': 'Cancelado'
+      pending_payment: "Pendiente",
+      completed: "Completado",
+      in_progress: "En Progreso",
+      cancelled: "Cancelado",
     };
     return stateMap[state] || state;
   };
 
   const getStateClass = (state: string) => {
     const classMap: { [key: string]: string } = {
-      'pending_payment': 'order-detail-modal__status--pending',
-      'completed': 'order-detail-modal__status--completed',
-      'in_progress': 'order-detail-modal__status--in-progress',
-      'cancelled': 'order-detail-modal__status--cancelled'
+      pending_payment: "order-detail-modal__status--pending",
+      completed: "order-detail-modal__status--completed",
+      in_progress: "order-detail-modal__status--in-progress",
+      cancelled: "order-detail-modal__status--cancelled",
     };
-    return `order-detail-modal__status ${classMap[state] || 'order-detail-modal__status--pending'}`;
+    return `order-detail-modal__status ${
+      classMap[state] || "order-detail-modal__status--pending"
+    }`;
   };
 
   const modalContent = (
-    <div 
-      className="order-detail-modal__overlay"
-      onClick={onClose}
-    >
-      <div 
+    <div className="order-detail-modal__overlay" onClick={onClose}>
+      <div
         className="order-detail-modal__content"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="order-detail-modal__header">
           <div className="order-detail-modal__header-info">
-            <h2>Detalle de la Orden #{orderDetail.order_id || orderNumber || ''}</h2>
+            <h2>
+              Detalle de la Orden #{orderDetail.order_id || orderNumber || ""}
+            </h2>
           </div>
-          <button 
+          <button
             className="order-detail-modal__header-close"
             onClick={onClose}
             aria-label="Cerrar modal"
@@ -121,28 +125,32 @@ export default function OrderDetailModal({
             ×
           </button>
         </div>
-        
+
         {/* Body */}
         <div className="order-detail-modal__body">
-          
           {/* Información principal */}
-          <div className={`order-detail-modal__main-info ${isRentalsPage ? 'order-detail-modal__main-info--rentals' : ''}`}>
+          <div
+            className={`order-detail-modal__main-info ${
+              isRentalsPage ? "order-detail-modal__main-info--rentals" : ""
+            }`}
+          >
             <div className="order-detail-modal__main-info-item">
               <div className="label">Fecha</div>
               <p className="value">
-                {orderDetail.start_date 
-                  ? new Date(orderDetail.start_date).toLocaleDateString('es-ES') 
-                  : '2024-01-17'
-                }
+                {orderDetail.start_date
+                  ? new Date(orderDetail.start_date).toLocaleDateString("es-ES")
+                  : "2024-01-17"}
               </p>
             </div>
             <div className="order-detail-modal__main-info-item">
               <div className="label">Estado</div>
-              <span className={getStateClass(orderDetail.state || 'pending_payment')}>
-                {orderDetail.state || 'pending_payment'}
+              <span
+                className={getStateClass(orderDetail.state || "pending_payment")}
+              >
+                {orderDetail.state || "pending_payment"}
               </span>
             </div>
-            
+
             {/* Mostrar diferentes campos según la página */}
             {isRentalsPage ? (
               <>
@@ -155,7 +163,9 @@ export default function OrderDetailModal({
                 <div className="order-detail-modal__main-info-item">
                   <div className="label">Comisión</div>
                   <p className="value value--large value--accent">
-                    {orderDetail.commission_rate ? `${orderDetail.commission_rate}%` : "8.5%"}
+                    {orderDetail.commission_rate
+                      ? `${orderDetail.commission_rate}%`
+                      : "8.5%"}
                   </p>
                 </div>
               </>
@@ -179,13 +189,13 @@ export default function OrderDetailModal({
                 <div className="order-detail-modal__client-info-item">
                   <div className="field-label">Nombre</div>
                   <p className="field-value">
-                    {orderDetail.client_name || orderDetail.name || 'No especificado'}
+                    {orderDetail.client_name || orderDetail.name || "No especificado"}
                   </p>
                 </div>
                 <div className="order-detail-modal__client-info-item">
                   <div className="field-label">Teléfono</div>
                   <p className="field-value">
-                    {orderDetail.client_phone || 'No especificado'}
+                    {orderDetail.client_phone || "No especificado"}
                   </p>
                 </div>
               </div>
@@ -213,8 +223,12 @@ export default function OrderDetailModal({
                       <tr key={item.line_id || index}>
                         <td>{item.product}</td>
                         <td>{item.quantity}</td>
-                        <td>{new Date(item.start_date).toLocaleDateString('es-ES')}</td>
-                        <td>{new Date(item.end_date).toLocaleDateString('es-ES')}</td>
+                        <td>
+                          {new Date(item.start_date).toLocaleDateString("es-ES")}
+                        </td>
+                        <td>
+                          {new Date(item.end_date).toLocaleDateString("es-ES")}
+                        </td>
                       </tr>
                     ))
                   ) : (
@@ -230,7 +244,9 @@ export default function OrderDetailModal({
           {/* Detalles del Servicio - Solo si existe proyecto */}
           {orderDetail.project && (
             <div className="order-detail-modal__section">
-              <h3 className="order-detail-modal__section-title">Detalles del Servicio</h3>
+              <h3 className="order-detail-modal__section-title">
+                Detalles del Servicio
+              </h3>
               <div className="order-detail-modal__products-table">
                 <table>
                   <thead>
@@ -245,9 +261,9 @@ export default function OrderDetailModal({
                   <tbody>
                     <tr>
                       <td>{orderDetail.project}</td>
-                      <td>{orderDetail.responsible_name || 'No especificado'}</td>
+                      <td>{orderDetail.responsible_name || "No especificado"}</td>
                       <td>{getLocationDisplay(orderDetail.location)}</td>
-                      <td>{orderDetail.responsible_phone || 'No especificado'}</td>
+                      <td>{orderDetail.responsible_phone || "No especificado"}</td>
                       <td>{orderDetail.duration_days || 1} días</td>
                     </tr>
                   </tbody>
@@ -260,7 +276,7 @@ export default function OrderDetailModal({
     </div>
   );
 
-  return typeof document !== 'undefined' 
+  return typeof document !== "undefined"
     ? createPortal(modalContent, document.body)
     : null;
 }
