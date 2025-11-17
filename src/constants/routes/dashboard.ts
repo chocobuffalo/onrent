@@ -122,6 +122,12 @@ export const dashboardRoutes: SidebarMenuProps[] = [
     icon: WrenckIcon,
     roles: ["operador"], // Sistema de navegación/GPS para operaciones
   },
+  {
+    link: "/dashboard/support",
+    title: "Soporte",
+    icon: UserProfileIcon,
+    roles: [], // vacío = visible para todos los roles
+  },
 
   /* ----------------------------------------------------
    * FUNCIONALIDADES FUTURAS - Comentadas temporalmente

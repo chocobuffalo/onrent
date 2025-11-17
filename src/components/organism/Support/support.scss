@@ -1,0 +1,216 @@
+// support.scss
+// variables + mixins (pegar al inicio si no tienes un archivo _variables.scss)
+$color-overlay: rgba(0, 0, 0, 0.4);
+$color-modal-bg: #ffffff;
+$color-header-bg: #ffffff;
+$color-text-primary: #1f2937;
+$color-text-secondary: #6b7280;
+$color-text-light: #9ca3af;
+$color-text-white: #ffffff;
+$color-text-header: #1f2937;
+$color-border: #e5e7eb;
+$color-border-light: #f3f4f6;
+$color-section-bg: #fafafa;
+$color-accent: #f97316;
+$color-close-hover: #ef4444;
+
+$spacing-xs: 8px;
+$spacing-sm: 12px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin card-shadow {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+
+.support {
+  // Contenedor general
+  &__page {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 24px;
+
+    @media (max-width: 992px) {
+      grid-template-columns: 1fr;
+      padding: 16px;
+    }
+  }
+
+  // Panel izquierdo: formulario rápido + acciones
+  &__panel {
+    background: $color-modal-bg;
+    border: 1px solid $color-border-light;
+    border-radius: 12px;
+    padding: 16px;
+    @include card-shadow;
+
+    &-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: $color-text-primary;
+      margin-bottom: 12px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid $color-border;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: $color-text-primary;
+      background: white;
+      font-size: 0.95rem;
+    }
+
+    .btn {
+      align-self: flex-start;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: $color-accent;
+      color: $color-text-white;
+      font-weight: 600;
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    }
+
+    .hint {
+      font-size: 0.85rem;
+      color: $color-text-light;
+    }
+  }
+
+  // Panel derecho: lista de tickets
+  &__tickets {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__tickets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+
+    h2 { margin: 0; font-size: 1.25rem; color: $color-text-primary; }
+    .filter { font-size: 0.9rem; color: $color-text-secondary; }
+  }
+
+  // Table card
+  &__table-card {
+    background: $color-modal-bg;
+    border: 1px solid $color-border-light;
+    border-radius: 10px;
+    overflow: hidden;
+    @include card-shadow;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      thead {
+        background: $color-section-bg;
+      }
+      th, td {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 0.95rem;
+        color: $color-text-primary;
+        border-bottom: 1px solid $color-border-light;
+      }
+      td.status {
+        width: 140px;
+      }
+      tr:hover {
+        background: rgba(0,0,0,0.02);
+      }
+      tbody tr:last-child td { border-bottom: none; }
+    }
+
+    .empty {
+      padding: 28px;
+      text-align: center;
+      color: $color-text-secondary;
+    }
+  }
+
+  // Ticket row condensed card (for mobile)
+  &__ticket-card {
+    display: none;
+    background: $color-modal-bg;
+    border: 1px solid $color-border-light;
+    border-radius: 10px;
+    padding: 12px;
+    @include card-shadow;
+
+    .top {
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+
+      .ref { font-weight:700; color: $color-text-primary; }
+      .meta { font-size: 0.85rem; color: $color-text-secondary; }
+    }
+    .desc { color: $color-text-secondary; font-size: 0.95rem; white-space: pre-wrap; word-break: break-word; }
+  }
+
+  // Status badges (reusar estilos que ya tienes)
+  &__badge {
+    display:inline-flex;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight:600;
+    font-size: 0.85rem;
+    &--open { background: #FEF3C7; color:#92400e; }
+    &--in_progress { background: #DBEAFE; color:#1E3A8A; }
+    &--resolved { background: #D1FAE5; color:#065F46; }
+  }
+
+  // Modal para ver detalle de ticket
+  &__detail-modal {
+    .overlay { position: fixed; inset: 0; background: $color-overlay; display:flex; align-items:center; justify-content:center; z-index:20000; }
+    .card {
+      width: min(920px, 95vw);
+      max-height: 88vh;
+      overflow:auto;
+      border-radius: 12px;
+      background: $color-modal-bg;
+      padding: 20px;
+      @include card-shadow;
+    }
+    .close {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: $color-text-secondary;
+      cursor: pointer;
+    }
+  }
+
+  // Responsive: swap table -> cards on mobile
+  @media (max-width: 768px) {
+    &__page { grid-template-columns: 1fr; }
+    &__table-card { display: none; }
+    &__ticket-card { display: block; }
+  }
+}

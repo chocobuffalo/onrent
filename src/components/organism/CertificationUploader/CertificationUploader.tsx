@@ -1,6 +1,4 @@
-// components/organisms/CertificationUploader/CertificationUploader.tsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // IMPORTAMOS LOS ÁTOMOS
 import InputFile from '@/components/atoms/InputFile/InputFile';
 import ActionButton from '@/components/atoms/Button/ActionButton';
@@ -19,22 +17,31 @@ interface SubmitResponse {
 
 interface StatusResponse {
   request_id: number;
-  state: 'draft' | 'under_review' | 'approved' | 'rejected';
-  level_obtained: string;
-  score: number;
-  resolution_note: string;
+  state?: string;
+  level_obtained?: string;
+  score?: number;
+  resolution_note?: string;
+  [k: string]: any;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_ORIGIN || '';
 
 const CertificationUploader = ({ machineId, token }: { machineId: number; token: string }) => {
-  // authToken: usamos el token pasado por prop, con fallback a localStorage si por alguna razón no llegó
   const authToken = token ?? (typeof window !== 'undefined' ? localStorage.getItem('access_token') || '' : '');
 
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [status, setStatus] = useState<StatusType>('idle');
   const [message, setMessage] = useState('');
   const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    return () => {
+      try {
+        const fn = (window as any).__cert_poll_cleanup;
+        if (typeof fn === 'function') fn();
+      } catch {}
+    };
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -46,44 +53,102 @@ const CertificationUploader = ({ machineId, token }: { machineId: number; token:
       setVideoFile(e.target.files[0]);
       setMessage('');
       setStatus('idle');
+      setProgress(0);
     }
   };
 
-  const pollStatus = (requestId: number) => {
+  const pollStatus = (requestId: number, timeoutMs = 5 * 60_000) => {
     return new Promise<void>((resolve, reject) => {
-      const interval = setInterval(async () => {
+      const start = Date.now();
+      const intervalMs = 3000; // feedback más rápido
+      let interval = 0 as unknown as number;
+
+      const mapToTerminal = (state?: string) => {
+        if (!state) return null;
+        const s = state.toString().toLowerCase().trim();
+        if (['approved', 'approved_by_system', 'certified', 'done', 'onrent_black', 'onrent_black_certified', 'onrentx_black', 'standard', 'certified_standard'].includes(s)) return 'approved';
+        if (['rejected', 'declined', 'not_certified', 'failed'].includes(s)) return 'rejected';
+        return 'pending';
+      };
+
+      const check = async () => {
         try {
-          // ✅ USO DEL authToken Y URL BASE PARA POLLING
-          const statusResponse = await fetch(`${API_BASE_URL}/api/machinery/certification/status/${requestId}`, {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
+          const res = await fetch(`${API_BASE_URL}/api/machinery/certification/status/${requestId}`, {
+            headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
           });
 
-          if (!statusResponse.ok) {
-            console.error('Fallo en polling. Respuesta no OK.', statusResponse.status);
+          console.debug('[pollStatus] HTTP', res.status, res.statusText);
+          if (!res.ok) {
+            console.warn('[pollStatus] response not ok', res.status);
             return;
           }
 
-          const result: StatusResponse = await statusResponse.json();
+          const json = (await res.json().catch((e) => {
+            console.error('[pollStatus] invalid-json', e);
+            return null;
+          })) as StatusResponse | null;
 
-          if (result.state === 'approved' || result.state === 'rejected') {
-            clearInterval(interval);
+          console.debug('[pollStatus] body', json);
 
-            const isApproved = result.state === 'approved';
+          if (!json) return;
+
+          const state = json.state ?? json.status ?? json.result?.state ?? json.data?.state;
+          // Si backend devuelve under_review pero incluye level/score -> considerarlo terminal
+          const hasResultInfo = !!(json.level_obtained || (typeof json.score === 'number' && !Number.isNaN(json.score)));
+          const mapped = mapToTerminal(state);
+
+          if (mapped === 'pending') {
+            // handle under_review but with result info as terminal approved
+            if ((state && state.toString().toLowerCase().includes('under_review')) && hasResultInfo) {
+              // interpretar como aprobado si level/score presente
+              if (interval) clearInterval(interval);
+              setStatus('success');
+              const level = json.level_obtained ?? 'N/A';
+              const score = typeof json.score === 'number' ? Math.round(json.score * 100) + '%' : 'N/A';
+              setMessage(`✅ Análisis completado. Nivel: ${level}. Puntaje: ${score}`);
+              resolve();
+              return;
+            }
+
+            setStatus('processing');
+            setMessage(`Análisis en progreso (estado: ${state}).`);
+            return;
+          }
+
+          if (mapped === 'approved' || mapped === 'rejected') {
+            if (interval) clearInterval(interval);
+            const isApproved = mapped === 'approved';
             setStatus(isApproved ? 'success' : 'error');
 
+            const level = json.level_obtained ?? 'N/A';
+            const score = typeof json.score === 'number' ? Math.round(json.score * 100) + '%' : 'N/A';
+            const note = json.resolution_note ?? '';
+
             const finalMessage = isApproved
-              ? `✅ Análisis completado. Nivel: ${result.level_obtained || 'N/A'}. Puntaje: ${Math.round(result.score * 100)}%.`
-              : `❌ Análisis rechazado. Razón: ${result.resolution_note || 'Sin nota de revisión.'}`;
+              ? `✅ Análisis completado. Nivel: ${level}. Puntaje: ${score}`
+              : `❌ Análisis rechazado. Razón: ${note || 'Sin nota de revisión.'}`;
 
             setMessage(finalMessage);
             resolve();
+            return;
+          }
+
+          if (Date.now() - start > timeoutMs) {
+            if (interval) clearInterval(interval);
+            setStatus('error');
+            setMessage('Timeout: el análisis tardó demasiado. Intenta nuevamente más tarde.');
+            reject(new Error('Polling timeout'));
           }
         } catch (err) {
-          console.error('Fallo en polling, reintentando...', err);
+          console.error('[pollStatus] unexpected error', err);
         }
-      }, 10000);
+      };
+
+      check().catch(() => {});
+      interval = window.setInterval(check, intervalMs);
+      (window as any).__cert_poll_cleanup = () => {
+        if (interval) clearInterval(interval);
+      };
     });
   };
 
@@ -93,7 +158,6 @@ const CertificationUploader = ({ machineId, token }: { machineId: number; token:
       return;
     }
 
-    // Validación temprana del token
     if (!authToken) {
       setStatus('error');
       setMessage('No autorizado: falta token de sesión. Inicia sesión y vuelve a intentar.');
@@ -105,7 +169,6 @@ const CertificationUploader = ({ machineId, token }: { machineId: number; token:
     setProgress(0);
 
     try {
-      // 1. Obtener la URL prefirmada de FastAPI
       const urlResponse = await fetch(`${API_BASE_URL}/api/machinery/certification/get_upload_url`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
@@ -120,7 +183,6 @@ const CertificationUploader = ({ machineId, token }: { machineId: number; token:
 
       const { upload_url, public_url }: UploadUrlResponse = await urlResponse.json();
 
-      // 2. Subir el video directamente a S3 (con seguimiento de progreso)
       setMessage('2/4: Subiendo video... (Esto puede tardar)');
       const xhr = new XMLHttpRequest();
       xhr.open('PUT', upload_url);
@@ -146,7 +208,6 @@ const CertificationUploader = ({ machineId, token }: { machineId: number; token:
       });
       setProgress(100);
 
-      // 3. Notificar a FastAPI/Odoo para iniciar el análisis
       setStatus('processing');
       setMessage('3/4: Subida completa. Iniciando análisis para certificación...');
 
@@ -164,7 +225,6 @@ const CertificationUploader = ({ machineId, token }: { machineId: number; token:
 
       const { request_id }: SubmitResponse = await submitResponse.json();
 
-      // 4. Iniciar el "Polling" para ver el estado
       setMessage('4/4: Solicitud creada. Análisis en progreso. Consultando estado...');
       await pollStatus(request_id);
     } catch (err: any) {
@@ -174,21 +234,23 @@ const CertificationUploader = ({ machineId, token }: { machineId: number; token:
   };
 
   const isActionDisabled = !videoFile || status !== 'idle';
+  const isLoading = status === 'uploading' || status === 'processing';
 
   return (
     <div className="card mt-4">
       <div className="card-body">
         <h4 className="card-title">Certifica tu maquinaria</h4>
 
-        {/* ÁTOMO 1: InputFile */}
-        <InputFile label="La maquinaria certificada recibe una etiqueta distintiva y prioridad en el algoritmo de asignación de rentas (Video máx. 500MB)" onChange={handleFileChange} disabled={status !== 'idle'} />
+        <InputFile
+          label="La maquinaria certificada recibe una etiqueta distintiva y prioridad en el algoritmo de asignación de rentas (Video máx. 500MB)"
+          onChange={handleFileChange}
+          disabled={status !== 'idle'}
+        />
 
-        {/* ÁTOMO 2: ActionButton */}
-        <ActionButton onClick={handleSubmit} isLoading={status !== 'idle'} disabled={isActionDisabled}>
+        <ActionButton onClick={handleSubmit} isLoading={isLoading} disabled={isActionDisabled}>
           Iniciar Certificación
         </ActionButton>
 
-        {/* ÁTOMO 3: StatusMessage */}
         <StatusMessage status={status} message={message} progress={progress} />
       </div>
     </div>
