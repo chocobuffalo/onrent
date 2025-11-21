@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { MachineryResponse } from "@/types/machinary";
 import { ImSpinner8 } from "react-icons/im";
 import { typeOptions } from "@/constants/routes/home";
@@ -13,7 +14,8 @@ import FileInput from "@/components/atoms/FileInput/FileInput";
 import EditFilterInput from "@/components/atoms/EditFilterInput/EditFilterInput";
 import useEditMachineFormUI from "@/hooks/frontend/ui/useEditMachineFormUI";
 import { useSession } from "next-auth/react";
-import CertificationUploader from "@/components/organism/CertificationUploader/CertificationUploader";
+// Reemplazamos el uploader único por las pestañas que muestran ambos flujos
+import CertTabs from "@/components/organism/CertTabs/CertTabs";
 import "./EditMachineForm.scss";
 
 interface EditMachineFormProps {
@@ -22,9 +24,7 @@ interface EditMachineFormProps {
 }
 
 const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
-  // ---------------------------
-  // Hooks deben estar dentro
-  // ---------------------------
+  // Hooks deben estar dentro del componente
   const { data: session } = useSession();
   const token = (session as any)?.accessToken || (session as any)?.access_token || "";
 
@@ -106,8 +106,8 @@ const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
           <div className="col-md-12 pb-3">
             <div className="form-group">
               <label className="form-label">Información de ubicación</label>
-              <EditFilterInput 
-                key={`location-${editData?.id || 'new'}`}
+              <EditFilterInput
+                key={`location-${editData?.id || "new"}`}
                 initialValue={editData?.location_info || ""}
                 onChange={handleLocationChange}
                 error={errors.location_info?.message as string}
@@ -120,7 +120,7 @@ const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
                 </div>
               )}
             </div>
-            
+
             {/* Campos ocultos para GPS */}
             <input type="hidden" {...register("gps_lat")} />
             <input type="hidden" {...register("gps_lng")} />
@@ -203,10 +203,20 @@ const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
             />
           </div>
         </div>
+
         <div className="p-4">
-          <CertificationUploader machineId={editData.id} token={token} />
+          {/* Aquí integramos las pestañas que contienen ambos flujos */}
+          <CertTabs
+            machineId={editData.id}
+            token={token}
+            onCreated={(r) => {
+              // opcional: puedes reaccionar aquí (toast, set hidden field, etc.)
+              console.log("Cert created", r);
+            }}
+          />
         </div>
       </div>
+
       <div className="group-button-submit modal-footer left mb-0">
         <button
           className="pre-btn submit-edit-button"
@@ -214,11 +224,7 @@ const EditMachineForm = ({ editData, onSuccess }: EditMachineFormProps) => {
           disabled={!isValid || isLoading}
         >
           {isLoading ? (
-            <ImSpinner8
-              color="#ffffff"
-              size={20}
-              className="animate-spin mx-auto"
-            />
+            <ImSpinner8 color="#ffffff" size={20} className="animate-spin mx-auto" />
           ) : (
             <span>Actualizar maquinaria</span>
           )}

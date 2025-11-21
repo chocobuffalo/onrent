@@ -1,0 +1,19 @@
+.cert-uploader {
+  .card-body {
+    padding: 1rem;
+  }
+  .mode-switch {
+    font-size: 0.9rem;
+    label {
+      margin-right: 1rem;
+      font-weight: 600;
+    }
+  }
+  .form-control {
+    border-radius: 6px;
+    border: 1px solid #e6e9ee;
+  }
+  .btn {
+    min-width: 120px;
+  }
+}
