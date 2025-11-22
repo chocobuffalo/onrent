@@ -1,7 +1,8 @@
+// src/components/organism/Support/IncidentForm.tsx
 "use client";
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import "@/components/organism/Support/support.scss";
+import "./support.scss";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_ORIGIN || "";
 
@@ -11,7 +12,7 @@ export default function IncidentForm({ defaultOrderId }: { defaultOrderId?: numb
 
   const [orderId, setOrderId] = useState<number | "">(defaultOrderId ?? "");
   const [description, setDescription] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null); // opcional, sólo si API acepta base64
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -19,59 +20,54 @@ export default function IncidentForm({ defaultOrderId }: { defaultOrderId?: numb
     e.preventDefault();
     setMessage(null);
 
-    console.debug("[Support][IncidentForm] submit start", { orderId, description, file });
-
     const authToken = token || (typeof window !== "undefined" ? localStorage.getItem("access_token") || "" : "");
-    console.debug("[Support][IncidentForm] authToken length:", authToken ? authToken.length : 0);
-
-    if (!orderId || String(orderId).trim() === "") {
-      setMessage("Selecciona una orden válida.");
-      return;
-    }
-    if (description.trim().length < 10) {
-      setMessage("Describe el problema (mínimo 10 caracteres).");
-      return;
-    }
-    if (!authToken) {
-      setMessage("No autorizado. Inicia sesión e intenta de nuevo.");
-      return;
-    }
+    if (!orderId || String(orderId).trim() === "") return setMessage("Selecciona una orden válida.");
+    if (description.trim().length < 10) return setMessage("Describe el problema (mínimo 10 caracteres).");
+    if (!authToken) return setMessage("No autorizado. Inicia sesión e intenta de nuevo.");
 
     setLoading(true);
 
     try {
-      const fd = new FormData();
-      fd.append("order_id", String(orderId));
-      fd.append("description", description);
-      if (file) fd.append("attachment", file);
+      const payload: any = { order_id: Number(orderId), description: description.trim() };
+      // si tu backend acepta attachment en JSON, incluirlo; si no, dejar file null y enviar sin él
+      if (file) {
+        // convertir a base64 solo si el backend lo espera
+        const toBase64 = (f: File) =>
+          new Promise<string>((res, rej) => {
+            const r = new FileReader();
+            r.onerror = rej;
+            r.onload = () => {
+              const s = String(r.result || "");
+              const comma = s.indexOf(",");
+              res(comma >= 0 ? s.slice(comma + 1) : s);
+            };
+            r.readAsDataURL(f);
+          });
+        const dataBase64 = await toBase64(file);
+        payload.attachment = { filename: file.name, content_type: file.type, data_base64: dataBase64 };
+      }
 
       const url = `${API_BASE_URL}/support/incidents`;
-      console.debug("[Support][IncidentForm] POST URL:", url);
-
       const res = await fetch(url, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
         },
-        body: fd,
+        body: JSON.stringify(payload),
       });
 
-      console.debug("[Support][IncidentForm] response status", res.status);
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        console.error("[Support][IncidentForm] server error body", json);
-        const err = json?.detail || json?.warning || json?.message || "Error creando incidencia";
+        const err = json?.detail || json?.message || "Error creando incidencia";
         throw new Error(err);
       }
-
-      const ref = json.reference || json.id;
-      setMessage(`Incidencia creada: ${ref}`);
+      setMessage(`Incidencia creada: ${json.reference || json.id}`);
+      setOrderId("");
       setDescription("");
       setFile(null);
-      setOrderId("");
     } catch (err: any) {
-      console.error("[Support][IncidentForm] submit error", err);
-      setMessage(err.message || "Error desconocido");
+      setMessage(err?.message || "Error desconocido");
     } finally {
       setLoading(false);
     }
@@ -83,35 +79,17 @@ export default function IncidentForm({ defaultOrderId }: { defaultOrderId?: numb
       <form onSubmit={submit} className="support__panel-form" noValidate>
         <label>
           Orden (ID)
-          <input
-            type="number"
-            value={orderId ?? ""}
-            onChange={(e) => setOrderId(e.target.value === "" ? "" : Number(e.target.value))}
-            required
-            className="mt-1"
-          />
+          <input type="number" value={orderId ?? ""} onChange={(e) => setOrderId(e.target.value === "" ? "" : Number(e.target.value))} required className="mt-1" />
         </label>
 
         <label>
           Descripción
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-            rows={5}
-            className="mt-1"
-            minLength={10}
-          />
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} required rows={5} className="mt-1" minLength={10} />
         </label>
 
         <label>
-          Evidencia (opcional)
-          <input
-            type="file"
-            accept="image/*,application/pdf"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="mt-1"
-          />
+          Evidencia (opcional, se convertirá a base64 si el backend lo espera)
+          <input type="file" accept="image/*,application/pdf" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1" />
         </label>
 
         <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 8 }}>

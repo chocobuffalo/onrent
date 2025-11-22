@@ -58,7 +58,15 @@ export default function NewProjectForm({
               machinetype   
           });
 
-          const dayValue = project.estimated_duration !== "NaN" ? `${project.estimated_duration}  ${project.estimated_duration === "1" ? "día" : "días" }` : "calculando..." ;
+          const shownDays = Math.max(1, (parseInt(project.estimated_duration || "0", 10) || 0) - 1);
+
+          const dayValue = project.start_date? `${shownDays} ${shownDays === 1 ? "día" : "días"}`: "calculando...";
+          console.log("UI dayValue →", dayValue, {
+            raw: project.estimated_duration,
+            start: project.start_date,
+            end: project.end_date,
+          });
+         
           
           const handlerGetTerrainType = (type:string) => {
             if (terrainType.includes(type)) {
@@ -106,7 +114,7 @@ export default function NewProjectForm({
                 <div className="flex flex-col gap-2">
                   <label className="" htmlFor="start_date">Fecha de inicio de la obra </label>
                   <DateInput 
-                    action={(date:string)=>{handlerStartDate(date);handlerWorkSchedule(date, project.end_date)}} 
+                    action={(date:string)=>{handlerStartDate(date);console.log("DEBUG start_date:", date, "end_date:", project.end_date);handlerWorkSchedule(date, project.end_date)}} 
                     value={project.start_date}
                     endDate={ typeof fixDate(project.end_date) === "object" ? fixDate(project.end_date) : undefined } 
                     placeholder="Fecha de inicio de la obra"  />
@@ -118,7 +126,7 @@ export default function NewProjectForm({
                 <div className="flex flex-col gap-2">
                   <label className="" htmlFor="end_date">Fecha de fin de la obra</label>
                   <DateInput 
-                    action={(date:string)=>{handlerEndDate(date);handlerWorkSchedule(project.start_date, date)}} 
+                    action={(date:string)=>{handlerEndDate(date);console.log("DEBUG start_date:", project.start_date, "end_date:", date);handlerWorkSchedule(project.start_date, date)}} 
                     value={project.end_date}
                     startDate={project.start_date !== '' && typeof fixDate(project.start_date) === "object" ? fixDate(project.start_date) : currentDate() }
                     placeholder="Fecha de fin de la obra"  />

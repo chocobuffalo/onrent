@@ -51,16 +51,16 @@ export default function DateInput({
         className="border dateItem h-[40px] border-[#B2B2B2] rounded-[5px] block px-3 py-6 w-full relative z-10"
         options={{
           minDate: calculatedMinDate,
-          maxDate: calculatedMaxDate, //Solo se establece si hay un objeto válido
+          maxDate: calculatedMaxDate, // Solo se establece si hay un objeto válido
           locale: Spanish,
           dateFormat: "d-m-Y",
           disableMobile: true,
           clickOpens: true,
-          //NO agregar "disable" ni "enable" que limiten fechas
         }}
         onChange={(date) => {
           if (date.length > 0) {
-            action(formatDate(new Date(date[0]).toISOString()));
+            // ✅ Convertir el Date a string antes de pasarlo a formatDate
+            action(formatDate(date[0].toString()));
           } else {
             action("");
           }
